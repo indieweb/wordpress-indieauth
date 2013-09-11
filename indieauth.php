@@ -45,7 +45,7 @@ class IndieAuthPlugin {
     if ( array_key_exists('indieauth_identifier', $_POST) && $_POST['indieauth_identifier'] ) {
       $redirect_to = array_key_exists('redirect_to', $_REQUEST) ? $_REQUEST['redirect_to'] : null;
       // redirect to indieauth.com
-      wp_redirect("http://indieauth.com/auth?me=".urldecode($_POST['indieauth_identifier'])."&redirect_uri=".wp_login_url($redirect_to));
+      wp_redirect("http://indieauth.com/auth?me=".urlencode($_POST['indieauth_identifier'])."&redirect_uri=".wp_login_url($redirect_to));
     } else if ( array_key_exists('token', $_REQUEST) ) {
 
       $token = $_REQUEST['token'];
