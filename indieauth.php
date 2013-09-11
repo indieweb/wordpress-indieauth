@@ -48,9 +48,9 @@ class IndieAuthPlugin {
       wp_redirect("http://indieauth.com/auth?me=".$_POST['indieauth_identifier']."&redirect_uri=".wp_login_url($redirect_to));
     } else if ( array_key_exists('token', $_REQUEST) ) {
 
-   		$token = $_REQUEST['token'];
+      $token = $_REQUEST['token'];
 
-   		$response = wp_remote_get( "http://indieauth.com/verify?token=$token" );
+      $response = wp_remote_get( "http://indieauth.com/verify?token=$token" );
       $response = wp_remote_retrieve_body($response);
       $response = json_decode($response, true);      
       
@@ -64,9 +64,9 @@ class IndieAuthPlugin {
       } else if ( array_key_exists('error', $response) ) {
         $user = new WP_Error('indieauth_'.$response['error'], htmlentities2($response['error_description']));
       }
-   	}
+    }
 
-   	return $user;
+    return $user;
   }
   
   private function get_user_by_identifier($identifier) {
