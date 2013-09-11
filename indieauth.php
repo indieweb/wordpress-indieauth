@@ -37,7 +37,7 @@ class IndieAuthPlugin {
   }
   
   /**
-   * Authenticate user to WordPress using OpenID.
+   * Authenticate user to WordPress using IndieAuth.
    *
    * @param mixed $user authenticated user object, or WP_Error or null
    */
