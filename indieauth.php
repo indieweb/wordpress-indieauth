@@ -3,7 +3,7 @@
 Plugin Name: IndieAuth
 Plugin URI: https://github.com/pfefferle/wordpress-indieauth/
 Description: IndieAuth for WordPress
-Version: 1.0.0-dev
+Version: 1.0.0
 Author: pfefferle
 Author URI: http://notizblog.org/
 */
