@@ -42,7 +42,7 @@ class IndieAuthPlugin {
    * @param mixed $user authenticated user object, or WP_Error or null
    */
   public function authenticate($user) {
-  	if ( array_key_exists('indieauth_identifier', $_POST) && $_POST['indieauth_identifier'] ) {
+    if ( array_key_exists('indieauth_identifier', $_POST) && $_POST['indieauth_identifier'] ) {
       $redirect_to = array_key_exists('redirect_to', $_REQUEST) ? $_REQUEST['redirect_to'] : null;
       // redirect to indieauth.com
       wp_redirect("http://indieauth.com/auth?me=".$_POST['indieauth_identifier']."&redirect_uri=".wp_login_url($redirect_to));
@@ -55,15 +55,15 @@ class IndieAuthPlugin {
       $response = json_decode($response, true);      
       
       if ( array_key_exists('me', $response) ) {
-   			$user_id = $this->get_user_by_identifier( $response['me'] );
-   			if ( $user_id ) {
-   				$user = new WP_User($user_id);
-   			} else {
-   				$user = new WP_Error('indieauth_registration_failure', __('Your have entered a valid Domain, but you have no account on this blog.', 'indieauth'));
-   			}
-   		} else if ( array_key_exists('error', $response) ) {
-   			$user = new WP_Error('indieauth_'.$response['error'], htmlentities2($response['error_description']));
-   		}
+        $user_id = $this->get_user_by_identifier( $response['me'] );
+        if ( $user_id ) {
+          $user = new WP_User($user_id);
+        } else {
+          $user = new WP_Error('indieauth_registration_failure', __('Your have entered a valid Domain, but you have no account on this blog.', 'indieauth'));
+        }
+      } else if ( array_key_exists('error', $response) ) {
+        $user = new WP_Error('indieauth_'.$response['error'], htmlentities2($response['error_description']));
+      }
    	}
 
    	return $user;
