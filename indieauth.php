@@ -45,14 +45,19 @@ class IndieAuthPlugin {
     if ( array_key_exists('indieauth_identifier', $_POST) && $_POST['indieauth_identifier'] ) {
       $redirect_to = array_key_exists('redirect_to', $_REQUEST) ? $_REQUEST['redirect_to'] : null;
       // redirect to indieauth.com
-      wp_redirect("http://indieauth.com/auth?me=".$_POST['indieauth_identifier']."&redirect_uri=".wp_login_url($redirect_to));
+      wp_redirect("http://indieauth.com/auth?me=".urldecode($_POST['indieauth_identifier'])."&redirect_uri=".wp_login_url($redirect_to));
     } else if ( array_key_exists('token', $_REQUEST) ) {
 
       $token = $_REQUEST['token'];
 
       $response = wp_remote_get( "http://indieauth.com/verify?token=$token" );
       $response = wp_remote_retrieve_body($response);
-      $response = json_decode($response, true);      
+      $response = @json_decode($response, true);      
+      
+      // check if response was json or not
+      if (!is_array($response)) {
+        $user = new WP_Error('indieauth_response_error', __('IndieAuth.com seems to have some hickups, please try it again later.', 'indieauth'));
+      }
       
       if ( array_key_exists('me', $response) ) {
         $user_id = $this->get_user_by_identifier( $response['me'] );
