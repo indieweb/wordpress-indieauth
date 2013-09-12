@@ -17,16 +17,13 @@ class IndieAuthPlugin {
   public function init() {
     add_action( 'login_form', array($this, 'login_form') );
     add_action( 'authenticate', array($this, 'authenticate') );
-    
-    add_filter( 'query_vars', array($this, 'query_vars') );
   }
   
-  function query_vars($query_vars) {
-    $query_vars[] = 'indieauth_identifier';
-
-    return $query_vars;
-  }
-  
+  /**
+   * Add IndieAuth input field to wp-login.php
+   *
+   * @action: login_form
+   */
   public function login_form() {
     echo '
     	<p style="margin-bottom: 8px;">
@@ -39,7 +36,9 @@ class IndieAuthPlugin {
   /**
    * Authenticate user to WordPress using IndieAuth.
    *
+   * @action: authenticate
    * @param mixed $user authenticated user object, or WP_Error or null
+   * @return mixed authenticated user object, or WP_Error or null
    */
   public function authenticate($user) {
     if ( array_key_exists('indieauth_identifier', $_POST) && $_POST['indieauth_identifier'] ) {
@@ -73,6 +72,12 @@ class IndieAuthPlugin {
     return $user;
   }
   
+  /**
+   * Get the user associated with the specified Identifier-URI.
+   *
+   * @param string $$identifier identifier to match
+   * @return int|null ID of associated user, or null if no associated user
+   */
   private function get_user_by_identifier($identifier) {
     global $wpdb;
     
