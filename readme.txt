@@ -3,7 +3,7 @@ Contributors: pfefferle
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 3.6
 Tested up to: 3.6
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 
 An IndieAuth plugin for WordPress
 
