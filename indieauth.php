@@ -9,16 +9,16 @@ Author URI: http://notizblog.org/
 */
 
 class IndieAuthPlugin {
-  
+
   public function __construct() {
     add_action( 'init', array($this, 'init') );
   }
-  
+
   public function init() {
     add_action( 'login_form', array($this, 'login_form') );
     add_action( 'authenticate', array($this, 'authenticate') );
   }
-  
+
   /**
    * Add IndieAuth input field to wp-login.php
    *
@@ -32,7 +32,7 @@ class IndieAuthPlugin {
         <a href="https://indieauth.com/#faq" target="_blank">'.__('Learn about IndieAuth', 'indieauth').'</a>
     	</p>';
   }
-  
+
   /**
    * Authenticate user to WordPress using IndieAuth.
    *
@@ -50,18 +50,17 @@ class IndieAuthPlugin {
 
       $response = wp_remote_get( "http://indieauth.com/verify?token=".urlencode($token) );
       $response = wp_remote_retrieve_body($response);
-      $response = @json_decode($response, true);      
-      
+      $response = @json_decode($response, true);
+
       // check if response was json or not
       if (!is_array($response)) {
         $user = new WP_Error('indieauth_response_error', __('IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth'));
       }
-      
+
       if ( array_key_exists('me', $response) ) {
-        $user_id = $this->get_user_by_identifier( $response['me'] );
-        if ( $user_id ) {
-          $user = new WP_User($user_id);
-        } else {
+        $user = $this->get_user_by_identifier( $response['me'] );
+
+        if ( !$user ) {
           $user = new WP_Error('indieauth_registration_failure', __('Your have entered a valid Domain, but you have no account on this blog.', 'indieauth'));
         }
       } else if ( array_key_exists('error', $response) ) {
@@ -71,7 +70,7 @@ class IndieAuthPlugin {
 
     return $user;
   }
-  
+
   /**
    * Get the user associated with the specified Identifier-URI.
    *
@@ -79,12 +78,38 @@ class IndieAuthPlugin {
    * @return int|null ID of associated user, or null if no associated user
    */
   private function get_user_by_identifier($identifier) {
-    global $wpdb;
-    
+    // try it without trailing slash
     $no_slash = untrailingslashit($identifier);
+
+
+    $args = array(
+      'search'         => $no_slash,
+      'search_columns' => array( 'user_url' ),
+    );
+
+    $user_query = new WP_User_Query( $args );
+
+    // check result
+    if (!empty($user_query->results)) {
+      return $user_query->results[0];
+    }
+
+    // try it with trailing slash
     $slash = trailingslashit($identifier);
-    
-    return $wpdb->get_var( $wpdb->prepare( "SELECT * FROM $wpdb->users WHERE user_url = %s OR user_url = %d", $no_slash, $slash ) );
+
+    $args = array(
+      'search'         => $slash,
+      'search_columns' => array( 'user_url' ),
+    );
+
+    $user_query = new WP_User_Query( $args );
+
+    // check result
+    if (!empty($user_query->results)) {
+      return $user_query->results[0];
+    }
+
+    return null;
   }
 }
 

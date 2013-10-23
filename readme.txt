@@ -42,5 +42,8 @@ Yes, the assumption is that people are willing to [own their online identities](
 
 == Changelog ==
 
+= 1.1.0 =
+* fixed critical bug
+
 = 1.0.0 =
 * initial
