@@ -11,7 +11,7 @@ An IndieAuth plugin for WordPress
 
 The plugin lets you login to the WordPress backend via IndieAuth. It uses the URL from the profile page to identify the blog user.
 
-Register with IndieAuth is not supported yet.
+Registration with IndieAuth is not supported yet.
 
 == Installation ==
 
