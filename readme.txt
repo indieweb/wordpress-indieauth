@@ -11,9 +11,7 @@ An IndieAuth plugin for WordPress
 
 The plugin lets you login to the WordPress backend via IndieAuth. It uses the URL from the profile page to identify the blog user.
 
-IndieAuth is a way to use your own domain name to sign in to websites. It's like OpenID, but simpler! It works by linking your website to one or more authentication providers such as Twitter or Google, then entering your domain name in the login form on websites that support IndieAuth. You can find out more about IndieAuth on [IndieAuth.com](https://indieauth.com).
-
-Signup with IndieAuth is not supported yet.
+Register with IndieAuth is not supported yet.
 
 == Installation ==
 
