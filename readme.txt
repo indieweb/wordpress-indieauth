@@ -3,7 +3,7 @@ Contributors: pfefferle
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 3.6
 Tested up to: 3.6
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 
 An IndieAuth plugin for WordPress
 
@@ -41,6 +41,9 @@ Yes, your rel="me" links do not need to be visible, but the html does need to be
 Yes, the assumption is that people are willing to [own their online identities](http://indiewebcamp.com/why) in the form of a domain name. It is getting easier and easier to host content on your own domain name. See "[Getting Started on the Indie Web](http://indiewebcamp.com/Getting_Started)" for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like Dreamhost.
 
 == Changelog ==
+
+= 1.1.1 =
+* WordPress coding style
 
 = 1.1.0 =
 * fixed critical bug
