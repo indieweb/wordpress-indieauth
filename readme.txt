@@ -2,7 +2,7 @@
 Contributors: pfefferle
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 3.6
-Tested up to: 3.6
+Tested up to: 4.7.1
 Stable tag: 1.1.1
 
 An IndieAuth plugin for WordPress
@@ -18,6 +18,8 @@ Registration with IndieAuth is not supported yet.
 1. Upload the `indieauth` directory to your `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. That's it
+
+For additional minor set up to be able to actually log in using IndieAuth, see [IndieAuth.com](https://indieauth.com/setup). Supported providers include: Twitter, Github, Flickr, SMS, and email among others.
 
 == Frequently Asked Questions ==
 
