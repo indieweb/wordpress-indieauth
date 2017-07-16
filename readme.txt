@@ -2,8 +2,11 @@
 Contributors: pfefferle
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 3.6
-Tested up to: 4.7.1
-Stable tag: 1.1.1
+Tested up to: 4.8
+Stable tag: 1.1.2
+License: MIT
+License URI: http://opensource.org/licenses/MIT
+Donate link: http://14101978.de
 
 An IndieAuth plugin for WordPress
 
@@ -44,11 +47,18 @@ Yes, the assumption is that people are willing to [own their online identities](
 
 == Changelog ==
 
+= 1.1.2 =
+
+* fixed redirect URL
+
 = 1.1.1 =
+
 * WordPress coding style
 
 = 1.1.0 =
+
 * fixed critical bug
 
 = 1.0.0 =
+
 * initial

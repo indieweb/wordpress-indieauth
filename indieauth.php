@@ -1,12 +1,14 @@
 <?php
-/*
-Plugin Name: IndieAuth
-Plugin URI: https://github.com/pfefferle/wordpress-indieauth/
-Description: IndieAuth for WordPress
-Version: 1.1.1
-Author: pfefferle
-Author URI: http://notizblog.org/
-*/
+/**
+ * Plugin Name: IndieAuth
+ * Plugin URI: https://github.com/pfefferle/wordpress-indieauth/
+ * Description: IndieAuth for WordPress
+ * Version: 1.1.2
+ * Author: Matthias Pfefferle
+ * Author URI: https://notiz.blog
+ * License: MIT
+ * License URI: http://opensource.org/licenses/MIT
+ */
 
 class IndieAuthPlugin {
 
@@ -44,7 +46,7 @@ class IndieAuthPlugin {
 		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
 			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 			// redirect to indieauth.com
-			wp_redirect( 'http://indieauth.com/auth?me=' . urlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . urlencode( wp_login_url( $redirect_to ) ) );
+			wp_redirect( 'http://indieauth.com/auth?me=' . urlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) );
 		} elseif ( array_key_exists( 'token', $_REQUEST ) ) {
 			$token = $_REQUEST['token'];
 
@@ -63,8 +65,8 @@ class IndieAuthPlugin {
 				if ( ! $user ) {
 					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
 				}
-			} else if ( array_key_exists( 'error', $response ) ) {
-				$user = new WP_Error( 'indieauth_' . $response['error'], htmlentities2( $response['error_description'] ) );
+			} elseif ( array_key_exists( 'error', $response ) ) {
+				$user = new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
 			}
 		}
 
