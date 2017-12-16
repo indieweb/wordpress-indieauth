@@ -2,15 +2,15 @@
 /**
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/pfefferle/wordpress-indieauth/
- * Description: IndieAuth for WordPress
- * Version: 1.1.2
+ * Description: Login to your site using IndieAuth.com
+ * Version: 1.1.3
  * Author: Matthias Pfefferle
  * Author URI: https://notiz.blog
  * License: MIT
  * License URI: http://opensource.org/licenses/MIT
  */
 
-class IndieAuthPlugin {
+class IndieAuth_Plugin {
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'init' ) );
@@ -31,7 +31,7 @@ class IndieAuthPlugin {
 			<p style="margin-bottom: 8px;">
 				<label for="indieauth_identifier">' . __( 'Or login with your Domain', 'indieauth' ) . '<br />
 				<input type="text" name="indieauth_identifier" placeholder="your-domain.com" id="indieauth_identifier" class="input indieauth_identifier" value="" /></label>
-				<a href="https://indieauth.com/#faq" target="_blank">' . __( 'Learn about IndieAuth', 'indieauth' ) . '</a>
+				<a href="https://indieauth.com/" target="_blank">' . __( 'Learn about IndieAuth', 'indieauth' ) . '</a>
 			</p>';
 	}
 
@@ -46,11 +46,11 @@ class IndieAuthPlugin {
 		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
 			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 			// redirect to indieauth.com
-			wp_redirect( 'http://indieauth.com/auth?me=' . urlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) );
+			wp_redirect( 'http://indieauth.com/auth?me=' . rawurlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) );
 		} elseif ( array_key_exists( 'token', $_REQUEST ) ) {
 			$token = $_REQUEST['token'];
 
-			$response = wp_remote_get( 'http://indieauth.com/verify?token=' . urlencode( $token ) );
+			$response = wp_remote_get( 'http://indieauth.com/verify?token=' . rawurlencode( $token ) );
 			$response = wp_remote_retrieve_body( $response );
 			$response = json_decode( $response, true );
 
@@ -114,4 +114,4 @@ class IndieAuthPlugin {
 	}
 }
 
-new IndieAuthPlugin();
+new IndieAuth_Plugin();
