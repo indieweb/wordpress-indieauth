@@ -46,9 +46,9 @@ class IndieAuth_Plugin {
 		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
 			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 			// redirect to indieauth.com
-			wp_redirect( 'http://indieauth.com/auth?me=' . rawurlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) );
-		} elseif ( array_key_exists( 'token', $_REQUEST ) ) {
-			$token = $_REQUEST['token'];
+			wp_redirect( 'http://indieauth.com/auth?me=' . rawurlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) . '&client_id=' . home_url() );
+		} elseif ( array_key_exists( 'code', $_REQUEST ) ) {
+			$token = $_REQUEST['code'];
 
 			$response = wp_remote_get( 'http://indieauth.com/verify?token=' . rawurlencode( $token ) );
 			$response = wp_remote_retrieve_body( $response );
