@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== IndieAuth ===
 Contributors: pfefferle
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 3.6

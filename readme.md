@@ -1,4 +1,4 @@
-# Plugin Name #
+# IndieAuth #
 **Contributors:** [pfefferle](https://profiles.wordpress.org/pfefferle)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 3.6  
