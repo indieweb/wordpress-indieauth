@@ -84,7 +84,7 @@ class IndieAuthPlugin {
 		$no_slash = untrailingslashit( $identifier );
 
 		$args = array(
-			'search' => $no_slash,
+			'search'         => $no_slash,
 			'search_columns' => array( 'user_url' ),
 		);
 
@@ -99,7 +99,7 @@ class IndieAuthPlugin {
 		$slash = trailingslashit( $identifier );
 
 		$args = array(
-			'search' => $slash,
+			'search'         => $slash,
 			'search_columns' => array( 'user_url' ),
 		);
 
