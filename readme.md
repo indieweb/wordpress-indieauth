@@ -2,7 +2,7 @@
 **Contributors:** [pfefferle](https://profiles.wordpress.org/pfefferle)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 3.6  
-**Tested up to:** 4.8  
+**Tested up to:** 4.9.1  
 **Stable tag:** 1.1.2  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
