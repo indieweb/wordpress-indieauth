@@ -1,117 +1,81 @@
 <?php
 /**
  * Plugin Name: IndieAuth
- * Plugin URI: https://github.com/pfefferle/wordpress-indieauth/
+ * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: Login to your site using IndieAuth.com
- * Version: 1.1.3
- * Author: Matthias Pfefferle
- * Author URI: https://notiz.blog
+ * Version: 1.2.0
+ * Author: IndieWebCamp WordPress Outreach Club
+ * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
  * License URI: http://opensource.org/licenses/MIT
+ * Text Domain: indieauth
+ * Domain Path: /languages
  */
+
+add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'init' ) );
 
 class IndieAuth_Plugin {
 
-	public function __construct() {
-		add_action( 'init', array( $this, 'init' ) );
-	}
+	public static function init() {
+		// initialize admin settings
+		add_action( 'admin_init', array( 'IndieAuth_Plugin', 'admin_init' ) );
 
-	public function init() {
-		add_action( 'login_form', array( $this, 'login_form' ) );
-		add_action( 'authenticate', array( $this, 'authenticate' ) );
-	}
+		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
+		// Compatibility Functions
+		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
+		// Indieauth Authentication Functions
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
 
-	/**
-	 * Add IndieAuth input field to wp-login.php
-	 *
-	 * @action: login_form
-	 */
-	public function login_form() {
-		echo '
-			<p style="margin-bottom: 8px;">
-				<label for="indieauth_identifier">' . __( 'Or login with your Domain', 'indieauth' ) . '<br />
-				<input type="text" name="indieauth_identifier" placeholder="your-domain.com" id="indieauth_identifier" class="input indieauth_identifier" value="" /></label>
-				<a href="https://indieauth.com/" target="_blank">' . __( 'Learn about IndieAuth', 'indieauth' ) . '</a>
-			</p>';
-	}
-
-	/**
-	 * Authenticate user to WordPress using IndieAuth.
-	 *
-	 * @action: authenticate
-	 * @param mixed $user authenticated user object, or WP_Error or null
-	 * @return mixed authenticated user object, or WP_Error or null
-	 */
-	public function authenticate( $user ) {
-		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
-			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
-			// redirect to indieauth.com
-			wp_redirect( 'http://indieauth.com/auth?me=' . rawurlencode( $_POST['indieauth_identifier'] ) . '&redirect_uri=' . wp_login_url( $redirect_to ) . '&client_id=' . home_url() );
-		} elseif ( array_key_exists( 'code', $_REQUEST ) ) {
-			$token = $_REQUEST['code'];
-
-			$response = wp_remote_get( 'http://indieauth.com/verify?token=' . rawurlencode( $token ) );
-			$response = wp_remote_retrieve_body( $response );
-			$response = json_decode( $response, true );
-
-			// check if response was json or not
-			if ( ! is_array( $response ) ) {
-				$user = new WP_Error( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ) );
-			}
-
-			if ( array_key_exists( 'me', $response ) ) {
-				$user = $this->get_user_by_identifier( $response['me'] );
-
-				if ( ! $user ) {
-					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
-				}
-			} elseif ( array_key_exists( 'error', $response ) ) {
-				$user = new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
-			}
-		}
-
-		return $user;
-	}
-
-	/**
-	 * Get the user associated with the specified Identifier-URI.
-	 *
-	 * @param string $$identifier identifier to match
-	 * @return int|null ID of associated user, or null if no associated user
-	 */
-	private function get_user_by_identifier( $identifier ) {
-		// try it without trailing slash
-		$no_slash = untrailingslashit( $identifier );
-
-		$args = array(
-			'search'         => $no_slash,
-			'search_columns' => array( 'user_url' ),
+		register_setting(
+			'general', 'indieauth_show_login_form', array(
+				'type'         => 'boolean',
+				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 1,
+			)
 		);
 
-		$user_query = new WP_User_Query( $args );
-
-		// check result
-		if ( ! empty( $user_query->results ) ) {
-			return $user_query->results[0];
-		}
-
-		// try it with trailing slash
-		$slash = trailingslashit( $identifier );
-
-		$args = array(
-			'search'         => $slash,
-			'search_columns' => array( 'user_url' ),
+		register_setting(
+			'general', 'indieauth_authorization_endpoint', array(
+				'type'         => 'string',
+				'description'  => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 'https://indieauth.com/auth',
+			)
 		);
 
-		$user_query = new WP_User_Query( $args );
+		register_setting(
+			'general', 'indieauth_token_endpoint', array(
+				'type'         => 'string',
+				'description'  => __( 'IndieAuth Token Endpoint', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 'https://tokens.indieauth.com/token',
+			)
+		);
 
-		// check result
-		if ( ! empty( $user_query->results ) ) {
-			return $user_query->results[0];
-		}
-
-		return null;
+		new IndieAuth_Authenticate();
 	}
+
+	public static function admin_init() {
+		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( 'IndieAuth_Plugin', 'general_settings' ), 'general', 'default' );
+	}
+
+		/**
+		 * render the login form
+		 */
+	public static function login_form() {
+		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-login-form.php';
+		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
+				load_template( $template );
+		}
+	}
+
+	/**
+	 * Add Webmention options to the WordPress general settings page.
+	 */
+	public static function general_settings() {
+		load_template( plugin_dir_path( __FILE__ ) . 'templates/indieauth-general-settings.php' );
+	}
+
 }
 
-new IndieAuth_Plugin();
