@@ -1,9 +1,9 @@
 === IndieAuth ===
-Contributors: pfefferle
+Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
-Requires at least: 3.6
+Requires at least: 4.7
 Tested up to: 4.9.1
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: http://14101978.de
@@ -12,7 +12,8 @@ An IndieAuth plugin for WordPress. This allows you to login to your website usin
 
 == Description ==
 
-The plugin lets you login to the WordPress backend via IndieAuth.com. It uses the URL from the profile page to identify the blog user.
+The plugin lets you login to the WordPress backend via IndieAuth.com and allows an Indieauth.com to act as an authentication mechanism for WordPress and its REST API.
+It uses the URL from the profile page to identify the blog user or your author url.
 
 == Installation ==
 
@@ -20,27 +21,50 @@ The plugin lets you login to the WordPress backend via IndieAuth.com. It uses th
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. That's it
 
-For additional minor set up to be able to actually log in using IndieAuth.com, see [IndieAuth.com](https://indieauth.com/setup). Supported providers include: Twitter, Github, GNUPG, email among others.
+To be able to actually log in using IndieAuth.com, see [IndieAuth.com](https://indieauth.com/setup). Supported providers include: Twitter, Github, GNUPG, email among others.
 
 == Frequently Asked Questions ==
 
-Taken from [IndieAuth.com](https://indieauth.com)
-
 = What is IndieAuth? =
-IndieAuth is a way to use your own domain name to sign in to websites. IndieAuth.com works by linking your website to one or more authentication providers such as Twitter or Github, then entering your domain name in the login form on websites that support IndieAuth. You can link your website to these providers using 'rel-me', which is built into the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
+[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage to sign in to other places. 
+
+= What is IndieAuth.com? =
+
+[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use.
 
 = Why IndieAuth? =
-IndieAuth is part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity. Instead of logging in to websites as "you on Twitter" or "you on Facebook", you should be able to log in as just "you". We should not be relying on other sites to provide our authenticated identities, we should be able to use our own domain names to log in to sites everywhere.
 
-IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web, without the .
+IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises 
+much of the process so completely separate implementations and services can be used for each part. 
+
+IndieAuth was developed as part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity.
 
 = How is this different from OpenID? =
-The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, and IndieAuth.com leverages other OAuth providers and behaviors that people are already accustomed to.
+The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. 
+However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. 
+
+= How is this different from OAuth? =
+
+IndieAuth was built on top of the OAuth 2.0 Framework and is a simplified way of verifying the identity of an end user and obtaining an OAuth 2.0 Bearer token.
 
 = Does this require users to have their own domain name? =
-Yes, the assumption is that people are willing to [own their online identities](http://indiewebcamp.com/why) in the form of a domain name. It is getting easier and easier to host content on your own domain name. See "[Getting Started on the Indie Web](http://indieweb.org/Getting_Started)" for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like Dreamhost.
+No. You can use your author profile URL to login if you do not have a domain name. However how the Indieauth server authenticates you depends on that server.
+
+= How do I authenticate myself to an Indieauth server? =
+
+That, as mentioned, depends on the server. By default, the plugin uses IndieAuth.com which works by linking your website to one or more authentication providers 
+such as Twitter or Github, then entering your domain name in the login form on websites that support IndieAuth. 
+
+You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing 
+the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
+
 
 == Changelog ==
+
+= 1.2.0 =
+* Support author profiles in addition to user URLs
+* Change token verification method to match current Indieauth specification
+* Add support for token verification to act as a WordPress authentication mechanism.
 
 = 1.1.3 =
 * update README
