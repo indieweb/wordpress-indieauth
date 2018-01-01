@@ -69,6 +69,27 @@ class IndieAuth_Authenticate {
 	}
 
 	/**
+	 * Redirect to Authorization Endpoint for Authentication
+	 *
+	 * @param string $me URL parameter
+	 * @param string $redirect_uri where to redirect
+	 *
+	 */
+	public static function authorization_redirect( $me, $redirect_uri ) {
+		$query = build_query(
+			array(
+				'me'           => rawurlencode( $me ),
+				'redirect_uri' => wp_login_url( $redirect_uri ),
+				'client_id'    => home_url(),
+				'state'        => wp_create_nonce( 'indieauth-' . home_url() ),
+			)
+		);
+		// redirect to authentication endpoint
+		wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
+	}
+
+
+	/**
 	 * Authenticate user to WordPress using IndieAuth.
 	 *
 	 * @action: authenticate
@@ -88,18 +109,9 @@ class IndieAuth_Authenticate {
 			if ( ! wp_http_validate_url( $me ) ) {
 				return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
 			}
-			$query = build_query(
-				array(
-					'me'           => rawurlencode( $me ),
-					'redirect_uri' => wp_login_url( $redirect_to ),
-					'client_id'    => home_url(),
-					'state'        => wp_create_nonce( home_url() ),
-				)
-			);
-			// redirect to authentication endpoint
-			wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
+			$this->authorization_redirect( $me, $redirect_to );
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			if ( ! wp_verify_nonce( $_REQUEST['state'], home_url() ) ) {
+			if ( ! wp_verify_nonce( $_REQUEST['state'], 'indieauth-' . home_url() ) ) {
 				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
 			}
 			$query    = build_query(
