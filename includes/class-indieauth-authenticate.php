@@ -126,6 +126,21 @@ class IndieAuth_Authenticate {
 		);
 	}
 
+	/**
+	 * Verify State
+	 *
+	 * @param string $state
+	 *
+	 * @return boolean|WP_Error
+	 */
+	public function verify_state( $state ) {
+		$return = wp_verify_nonce( $state, 'indieauth-' . home_url() );
+		if ( ! $return ) {
+			return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+		}
+		return $return;
+	}
+
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
@@ -144,8 +159,9 @@ class IndieAuth_Authenticate {
 			}
 			$this->authorization_redirect( $me, $redirect_to );
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			if ( ! wp_verify_nonce( $_REQUEST['state'], 'indieauth-' . home_url() ) ) {
-				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+			$state = $this->verify_state( $_REQUEST['state'] );
+			if ( is_wp_error( $state ) ) {
+				return $state;
 			}
 			$me = $this->verify_authorization_token( $_REQUEST['code'], $redirect_to );
 			if ( is_wp_error( $me ) ) {
