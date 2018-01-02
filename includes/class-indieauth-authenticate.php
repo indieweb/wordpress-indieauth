@@ -88,6 +88,44 @@ class IndieAuth_Authenticate {
 		wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
 	}
 
+	public function verify_authorization_token( $code, $redirect_uri ) {
+		$args     = array(
+			'headers' => array(
+				'Accept' => 'application/json',
+			),
+		);
+		$query    = build_query(
+			array(
+				'code'         => rawurlencode( $code ),
+				'redirect_uri' => wp_login_url( $redirect_uri ),
+				'client_id'    => home_url(),
+			)
+		);
+		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
+		$code     = wp_remote_retrieve_response_code( $response );
+		$response = wp_remote_retrieve_body( $response );
+		$response = json_decode( $response, true );
+		// check if response was json or not
+		if ( ! is_array( $response ) ) {
+			return new WP_Error( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ) );
+		}
+
+		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
+			return $response['me'];
+		}
+		if ( array_key_exists( 'error', $response ) ) {
+			return new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
+		}
+		return new WP_Error(
+			'indieauth.invalid_access_token',
+			__( 'Supplied Token is Invalid', 'indieauth' ),
+			array(
+				'status'   => $code,
+				'response' => $response,
+			)
+		);
+	}
+
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
@@ -97,11 +135,6 @@ class IndieAuth_Authenticate {
 	 * @return mixed authenticated user object, or WP_Error or null
 	 */
 	public function authenticate( $user ) {
-		$args        = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
 			$me = esc_url_raw( $_POST['indieauth_identifier'] );
@@ -114,40 +147,13 @@ class IndieAuth_Authenticate {
 			if ( ! wp_verify_nonce( $_REQUEST['state'], 'indieauth-' . home_url() ) ) {
 				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
 			}
-			$query    = build_query(
-				array(
-					'code'         => rawurlencode( $_REQUEST['code'] ),
-					'redirect_uri' => wp_login_url( $redirect_to ),
-					'client_id'    => home_url(),
-				)
-			);
-			$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
-			$code     = wp_remote_retrieve_response_code( $response );
-			$response = wp_remote_retrieve_body( $response );
-			$response = json_decode( $response, true );
-			// check if response was json or not
-			if ( ! is_array( $response ) ) {
-				$user = new WP_Error( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ) );
+			$me = $this->verify_authorization_token( $_REQUEST['code'], $redirect_to );
+			if ( is_wp_error( $me ) ) {
+				return $me;
 			}
-
-			if ( 2 !== (int) ( $code / 100 ) ) {
-				return new WP_Error(
-					'indieauth.invalid_access_token',
-					__( 'Supplied Token is Invalid', 'indieauth' ),
-					array(
-						'status'   => $code,
-						'response' => $response,
-					)
-				);
-			}
-
-			if ( array_key_exists( 'me', $response ) ) {
-				$user = $this->get_user_by_identifier( $response['me'] );
-				if ( ! $user ) {
-					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
-				}
-			} elseif ( array_key_exists( 'error', $response ) ) {
-				$user = new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
+			$user = $this->get_user_by_identifier( $me );
+			if ( ! $user ) {
+				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
 			}
 		}
 		return $user;
