@@ -100,7 +100,7 @@ class IndieAuth_Authenticate {
 				'client_id'    => home_url(),
 			)
 		);
-		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
+		$response = wp_safe_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
 		$code     = wp_remote_retrieve_response_code( $response );
 		$response = wp_remote_retrieve_body( $response );
 		$response = json_decode( $response, true );
