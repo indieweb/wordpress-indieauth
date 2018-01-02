@@ -5,6 +5,7 @@
  */
 class IndieAuth_Authenticate {
 
+	private $error = null;
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
@@ -25,8 +26,7 @@ class IndieAuth_Authenticate {
 		if ( ! empty( $error ) ) {
 			return $error;
 		}
-		global $indieauth_error;
-		return $indieauth_error;
+		return $this->error;
 	}
 
 	public function determine_current_user( $user_id ) {
@@ -45,8 +45,7 @@ class IndieAuth_Authenticate {
 		$body     = wp_remote_retrieve_body( $response );
 
 		if ( 2 !== (int) ( $code / 100 ) ) {
-			global $indieauth_error;
-			$indieauth_error = new WP_Error(
+			$this->error = new WP_Error(
 				'indieauth.invalid_access_token',
 				__( 'Supplied Token is Invalid', 'indieauth' ),
 				array(
