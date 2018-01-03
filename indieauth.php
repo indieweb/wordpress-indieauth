@@ -37,19 +37,21 @@ class IndieAuth_Plugin {
 
 		register_setting(
 			'general', 'indieauth_authorization_endpoint', array(
-				'type'         => 'string',
-				'description'  => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 'https://indieauth.com/auth',
+				'type'              => 'string',
+				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'esc_url_raw',
+				'default'           => 'https://indieauth.com/auth',
 			)
 		);
 
 		register_setting(
 			'general', 'indieauth_token_endpoint', array(
-				'type'         => 'string',
-				'description'  => __( 'IndieAuth Token Endpoint', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 'https://tokens.indieauth.com/token',
+				'type'              => 'string',
+				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'esc_url_raw',
+				'default'           => 'https://tokens.indieauth.com/token',
 			)
 		);
 

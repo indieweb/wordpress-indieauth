@@ -5,6 +5,7 @@
  */
 class IndieAuth_Authenticate {
 
+	public $error = null;
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
@@ -25,8 +26,7 @@ class IndieAuth_Authenticate {
 		if ( ! empty( $error ) ) {
 			return $error;
 		}
-		global $indieauth_error;
-		return $indieauth_error;
+		return $this->error;
 	}
 
 	public function determine_current_user( $user_id ) {
@@ -34,6 +34,26 @@ class IndieAuth_Authenticate {
 		if ( ! $token ) {
 			return $user_id;
 		}
+		$me = $this->verify_access_token( $token );
+		if ( ! $me ) {
+			return $user_id;
+		}
+		$user = $this->get_user_by_identifier( $me );
+		if ( $user instanceof WP_User ) {
+			return $user->ID;
+		}
+		$this->error = new WP_Error(
+			'indieauth.user_not_found', __( 'User Not Found on this Site', 'indieauth' ),
+			array(
+				'status'   => '401',
+				'response' => $me,
+			)
+		);
+		return $user_id;
+
+	}
+
+	public function verify_access_token( $token ) {
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',
@@ -45,8 +65,7 @@ class IndieAuth_Authenticate {
 		$body     = wp_remote_retrieve_body( $response );
 
 		if ( 2 !== (int) ( $code / 100 ) ) {
-			global $indieauth_error;
-			$indieauth_error = new WP_Error(
+			$this->error = new WP_Error(
 				'indieauth.invalid_access_token',
 				__( 'Supplied Token is Invalid', 'indieauth' ),
 				array(
@@ -54,19 +73,87 @@ class IndieAuth_Authenticate {
 					'response' => $body,
 				)
 			);
-			return $user_id;
+			return false;
 		}
 		$params = json_decode( $body, true );
 		global $indieauth_scopes;
 		$indieauth_scopes = explode( ' ', $params['scope'] );
-		$me               = $params['me'];
-		$user             = $this->get_user_by_identifier( $me );
-		if ( $user ) {
-			return $user->ID;
+		return $params['me'];
+	}
+
+	/**
+	 * Redirect to Authorization Endpoint for Authentication
+	 *
+	 * @param string $me URL parameter
+	 * @param string $redirect_uri where to redirect
+	 *
+	 */
+	public static function authorization_redirect( $me, $redirect_uri ) {
+		$query = build_query(
+			array(
+				'me'           => rawurlencode( $me ),
+				'redirect_uri' => wp_login_url( $redirect_uri ),
+				'client_id'    => home_url(),
+				'state'        => wp_create_nonce( 'indieauth-' . home_url() ),
+			)
+		);
+		// redirect to authentication endpoint
+		wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
+	}
+
+	public function verify_authorization_token( $code, $redirect_uri ) {
+		$args     = array(
+			'headers' => array(
+				'Accept' => 'application/json',
+			),
+		);
+		$query    = build_query(
+			array(
+				'code'         => rawurlencode( $code ),
+				'redirect_uri' => wp_login_url( $redirect_uri ),
+				'client_id'    => home_url(),
+			)
+		);
+		$response = wp_safe_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
+		$code     = wp_remote_retrieve_response_code( $response );
+		$response = wp_remote_retrieve_body( $response );
+		$response = json_decode( $response, true );
+		// check if response was json or not
+		if ( ! is_array( $response ) ) {
+			return new WP_Error( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ) );
 		}
 
-		return $user_id;
+		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
+			return $response['me'];
+		}
+		if ( array_key_exists( 'error', $response ) ) {
+			return new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
+		}
+		return new WP_Error(
+			'indieauth.invalid_access_token',
+			__( 'Supplied Token is Invalid', 'indieauth' ),
+			array(
+				'status'   => $code,
+				'response' => $response,
+			)
+		);
 	}
+
+	/**
+	 * Verify State
+	 *
+	 * @param string $state
+	 *
+	 * @return boolean|WP_Error
+	 */
+	public function verify_state( $state ) {
+		$return = wp_verify_nonce( $state, 'indieauth-' . home_url() );
+		if ( ! $return ) {
+			return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+		}
+		return $return;
+	}
+
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
@@ -76,62 +163,26 @@ class IndieAuth_Authenticate {
 	 * @return mixed authenticated user object, or WP_Error or null
 	 */
 	public function authenticate( $user ) {
-		$args        = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		if ( array_key_exists( 'indieauth_identifier', $_POST ) && $_POST['indieauth_identifier'] ) {
-				$me    = rawurlencode( $_POST['indieauth_identifier'] );
-				$query = build_query(
-					array(
-						'me'           => $me,
-						'redirect_uri' => wp_login_url( $redirect_to ),
-						'client_id'    => home_url(),
-						'state'        => wp_create_nonce( home_url() ),
-					)
-				);
-				// redirect to authentication endpoint
-				wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
+			$me = esc_url_raw( $_POST['indieauth_identifier'] );
+			// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
+			if ( ! wp_http_validate_url( $me ) ) {
+				return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
+			}
+			$this->authorization_redirect( $me, $redirect_to );
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			if ( ! wp_verify_nonce( $_REQUEST['state'], home_url() ) ) {
-				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+			$state = $this->verify_state( $_REQUEST['state'] );
+			if ( is_wp_error( $state ) ) {
+				return $state;
 			}
-			$query    = build_query(
-				array(
-					'code'         => rawurlencode( $_REQUEST['code'] ),
-					'redirect_uri' => wp_login_url( $redirect_to ),
-					'client_id'    => home_url(),
-				)
-			);
-			$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query, $args );
-			$code     = wp_remote_retrieve_response_code( $response );
-			$response = wp_remote_retrieve_body( $response );
-			$response = json_decode( $response, true );
-			// check if response was json or not
-			if ( ! is_array( $response ) ) {
-				$user = new WP_Error( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ) );
+			$me = $this->verify_authorization_token( $_REQUEST['code'], $redirect_to );
+			if ( is_wp_error( $me ) ) {
+				return $me;
 			}
-
-			if ( 2 !== (int) ( $code / 100 ) ) {
-				return new WP_Error(
-					'indieauth.invalid_access_token',
-					__( 'Supplied Token is Invalid', 'indieauth' ),
-					array(
-						'status'   => $code,
-						'response' => $response,
-					)
-				);
-			}
-
-			if ( array_key_exists( 'me', $response ) ) {
-				$user = $this->get_user_by_identifier( $response['me'] );
-				if ( ! $user ) {
-					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
-				}
-			} elseif ( array_key_exists( 'error', $response ) ) {
-				$user = new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
+			$user = $this->get_user_by_identifier( $me );
+			if ( ! $user ) {
+				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
 			}
 		}
 		return $user;
@@ -144,6 +195,9 @@ class IndieAuth_Authenticate {
 	 * @return int|null ID of associated user, or null if no associated user
 	 */
 	private function get_user_by_identifier( $identifier ) {
+		if ( empty( $identifier ) ) {
+			return null;
+		}
 		// try it without trailing slash
 		$no_slash = untrailingslashit( $identifier );
 
@@ -181,9 +235,14 @@ class IndieAuth_Authenticate {
 			$login = str_replace( home_url( '/' ) . '?author=', '', $identifier );
 		} else {
 			$link  = str_replace( '%author%', '', $link );
-			$link  = user_trailingslashit( $link );
-			$login = str_replace( $link, '', $link );
+			$link  = home_url( user_trailingslashit( $link ) );
+			$login = str_replace( $link, '', $identifier );
 		}
+
+		if ( ! $login ) {
+			return null;
+		}
+
 		$args = array(
 			'login' => $login,
 		);
