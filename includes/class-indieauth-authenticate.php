@@ -5,7 +5,7 @@
  */
 class IndieAuth_Authenticate {
 
-	private $error = null;
+	public $error = null;
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
@@ -34,6 +34,26 @@ class IndieAuth_Authenticate {
 		if ( ! $token ) {
 			return $user_id;
 		}
+		$me = $this->verify_access_token( $token );
+		if ( ! $me ) {
+			return $user_id;
+		}
+		$user = $this->get_user_by_identifier( $me );
+		if ( $user instanceof WP_User ) {
+			return $user->ID;
+		}
+		$this->error = new WP_Error(
+			'indieauth.user_not_found', __( 'User Not Found on this Site', 'indieauth' ),
+			array(
+				'status'   => '401',
+				'response' => $me,
+			)
+		);
+		return $user_id;
+
+	}
+
+	public function verify_access_token( $token ) {
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',
@@ -53,18 +73,12 @@ class IndieAuth_Authenticate {
 					'response' => $body,
 				)
 			);
-			return $user_id;
+			return false;
 		}
 		$params = json_decode( $body, true );
 		global $indieauth_scopes;
 		$indieauth_scopes = explode( ' ', $params['scope'] );
-		$me               = $params['me'];
-		$user             = $this->get_user_by_identifier( $me );
-		if ( $user ) {
-			return $user->ID;
-		}
-
-		return $user_id;
+		return $params['me'];
 	}
 
 	/**
@@ -181,6 +195,9 @@ class IndieAuth_Authenticate {
 	 * @return int|null ID of associated user, or null if no associated user
 	 */
 	private function get_user_by_identifier( $identifier ) {
+		if ( empty( $identifier ) ) {
+			return null;
+		}
 		// try it without trailing slash
 		$no_slash = untrailingslashit( $identifier );
 
@@ -221,6 +238,7 @@ class IndieAuth_Authenticate {
 			$link  = user_trailingslashit( $link );
 			$login = str_replace( $link, '', $link );
 		}
+
 		$args = array(
 			'login' => $login,
 		);
