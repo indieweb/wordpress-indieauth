@@ -235,8 +235,12 @@ class IndieAuth_Authenticate {
 			$login = str_replace( home_url( '/' ) . '?author=', '', $identifier );
 		} else {
 			$link  = str_replace( '%author%', '', $link );
-			$link  = user_trailingslashit( $link );
-			$login = str_replace( $link, '', $link );
+			$link  = home_url( user_trailingslashit( $link ) );
+			$login = str_replace( $link, '', $identifier );
+		}
+
+		if ( ! $login ) {
+			return null;
 		}
 
 		$args = array(
