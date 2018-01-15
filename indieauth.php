@@ -12,7 +12,7 @@
  * Domain Path: /languages
  */
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'init' ) );
+add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'init' ), 11 );
 
 class IndieAuth_Plugin {
 
@@ -23,6 +23,8 @@ class IndieAuth_Plugin {
 		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
 		// Compatibility Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
+		// Functions
+		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
 

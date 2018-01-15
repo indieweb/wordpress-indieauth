@@ -10,6 +10,19 @@ class IndieAuth_Authenticate {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_action( 'authenticate', array( $this, 'authenticate' ) );
+
+		add_action( 'send_headers', array( $this, 'http_header' ) );
+		add_action( 'wp_head', array( $this, 'html_header' ) );
+	}
+
+	public static function http_header() {
+		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', get_option( 'indieauth_authorization_endpoint' ) ), false );
+		header( sprintf( 'Link: <%s>; rel="token_endpoint"', get_option( 'indieauth_token_endpoint' ) ), false );
+	}
+
+	public static function html_header() {
+		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, get_option( 'indieauth_authorization_endpoint' ) );
+		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, get_option( 'indieauth_token_endpoint' ) );
 	}
 
 	/**
@@ -89,6 +102,20 @@ class IndieAuth_Authenticate {
 	 *
 	 */
 	public static function authorization_redirect( $me, $redirect_uri ) {
+		$endpoints = indieauth_discover_endpoint( $me );
+		if ( ! $endpoints ) {
+			return new WP_Error(
+				'authentication_failed',
+				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
+				array(
+					'status' => 401,
+				)
+			);
+		}
+		$authorization_endpoint = null;
+		if ( isset( $endpoints['authorization_endpoint'] ) ) {
+			$authorization_endpoint = $endpoints['authorization_endpoint'];
+		}
 		$query = build_query(
 			array(
 				'me'           => rawurlencode( $me ),
@@ -98,7 +125,7 @@ class IndieAuth_Authenticate {
 			)
 		);
 		// redirect to authentication endpoint
-		wp_redirect( get_option( 'indieauth_authorization_endpoint' ) . '?' . $query );
+		wp_redirect( $authorization_endpoint . '?' . $query );
 	}
 
 	public function verify_authorization_token( $code, $redirect_uri ) {
@@ -170,7 +197,10 @@ class IndieAuth_Authenticate {
 			if ( ! wp_http_validate_url( $me ) ) {
 				return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
 			}
-			$this->authorization_redirect( $me, $redirect_to );
+			$return = $this->authorization_redirect( $me, $redirect_to );
+			if ( is_wp_error( $return ) ) {
+				return $return;
+			}
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
 			$state = $this->verify_state( $_REQUEST['state'] );
 			if ( is_wp_error( $state ) ) {
