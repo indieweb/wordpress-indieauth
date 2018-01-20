@@ -2,17 +2,17 @@
 **Contributors:** [indieweb](https://profiles.wordpress.org/indieweb), [pfefferle](https://profiles.wordpress.org/pfefferle), [dshanske](https://profiles.wordpress.org/dshanske)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
-**Tested up to:** 4.9.1  
-**Stable tag:** 1.2.0  
+**Tested up to:** 4.9.2  
+**Stable tag:** 2.0.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** http://14101978.de  
 
-An IndieAuth plugin for WordPress. This allows you to login to your website using an IndieAuth server, defaultly IndieAuth.com.
+An IndieAuth plugin for WordPress. This allows you to login to your website using an IndieAuth server.
 
 ## Description ##
 
-The plugin lets you login to the WordPress backend via IndieAuth.com and allows an Indieauth.com to act as an authentication mechanism for WordPress and its REST API.
+The plugin lets you login to the WordPress backend via an Indieauth server and for it to act as an authentication mechanism for WordPress and its REST API.
 It uses the URL from the profile page to identify the blog user or your author url.
 
 ## Installation ##
@@ -21,12 +21,14 @@ It uses the URL from the profile page to identify the blog user or your author u
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. That's it
 
-To be able to actually log in using IndieAuth.com, see [IndieAuth.com](https://indieauth.com/setup). Supported providers include: Twitter, Github, GNUPG, email among others.
+If authorizing logins using the default, [IndieAuth.com](https://indieauth.com/setup), supported providers include: Twitter, Github, GNUPG, email among others.
 
 ## Frequently Asked Questions ##
 
 ### What is IndieAuth? ###
-[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage to sign in to other places. 
+
+[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage to sign in to other places. It is built on top of OAuth 2.0,
+which is used by many websites.
 
 ### What is IndieAuth.com? ###
 
@@ -40,14 +42,17 @@ much of the process so completely separate implementations and services can be u
 IndieAuth was developed as part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity.
 
 ### How is this different from OpenID? ###
+
 The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. 
 However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. 
 
 ### How is this different from OAuth? ###
 
-IndieAuth was built on top of the OAuth 2.0 Framework and is a simplified way of verifying the identity of an end user and obtaining an OAuth 2.0 Bearer token.
+IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of 
+a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources..
 
 ### Does this require users to have their own domain name? ###
+
 No. You can use your author profile URL to login if you do not have a domain name. However how the Indieauth server authenticates you depends on that server.
 
 ### How do I authenticate myself to an Indieauth server? ###
@@ -58,13 +63,21 @@ such as Twitter or Github, then entering your domain name in the login form on w
 You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing 
 the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
 
+### What is this built in token endpoint thing? ###
+
+Once you have proven your identity to the authorization endpoint, the token endpoint issues a token, which applications can use to authenticate as you to your site.
+The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
+
 
 ## Changelog ##
 
-### 1.2.0 ###
+### 2.0.0 ###
 * Support author profiles in addition to user URLs
 * Change token verification method to match current Indieauth specification
 * Add support for token verification to act as a WordPress authentication mechanism.
+* Add ability to set any token or authorization endpoint
+* Add authorization and token endpoint headers to the site
+* Discover and use authorization endpoint for provided URL when logging in
 
 ### 1.1.3 ###
 * update README
