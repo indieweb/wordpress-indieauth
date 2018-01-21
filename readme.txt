@@ -65,6 +65,9 @@ the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
 * Support author profiles in addition to user URLs
 * Change token verification method to match current Indieauth specification
 * Add support for token verification to act as a WordPress authentication mechanism.
+* Add discovery of authorization endpoint and token endpoint from provided URL
+* Add settings for default authorization and token endpoint
+* Automatically add token and authorization endpoint to page headers
 
 = 1.1.3 =
 * update README

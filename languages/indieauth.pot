@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-01-01 16:00:42+00:00\n"
+"POT-Creation-Date: 2018-01-21 02:50:25+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,36 +13,48 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 0.5.4\n"
 
-#: includes/class-indieauth-authenticate.php:51
-#: includes/class-indieauth-authenticate.php:120
+#: includes/class-indieauth-authenticate.php:59
+msgid "User Not Found on this Site"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:83
+#: includes/class-indieauth-authenticate.php:161
 msgid "Supplied Token is Invalid"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:99
-msgid "IndieAuth Server did not return the same state parameter"
+#: includes/class-indieauth-authenticate.php:109
+msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:114
+#: includes/class-indieauth-authenticate.php:150
 msgid "IndieAuth.com seems to have some hiccups, please try it again later."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:131
+#: includes/class-indieauth-authenticate.php:179
+msgid "IndieAuth Server did not return the same state parameter"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:198
+msgid "Invalid User Profile URL"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:215
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 
-#: indieauth.php:32
+#: indieauth.php:34
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: indieauth.php:41
+#: indieauth.php:43
 msgid "IndieAuth Authorization Endpoint"
 msgstr ""
 
-#: indieauth.php:50
+#: indieauth.php:53
 msgid "IndieAuth Token Endpoint"
 msgstr ""
 
-#: indieauth.php:60
+#: indieauth.php:64
 msgid "IndieAuth Settings"
 msgstr ""
 
