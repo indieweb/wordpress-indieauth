@@ -22,12 +22,6 @@ class AuthenticateTest extends WP_UnitTestCase {
 		return compact( 'headers', 'response', 'body' );
 	}
 
-	public function test_verify_state() {
-		$authenticate = new IndieAuth_Authenticate();
-		$state        = wp_create_nonce( 'indieauth-' . home_url() );
-		$this->assertTrue( 1 === $authenticate->verify_state( $state ) );
-	}
-
 	public function verification_token() {
 		return array(
 			'me'        => 'http://example.com/',

@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: Login to your site using IndieAuth.com
- * Version: 1.2.0
+ * Version: 2.0.0
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -12,20 +12,40 @@
  * Domain Path: /languages
  */
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'init' ) );
+add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ) );
 
 class IndieAuth_Plugin {
 
-	public static function init() {
+	public static function plugins_loaded() {
 		// initialize admin settings
 		add_action( 'admin_init', array( 'IndieAuth_Plugin', 'admin_init' ) );
-
+		add_action( 'init', array( 'IndieAuth_Plugin', 'init' ) );
 		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
 		// Compatibility Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
+
+		// Global Functions
+		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
+
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
 
+		// Token Endpoint
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
+
+		// Token Endpoint UI
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-ui.php';
+
+		if ( WP_DEBUG ) {
+			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
+		}
+
+		new IndieAuth_Authenticate();
+		new IndieAuth_Token_Endpoint();
+		new IndieAuth_Token_UI();
+	}
+
+	public static function init() {
 		register_setting(
 			'general', 'indieauth_show_login_form', array(
 				'type'         => 'boolean',
@@ -51,11 +71,9 @@ class IndieAuth_Plugin {
 				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
-				'default'           => 'https://tokens.indieauth.com/token',
+				'default'           => rest_url( '/indieauth/1.0/token' ), // Defaults to the built in Token Endpoint
 			)
 		);
-
-		new IndieAuth_Authenticate();
 	}
 
 	public static function admin_init() {
