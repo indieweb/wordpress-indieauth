@@ -78,6 +78,7 @@ The plugin supports you using an external token endpoint if you want, but by hav
 * Add ability to set any token or authorization endpoint
 * Add authorization and token endpoint headers to the site
 * Discover and use authorization endpoint for provided URL when logging in
+* Allow login using URL
 
 ### 1.1.3 ###
 * update README
