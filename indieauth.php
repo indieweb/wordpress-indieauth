@@ -30,6 +30,9 @@ class IndieAuth_Plugin {
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
 
+		// Authorization Endpoint
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorization-endpoint.php';
+
 		// Token Endpoint
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
 
@@ -41,6 +44,7 @@ class IndieAuth_Plugin {
 		}
 
 		new IndieAuth_Authenticate();
+		new IndieAuth_Authorization_Endpoint();
 		new IndieAuth_Token_Endpoint();
 		new IndieAuth_Token_UI();
 	}

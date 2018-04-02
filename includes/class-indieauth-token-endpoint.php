@@ -39,15 +39,15 @@ class IndieAuth_Token_Endpoint {
 						'grant_type'   => array(),
 						'code'         => array(),
 						'client_id'    => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'redirect_uri' => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'me'           => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'action'       => array(),
@@ -67,54 +67,8 @@ class IndieAuth_Token_Endpoint {
 		);
 	}
 
-	/**
-	 * Returns if valid URL for REST validation
-	 *
-	 * @param string $url
-	 *
-	 * @return boolean
-	 */
-	public static function is_valid_url( $url, $request = null, $key = null ) {
-		if ( ! is_string( $url ) || empty( $url ) ) {
-			return false;
-		}
-		return filter_var( $url, FILTER_VALIDATE_URL );
-	}
-
-	public function generate() {
-		return wp_generate_password( 128, false );
-	}
-
-	public function hash( $string ) {
-		return base64_encode( wp_hash( $string, 'secure_auth' ) );
-	}
-
 	public function get_token( $token, $hash = true ) {
-		$key = '_indieauth_token_';
-		// Either token is already hashed or is not
-		$key    .= $hash ? $this->hash( $token ) : $token;
-		$args    = array(
-			'number'      => 1,
-			'count_total' => false,
-			'meta_query'  => array(
-				array(
-					'key'     => $key,
-					'compare' => 'EXISTS',
-				),
-			),
-		);
-		$query   = new WP_User_Query( $args );
-		$results = $query->get_results();
-		if ( empty( $results ) ) {
-			return null;
-		}
-		$user  = $results[0];
-		$value = get_user_meta( $user->ID, $key, true );
-		if ( empty( $value ) ) {
-				return null;
-		}
-		$value['user'] = $user->ID;
-		return $value;
+		return get_indieauth_user_token( '_indieauth_token_', $token, $hash );
 	}
 
 	public function get( $request ) {
@@ -146,13 +100,13 @@ class IndieAuth_Token_Endpoint {
 		if ( ! isset( $token['access_token'] ) || ! isset( $token['me'] ) ) {
 			return false;
 		}
-		$access_token = $this->hash( $token['access_token'] );
+		$access_token = indieauth_hash_token( $token['access_token'] );
 		unset( $token['access_token'] );
 		$user = get_user_by_identifier( $token['me'] );
 		if ( ! $user ) {
 			return false;
 		}
-		return add_user_meta( $user->ID, '_indieauth_token_' . $access_token, $token );
+		return set_indieauth_user_token( $user->ID, '_indieauth_token_', $access_token, $token );
 	}
 
 	public function delete_token( $id, $user_id = null ) {
@@ -167,7 +121,7 @@ class IndieAuth_Token_Endpoint {
 				return false;
 			}
 		}
-		$id = $hash ? $this->hash( $id ) : $id;
+		$id = $hash ? indieauth_hash_token( $id ) : $id;
 		return delete_user_meta( $user_id, '_indieauth_token_' . $id );
 	}
 
@@ -211,7 +165,7 @@ class IndieAuth_Token_Endpoint {
 			return $response;
 		}
 		$token  = array(
-			'access_token' => $this->generate(),
+			'access_token' => indieauth_generate_token(),
 			'token_type'   => 'Bearer',
 			'scope'        => $response['scope'],
 			'me'           => $response['me'],
