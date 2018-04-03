@@ -211,7 +211,7 @@ function get_indieauth_user_token( $key, $token, $hash = true ) {
 	$query   = new WP_User_Query( $args );
 	$results = $query->get_results();
 	if ( empty( $results ) ) {
-	return null;
+		return null;
 	}
 	$user  = $results[0];
 	$value = get_user_meta( $user->ID, $key, true );

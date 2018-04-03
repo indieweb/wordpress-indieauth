@@ -90,7 +90,7 @@ class IndieAuth_Token_UI {
 		$meta   = get_user_meta( $user_id, '' );
 		$tokens = array();
 		foreach ( $meta as $key => $value ) {
-			if ( $this->str_prefix( $key, '_indieauth_token_' ) ) {
+			if ( IndieAuth_Token_UI::str_prefix( $key, '_indieauth_token_' ) || IndieAuth_Token_UI::str_prefix( $key, '_indieauth_code_' ) ) {
 				delete_user_meta( $user_id, $key );
 			}
 		}
