@@ -69,7 +69,7 @@ class IndieAuth_Authorization_Endpoint {
 
 	public function request( $request ) {
 		$params = $request->get_params();
-		if ( 'code' !== $params['response_type'] ) {
+		if ( 'code' !== $params['response_type'] && 'id' !== $params['response_type'] ) {
 			return new WP_Error( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), array( 'status' => 400 ) );
 		}
 		$url = wp_login_url( $params['redirect_uri'], true );
@@ -121,6 +121,7 @@ class IndieAuth_Authorization_Endpoint {
 		$params = wp_array_slice_assoc( $request->get_params(), array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
+		$user   = get_user_by( 'id', $token['user'] );
 		if ( $token['expiration'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
 			return array( 'error' => 'Failure' );
@@ -129,7 +130,10 @@ class IndieAuth_Authorization_Endpoint {
 
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code );
-			return wp_array_slice_assoc( $token, array( 'me', 'scope' ) );
+			return array(
+				'scope' => $token['scope'],
+				'me'    => $user->user_url,
+			);
 		}
 		// Look up what Failure looks like
 		return array( 'error' => 'Failure' );
