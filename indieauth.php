@@ -65,7 +65,7 @@ class IndieAuth_Plugin {
 				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
-				'default'           => 'https://indieauth.com/auth',
+				'default'           => rest_url( '/indieauth/1.0/auth' ), // Defaults to the built in Endpoint
 			)
 		);
 

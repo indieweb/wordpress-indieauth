@@ -72,6 +72,9 @@ class IndieAuth_Authorization_Endpoint {
 		if ( 'code' !== $params['response_type'] && 'id' !== $params['response_type'] ) {
 			return new WP_Error( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), array( 'status' => 400 ) );
 		}
+		if ( wp_parse_url( $params['client_id'], PHP_URL_HOST ) === wp_parse_url( $params['redirect_uri'], PHP_URL_HOST ) ) {
+			return new WP_Error( 'invalid_redirect', __( 'Redirect not on same host as client', 'indieauth' ), array( 'status' => 400 ) );
+		}
 		$url = wp_login_url( $params['redirect_uri'], true );
 		$url = add_query_arg(
 			array(
