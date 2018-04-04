@@ -83,14 +83,10 @@ class IndieAuth_Authorization_Endpoint {
 				'state'     => $params['state'],
 				'scope'     => urlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' ),
 				'me'        => $params['me'],
+				'_wpnonce' => wp_create_nonce( 'wp_rest' )
 			), $url
 		);
-		// Valid parameters, ensure the user is logged in.
-		if ( ! is_user_logged_in() ) {
-			$url = wp_login_url( $url );
-			wp_safe_redirect( $url );
-			exit;
-		}
+
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
 
@@ -144,6 +140,9 @@ class IndieAuth_Authorization_Endpoint {
 
 
 	public function login_form_indieauth() {
+		if ( ! is_user_logged_in() ) {
+			auth_redirect();
+		}
 		load_template( plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php' );
 		exit;
 	}
