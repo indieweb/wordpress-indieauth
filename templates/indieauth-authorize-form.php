@@ -25,7 +25,7 @@ $url          = add_query_arg(
 <?php echo get_avatar( $current_user->ID, '78' ); ?>
 <?php
 	printf(
-		'<p>' . __( 'The app <strong>%1$s</strong> would like to access your site, <strong>%2$s</strong> using the credentials of <strong>%3$s</strong>(%4$s).', 'indieauth' ) . '</p>',
+		'<p>' . __( 'The app <strong>%1$s</strong> would like to access your site, <strong>%2$s</strong> using the credentials of <strong>%3$s</strong> (%4$s).', 'indieauth' ) . '</p>',
 		$client_id,
 		get_bloginfo( 'url' ),
 		$current_user->display_name,
@@ -48,6 +48,24 @@ $url          = add_query_arg(
 		<a name="wp-submit" value="authorize" class="button button-primary button-large" href="<?php echo $url; ?>"><?php _e( 'Authorize', 'indieauth' ); ?></a>
 		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
 </p>
-<?php printf( __( 'You will be redirected to %1$s after authorizing this application.', 'indieauth' ), $redirect_uri ); ?>
+<p class="redirect-info"><?php printf( __( 'You will be redirected to <code>%1$s</code> after authorizing this application.', 'indieauth' ), $redirect_uri ); ?></p>
+<style>
+.login-info img {
+	width: 78px;
+	display: block;
+	margin: 0 auto;
+	border-radius: 6px;
+}
+.login-info p {
+	margin-top: 1em;
+}
+.scope-info ul {
+	margin-top: 1em;
+	margin-left: 2em;
+}
+.redirect-info {
+	margin-top: 1em;
+}
+</style>
 <?php
 login_footer();
