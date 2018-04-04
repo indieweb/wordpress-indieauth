@@ -109,7 +109,16 @@ function get_user_by_identifier( $identifier ) {
 		return null;
 	}
 	// try it without trailing slash
-	$no_slash   = untrailingslashit( $identifier );
+	$no_slash = untrailingslashit( $identifier );
+	// Try to save the expense of a search query if the URL is the site URL
+	if ( home_url() === $no_slash ) {
+		// Use the Indieweb settings to set the default author
+		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
+			return get_option( 'iw_default_author' );
+		}
+
+		// TODO: Add in search for whether there is only one author
+	}
 	$args       = array(
 		'search'         => $no_slash,
 		'search_columns' => array( 'user_url' ),
@@ -153,7 +162,7 @@ function get_user_by_identifier( $identifier ) {
 	return null;
 }
 
-/**
+	/**
  * Returns if valid URL for REST validation
  *
  * @param string $url
@@ -162,12 +171,12 @@ function get_user_by_identifier( $identifier ) {
  */
 function rest_is_valid_url( $url, $request = null, $key = null ) {
 	if ( ! is_string( $url ) || empty( $url ) ) {
-			return false;
+		return false;
 	}
-		return filter_var( $url, FILTER_VALIDATE_URL );
+	return filter_var( $url, FILTER_VALIDATE_URL );
 }
 
-/**
+	/**
  * Generates a random string using the WordPress password for use as a token.
  *
  * @return string
@@ -176,7 +185,7 @@ function indieauth_generate_token() {
 	return wp_generate_password( 128, false );
 }
 
-/**
+	/**
  * Hashes and Base64 encodes a token for storage so it cannot be retrieved
  *
  * @param string $string
@@ -184,10 +193,10 @@ function indieauth_generate_token() {
  * @return string
  */
 function indieauth_hash_token( $string ) {
-		return base64_encode( wp_hash( $string, 'secure_auth' ) );
+	return base64_encode( wp_hash( $string, 'secure_auth' ) );
 }
 
-/**
+	/**
  * Get the token from meta
  *
  * @param string $key Prefix for the meta keys for this type of token
@@ -222,7 +231,7 @@ function get_indieauth_user_token( $key, $token, $hash = true ) {
 	return $value;
 }
 
-/**
+	/**
  * Get the token from meta
  *
  * @param num $id User ID
