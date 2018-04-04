@@ -102,7 +102,7 @@ function indieauth_discover_endpoint( $me ) {
  * Get the user associated with the specified Identifier-URI.
  *
  * @param string $identifier identifier to match
- * @return int|null ID of associated user, or null if no associated user
+ * @return WP_User $user Associated user, or null if no associated user
  */
 function get_user_by_identifier( $identifier ) {
 	if ( empty( $identifier ) ) {
@@ -114,7 +114,7 @@ function get_user_by_identifier( $identifier ) {
 	if ( home_url() === $no_slash ) {
 		// Use the Indieweb settings to set the default author
 		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
-			return get_option( 'iw_default_author' );
+			return get_user_by( 'id', get_option( 'iw_default_author' ) );
 		}
 
 		// TODO: Add in search for whether there is only one author
