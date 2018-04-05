@@ -174,32 +174,30 @@ class IndieAuth_Authenticate {
 				'client_id'    => $client_id,
 			),
 		);
-		$response = wp_safe_remote_post( get_option( 'indieauth_authorization_endpoint' ), $args );
-		if ( is_wp_error( $response ) ) {
-			return $response;
+		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ), $args );
+		if ( $error = get_oauth_error( $response ) ) {
+			// Pass through well-formed error messages from the authorization endpoint
+			return $error;
 		}
 		$code     = wp_remote_retrieve_response_code( $response );
 		$response = wp_remote_retrieve_body( $response );
+
 		$response = json_decode( $response, true );
 		// check if response was json or not
 		if ( ! is_array( $response ) ) {
-			return new WP_Error( 'indieauth_response_error', __( 'Your Authorization Endpoint Did Not Return a Correct Response', 'indieauth' ) );
+			return new WP_OAuth_Response( 'server_error', __( 'The authorization endpoint did not return a JSON response', 'indieauth' ), 500 );
 		}
 
 		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
+			// The authorization endpoint acknowledged that the authorization code 
+			// is valid and returned the authorization info
 			return $response;
 		}
-		if ( array_key_exists( 'error', $response ) ) {
-			return new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
-		}
-		return new WP_Error(
-			'indieauth.invalid_access_token',
-			__( 'Supplied Token is Invalid', 'indieauth' ),
-			array(
-				'status'   => $code,
-				'response' => $response,
-			)
-		);
+
+		// got an unexpected response from the authorization endpoint
+		$error = new WP_OAuth_Response( 'server_error', __( 'There was an error verifying the authorization code, the authorization server return an expected response', 'indieauth' ), 500 );
+		$error->set_debug( array( 'debug' => $response ));
+		return $error;
 	}
 
 	/**

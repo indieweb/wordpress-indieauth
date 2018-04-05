@@ -128,23 +128,26 @@ class IndieAuth_Authorization_Endpoint {
 		$params = wp_array_slice_assoc( $request->get_params(), array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
+		if ( !$token ) {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );
+		}
 		$user   = get_user_by( 'id', $token['user'] );
 		if ( $token['expiration'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
-			return array( 'error' => 'Failure' );
+			return new WP_OAuth_Response( 'invalid_grant', __( 'The authorization code expired', 'indieauth' ), 400 );
 		}
 		unset( $token['expiration'] );
 
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code );
+			// Return the user profile URL and scope
 			$return = array( 'me' => $user->user_url );
 			if ( isset( $token['scope'] ) ) {
 				$return['scope'] = $token['scope'];
 			}
 			return $return;
 		}
-		// Look up what Failure looks like
-		return array( 'error' => 'Failure' );
+		return new WP_OAuth_Response( 'invalid_grant', __( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
 	}
 
 
