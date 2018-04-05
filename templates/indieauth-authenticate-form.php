@@ -14,14 +14,14 @@ login_header(
 		$client_id,
 		$current_user->user_url
 	);
-	// Hook to allow adding to form
-	add_action( 'indieauth_authentication_form', $current_user->user_id, $token );
 ?>
 </div>
 <br />
 
 <p class="submit">
 <form method="post" action="<?php echo $url; ?>">
+	// Hook to allow adding to form
+	add_action( 'indieauth_authentication_form', $current_user->user_id, $class_id );
         <input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
         <input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
         <input type="hidden" name="state" value="<?php echo $state; ?>" />

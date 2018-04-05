@@ -16,8 +16,6 @@ login_header(
 		$current_user->display_name,
 		$current_user->user_nicename
 	);
-	// Hook to allow adding to form
-	add_action( 'indieauth_authorization_form', $current_user->user_id, $token );
 ?>
 </div>
 <br />
@@ -33,6 +31,8 @@ login_header(
 </div>
 <p class="submit">
 <form method="post" action="<?php echo $url; ?>">
+	// Hook to allow adding to form
+	add_action( 'indieauth_authorization_form', $current_user->user_id, $client_id );
 	<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" /> 
 	<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" /> 
 	<input type="hidden" name="scope" value="<?php echo $scope; ?>" />        
