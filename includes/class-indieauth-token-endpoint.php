@@ -75,22 +75,11 @@ class IndieAuth_Token_Endpoint {
 		$params       = $request->get_params();
 		$access_token = $this->get_token_from_bearer_header( $request->get_header( 'Authorization' ) );
 		if ( ! $access_token ) {
-			return new WP_Error(
-				'invalid_request', __( 'Bearer Token Not Supplied', 'indieauth' ),
-				array(
-					'status' => '401',
-				)
-			);
+			return new WP_OAuth_Response( 'parameter_absent', __( 'Bearer Token Not Supplied', 'indieauth' ), 400 );
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new WP_Error(
-				'invalid_access_token', __( 'Invalid Token', 'indieauth' ),
-				array(
-					'status'   => '401',
-					'response' => $access_token,
-				)
-			);
+			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
 		return rest_ensure_response( $token );
 	}
@@ -138,14 +127,7 @@ class IndieAuth_Token_Endpoint {
 			return $this->request( $params );
 		}
 		// Everything Failed
-		return new WP_Error(
-			'invalid_request', __( 'Invalid Request', 'indieauth' ),
-			array(
-				'status'   => '400',
-				'response' => $params,
-			)
-		);
-
+		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
 
 	// Request a Token

@@ -86,8 +86,8 @@ You can revoke tokens under User->Manage Tokens.
 * Add authorization and token endpoint headers to the site
 * Discover and use authorization endpoint for provided URL when logging in
 * Allow login using URL
-* Add built-in token endpoint
-* Add built-in authorization endpoint
+* Add built-in token endpoint ( props to @aaronpk for support on this )
+* Add built-in authorization endpoint ( props to @aaronpk for support on this )
 
 ### 1.1.3 ###
 * update README
