@@ -2,17 +2,22 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
-Tested up to: 4.9.2
+Tested up to: 4.9.5
 Stable tag: 2.0.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: http://14101978.de
 
-An IndieAuth plugin for WordPress. This allows you to login to your website using an IndieAuth server.
+IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in to other places.
 
 == Description ==
 
-The plugin lets you login to the WordPress backend via an Indieauth server and for it to act as an authentication mechanism for WordPress and its REST API.
+The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication
+mechanism for WordPress and its REST API, as well as an identity mechanism for other sites.
+
+Alternatively, you can use a third-party IndieAuth authorization endpoint, which will allow you to log 
+into your own site using an IndieAuth endpoint.
+
 It uses the URL from the profile page to identify the blog user or your author url.
 
 == Installation ==
@@ -20,8 +25,6 @@ It uses the URL from the profile page to identify the blog user or your author u
 1. Upload the `indieauth` directory to your `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. That's it
-
-If authorizing logins using the default, [IndieAuth.com](https://indieauth.com/setup), supported providers include: Twitter, Github, GNUPG, email among others.
 
 == Frequently Asked Questions ==
 
@@ -57,16 +60,20 @@ No. You can use your author profile URL to login if you do not have a domain nam
 
 = How do I authenticate myself to an Indieauth server? =
 
-That, as mentioned, depends on the server. By default, the plugin uses IndieAuth.com which works by linking your website to one or more authentication providers 
-such as Twitter or Github, then entering your domain name in the login form on websites that support IndieAuth. 
+That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
+IndieAuth.com works by linking your website to one or more authentication providers such as Twitter or Github.
 
 You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing 
 the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
 
-= What is this built in token endpoint thing? =
+By adding Indieauth support, you can log into sites simply by providing your URL.
 
-Once you have proven your identity to the authorization endpoint, the token endpoint issues a token, which applications can use to authenticate as you to your site.
+= What is a token endpoint? =
+
+Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site.
 The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
+
+You can revoke tokens under User->Manage Tokens.
 
 
 == Changelog ==
@@ -79,6 +86,8 @@ The plugin supports you using an external token endpoint if you want, but by hav
 * Add authorization and token endpoint headers to the site
 * Discover and use authorization endpoint for provided URL when logging in
 * Allow login using URL
+* Add built-in token endpoint
+* Add built-in authorization endpoint
 
 = 1.1.3 =
 * update README
