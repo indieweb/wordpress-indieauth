@@ -164,18 +164,21 @@ class IndieAuth_Token_Endpoint {
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
-		$token  = array(
-			'access_token' => indieauth_generate_token(),
-			'token_type'   => 'Bearer',
-			'scope'        => $response['scope'],
-			'me'           => $response['me'],
-			'issued_by'    => rest_url( 'indieauth/1.0/token' ),
-			'client_id'    => $params['client_id'],
-			'issued_at'    => current_time( 'timestamp', 1 ),
-		);
-		$return = $this->set_token( $token );
-		if ( $token ) {
-			return( $token );
+		// Do not return
+		if ( isset( $response['scope'] ) ) {
+			$token  = array(
+				'access_token' => indieauth_generate_token(),
+				'token_type'   => 'Bearer',
+				'scope'        => $response['scope'],
+				'me'           => $response['me'],
+				'issued_by'    => rest_url( 'indieauth/1.0/token' ),
+				'client_id'    => $params['client_id'],
+				'issued_at'    => current_time( 'timestamp', 1 ),
+			);
+			$return = $this->set_token( $token );
+			if ( $token ) {
+				return( $token );
+			}
 		}
 		return new WP_Error( 'error', __( 'Set Token Error', 'indieauth' ) );
 	}
