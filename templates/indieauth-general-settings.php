@@ -2,7 +2,7 @@
 	<label for="indieauth_show_login_form">
 		<input type="checkbox" name="indieauth_show_login_form" id="indieauth_show_login_form" value="1" <?php
 			echo checked( true, get_option( 'indieauth_show_login_form' ) );  ?> />
-		<?php _e( 'Add a option to the login form to login by domain.', 'indieauth' ); ?>
+		<?php _e( 'Add a checkbox to the login form to authenticate using an IndieAuth endpoint.', 'indieauth' ); ?>
 	</label>
 	<BR />
 	<label for="indieauth_authorization_endpoint">

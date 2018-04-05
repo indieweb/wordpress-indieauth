@@ -55,7 +55,7 @@ class IndieAuth_Plugin {
 				'type'         => 'boolean',
 				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
 				'show_in_rest' => true,
-				'default'      => 1,
+				'default'      => 0,
 			)
 		);
 
