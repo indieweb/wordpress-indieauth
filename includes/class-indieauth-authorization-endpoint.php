@@ -82,17 +82,18 @@ class IndieAuth_Authorization_Endpoint {
 			);
 		}
 		$url = wp_login_url( $params['redirect_uri'], true );
-		$url = add_query_arg(
-			array(
+		$args = array(
 				'action'        => 'indieauth',
 				'response_type' => $params['response_type'],
 				'client_id'     => $params['client_id'],
 				'state'         => $params['state'],
-				'scope'         => urlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' ),
 				'me'            => $params['me'],
 				'_wpnonce'      => wp_create_nonce( 'wp_rest' ),
-			), $url
-		);
+			);
+		if ( 'code' === $params['response_type'] ) {
+			$args['scope'] = urlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' );
+		}
+		$url = add_query_arg( $args, $url );
 
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
@@ -158,6 +159,7 @@ class IndieAuth_Authorization_Endpoint {
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
 		$token         = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
+		$token = array_filter( $token );
 		$code          = IndieAuth_Authorization_Endpoint::set_code( $current_user->ID, $token );
 		$url           = add_query_arg(
 			array(
