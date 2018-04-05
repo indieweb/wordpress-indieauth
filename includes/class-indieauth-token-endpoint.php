@@ -152,19 +152,13 @@ class IndieAuth_Token_Endpoint {
 	public function request( $params ) {
 		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri', 'me' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
-			return new WP_Error(
-				'invalid_request', __( 'Invalid Request', 'indieauth' ),
-				array(
-					'status'   => '400',
-					'response' => $params,
-				)
-			);
+			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$response = IndieAuth_Authenticate::verify_authorization_code( $params['code'], $params['redirect_uri'], $params['client_id'] );
-		if ( is_wp_error( $response ) ) {
-			return $response;
+		if ( $error = get_oauth_error( $response ) ) {
+			return $error;
 		}
-		// Do not return
+		// Do not issue a token if the authorization code contains no scope
 		if ( isset( $response['scope'] ) ) {
 			$token  = array(
 				'access_token' => indieauth_generate_token(),
@@ -177,10 +171,13 @@ class IndieAuth_Token_Endpoint {
 			);
 			$return = $this->set_token( $token );
 			if ( $token ) {
-				return( $token );
+				// Return only the standard keys in the response
+				return( wp_array_slice_assoc($token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
 			}
+		} else {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
 		}
-		return new WP_Error( 'error', __( 'Set Token Error', 'indieauth' ) );
+		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
 }
 
