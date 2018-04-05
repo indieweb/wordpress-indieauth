@@ -16,6 +16,8 @@ login_header(
 		$current_user->display_name,
 		$current_user->user_nicename
 	);
+	// Hook to allow adding to form
+	add_action( 'indieauth_authorization_form', $current_user->user_id, $token );
 ?>
 </div>
 <br />
