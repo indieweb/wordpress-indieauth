@@ -21,9 +21,7 @@ class IndieAuth_Authorization_Endpoint {
 					'methods'  => WP_REST_Server::READABLE,
 					'callback' => array( $this, 'request' ),
 					'args'     => array(
-						'response_type' => array(
-							'required' => true,
-						),
+						'response_type' => array(),
 						'client_id'     => array(
 							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
@@ -69,21 +67,30 @@ class IndieAuth_Authorization_Endpoint {
 
 	public function request( $request ) {
 		$params = $request->get_params();
+		if ( ! isset( $params['response_type'] ) ) {
+			$params['response_type'] = 'id';
+		}
 		if ( 'code' !== $params['response_type'] && 'id' !== $params['response_type'] ) {
 			return new WP_Error( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), array( 'status' => 400 ) );
 		}
 		if ( wp_parse_url( $params['client_id'], PHP_URL_HOST ) !== wp_parse_url( $params['redirect_uri'], PHP_URL_HOST ) ) {
-			return new WP_Error( 'invalid_redirect', __( 'Redirect not on same host as client', 'indieauth' ), array( 'data' => $params, 'status' => 400 ) );
+			return new WP_Error(
+				'invalid_redirect', __( 'Redirect not on same host as client', 'indieauth' ), array(
+					'data'   => $params,
+					'status' => 400,
+				)
+			);
 		}
 		$url = wp_login_url( $params['redirect_uri'], true );
 		$url = add_query_arg(
 			array(
-				'action'    => 'indieauth',
-				'client_id' => $params['client_id'],
-				'state'     => $params['state'],
-				'scope'     => urlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' ),
-				'me'        => $params['me'],
-				'_wpnonce' => wp_create_nonce( 'wp_rest' )
+				'action'        => 'indieauth',
+				'response_type' => $params['response_type'],
+				'client_id'     => $params['client_id'],
+				'state'         => $params['state'],
+				'scope'         => urlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' ),
+				'me'            => $params['me'],
+				'_wpnonce'      => wp_create_nonce( 'wp_rest' ),
 			), $url
 		);
 
@@ -143,7 +150,28 @@ class IndieAuth_Authorization_Endpoint {
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
 		}
-		load_template( plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php' );
+		$current_user  = wp_get_current_user();
+		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
+		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
+		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
+		$state         = isset( $_GET['state'] ) ? wp_unslash( $_GET['state'] ) : null;
+		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
+		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
+		$token         = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
+		$code          = IndieAuth_Authorization_Endpoint::set_code( $current_user->ID, $token );
+		$url           = add_query_arg(
+			array(
+				'code'  => $code,
+				'state' => $state,
+			),
+			$redirect_uri
+		);
+		if ( 'code' === $_GET['response_type'] ) {
+			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php';
+		} elseif ( 'id' === $_GET['response_type'] ) {
+			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authenticate-form.php';
+		}
+		include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
 		exit;
 	}
 }

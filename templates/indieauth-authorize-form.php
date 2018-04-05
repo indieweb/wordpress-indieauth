@@ -5,21 +5,6 @@ login_header(
 	'',
 	$errors
 );
-$current_user = wp_get_current_user();
-$client_id    = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
-$redirect_uri = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
-$scope        = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
-$state        = isset( $_GET['state'] ) ? wp_unslash( $_GET['state'] ) : null;
-$me           = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
-$token        = compact( 'client_id', 'redirect_uri', 'scope', 'me' );
-$code         = IndieAuth_Authorization_Endpoint::set_code( $current_user->ID, $token );
-$url          = add_query_arg(
-	array(
-		'code'  => $code,
-		'state' => $state,
-	),
-	$redirect_uri
-);
 ?>
 <div class="login-info">
 <?php echo get_avatar( $current_user->ID, '78' ); ?>
@@ -49,23 +34,3 @@ $url          = add_query_arg(
 		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
 </p>
 <p class="redirect-info"><?php printf( __( 'You will be redirected to <code>%1$s</code> after authorizing this application.', 'indieauth' ), $redirect_uri ); ?></p>
-<style>
-.login-info img {
-	width: 78px;
-	display: block;
-	margin: 0 auto;
-	border-radius: 6px;
-}
-.login-info p {
-	margin-top: 1em;
-}
-.scope-info ul {
-	margin-top: 1em;
-	margin-left: 2em;
-}
-.redirect-info {
-	margin-top: 1em;
-}
-</style>
-<?php
-login_footer();
