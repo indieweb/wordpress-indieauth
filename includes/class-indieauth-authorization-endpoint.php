@@ -123,10 +123,10 @@ class IndieAuth_Authorization_Endpoint {
 		$params = wp_array_slice_assoc( $request->get_params(), array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
-		if ( !$token ) {
+		if ( ! $token ) {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
-		$user   = get_user_by( 'id', $token['user'] );
+		$user = get_user_by( 'id', $token['user'] );
 		if ( $token['expiration'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
 			return new WP_OAuth_Response( 'invalid_grant', __( 'The authorization code expired', 'indieauth' ), 400 );

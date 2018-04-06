@@ -154,7 +154,7 @@ class IndieAuth_Token_Endpoint {
 			$return = $this->set_token( $token );
 			if ( $token ) {
 				// Return only the standard keys in the response
-				return( wp_array_slice_assoc($token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
+				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
 			}
 		} else {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
