@@ -122,11 +122,8 @@ class IndieAuth_Authenticate {
 			),
 		);
 		$response = wp_safe_remote_get( get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) ), $args );
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
 		if ( is_oauth_error( $response ) ) {
-			return $response->to_wp_error();
+			return $response;
 		}
 		$code = wp_remote_retrieve_response_code( $response );
 		$body = wp_remote_retrieve_body( $response );
@@ -263,6 +260,9 @@ class IndieAuth_Authenticate {
 		if ( empty( $url ) || empty( $password ) ) {
 			if ( is_wp_error( $user ) ) {
 				return $user;
+			}
+			if ( is_oauth_error( $user ) ) {
+				return $user->to_wp_error();
 			}
 			$error = new WP_Error();
 
