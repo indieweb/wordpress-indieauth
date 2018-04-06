@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 2.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-04-05 18:39:38+00:00\n"
+"POT-Creation-Date: 2018-04-06 23:35:07+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,66 +13,67 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 0.5.4\n"
 
-#: includes/class-indieauth-authenticate.php:49
-#: includes/class-indieauth-authenticate.php:55
+#: includes/class-indieauth-authenticate.php:51
+#: includes/class-indieauth-authenticate.php:57
 msgid "Username, Email Address, or URL"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:78
+#: includes/class-indieauth-authenticate.php:74
+#: includes/class-indieauth-authenticate.php:336
+msgid "Invalid User Profile URL"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:107
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:104
+#: includes/class-indieauth-authenticate.php:136
 msgid "Supplied Token is Invalid"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:137
+#: includes/class-indieauth-authenticate.php:169
 msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:188
+#: includes/class-indieauth-authenticate.php:221
 msgid "The authorization endpoint did not return a JSON response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:198
+#: includes/class-indieauth-authenticate.php:231
 msgid ""
 "There was an error verifying the authorization code, the authorization "
 "server return an expected response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:219
+#: includes/class-indieauth-authenticate.php:252
 msgid "IndieAuth Server did not return the same state parameter"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:237
+#: includes/class-indieauth-authenticate.php:270
 msgid "<strong>ERROR</strong>: The URL field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:241
+#: includes/class-indieauth-authenticate.php:274
 msgid "<strong>ERROR</strong>: The password field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:255
+#: includes/class-indieauth-authenticate.php:288
 msgid "<strong>ERROR</strong>: Invalid URL."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:257
-#: includes/class-indieauth-authenticate.php:278
+#: includes/class-indieauth-authenticate.php:290
+#: includes/class-indieauth-authenticate.php:311
 msgid "Lost your password?"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:274
+#: includes/class-indieauth-authenticate.php:307
 #. translators: %s: url
 msgid ""
 "<strong>ERROR</strong>: The password you entered for the URL %s is "
 "incorrect."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:303
-msgid "Invalid User Profile URL"
-msgstr ""
-
-#: includes/class-indieauth-authenticate.php:320
+#: includes/class-indieauth-authenticate.php:356
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 
@@ -144,11 +145,11 @@ msgstr ""
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: indieauth.php:68
+#: indieauth.php:68 templates/indieauth-general-settings.php:13
 msgid "IndieAuth Authorization Endpoint"
 msgstr ""
 
-#: indieauth.php:78
+#: indieauth.php:78 templates/indieauth-general-settings.php:30
 msgid "IndieAuth Token Endpoint"
 msgstr ""
 
@@ -157,7 +158,7 @@ msgid "IndieAuth Settings"
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:4
-#: templates/indieauth-authenticate-form.php:30
+#: templates/indieauth-authenticate-form.php:31
 msgid "Authenticate"
 msgstr ""
 
@@ -167,12 +168,12 @@ msgid ""
 "<strong>%2$s</strong>."
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:31
+#: templates/indieauth-authenticate-form.php:32
 #: templates/indieauth-authorize-form.php:46
 msgid "Cancel"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:34
+#: templates/indieauth-authenticate-form.php:35
 msgid "You will be redirected to <code>%1$s</code> after authenticating."
 msgstr ""
 
@@ -199,25 +200,49 @@ msgid ""
 "application."
 msgstr ""
 
+#: templates/indieauth-domain-login.php:4
+msgid "Sign in with your Domain"
+msgstr ""
+
 #: templates/indieauth-general-settings.php:5
-msgid ""
-"Add a checkbox to the login form to authenticate using an IndieAuth "
-"endpoint."
+msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
 msgstr ""
 
-#: templates/indieauth-general-settings.php:14
-msgid "IndieAuth Authorization Endpoint."
+#: templates/indieauth-general-settings.php:15
+#: templates/indieauth-general-settings.php:32
+msgid "Custom"
 msgstr ""
 
-#: templates/indieauth-general-settings.php:23
-msgid "IndieAuth Token Endpoint."
+#: templates/indieauth-general-settings.php:18
+msgid "Built in Authorization Endpoint"
+msgstr ""
+
+#: templates/indieauth-general-settings.php:20
+#: templates/indieauth-general-settings.php:37
+msgid "Indieauth.com"
+msgstr ""
+
+#: templates/indieauth-general-settings.php:35
+msgid "Built in token Endpoint"
 msgstr ""
 
 #: templates/indieauth-login-form.php:4
-msgid "Login with your Domain"
+msgid "Sign in with your website"
 msgstr ""
 
-#: templates/indieauth-login-form.php:5
+#: templates/indieauth-login-form.php:11
+msgid "Sign in with your domain"
+msgstr ""
+
+#: templates/indieauth-login-form.php:13
+msgid "https://example.com"
+msgstr ""
+
+#: templates/indieauth-login-form.php:22
+msgid "Sign in"
+msgstr ""
+
+#: templates/indieauth-login-form.php:25
 msgid "Learn about IndieAuth"
 msgstr ""
 
