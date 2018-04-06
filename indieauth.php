@@ -91,7 +91,7 @@ class IndieAuth_Plugin {
 		 * render the login form
 		 */
 	public static function login_form() {
-		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-login-form.php';
+		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-domain-login.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
 				load_template( $template );
 		}

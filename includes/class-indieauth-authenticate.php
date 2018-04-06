@@ -11,6 +11,8 @@ class IndieAuth_Authenticate {
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
+		add_action( 'login_form_indielogin', array( $this, 'login_form_indielogin' ) );
+
 		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
 		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
 
@@ -56,6 +58,30 @@ class IndieAuth_Authenticate {
 		}
 		return $translated_text;
 	}
+
+	public function login_form_indielogin() {
+		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
+					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
+					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
+		}
+		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			$redirect_to         = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+					$redirect_to = rawurldecode( $redirect_to );
+			if ( array_key_exists( 'indieauth_identifier', $_POST ) ) {
+					$me = esc_url_raw( $_POST['indieauth_identifier'] );
+					// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
+				if ( ! wp_http_validate_url( $me ) ) {
+						return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
+				}
+					$return = $this->authorization_redirect( $me, wp_login_url( $redirect_to ) );
+				if ( is_wp_error( $return ) ) {
+					return $return;
+				}
+			}
+		}
+				exit;
+	}
+
 
 	public function determine_current_user( $user_id ) {
 		// If the Indieauth endpoint is being requested do not use this authentication method
@@ -175,7 +201,8 @@ class IndieAuth_Authenticate {
 			),
 		);
 		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ), $args );
-		if ( $error = get_oauth_error( $response ) ) {
+		$error    = get_oauth_error( $response );
+		if ( $error ) {
 			// Pass through well-formed error messages from the authorization endpoint
 			return $error;
 		}
@@ -189,14 +216,14 @@ class IndieAuth_Authenticate {
 		}
 
 		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
-			// The authorization endpoint acknowledged that the authorization code 
+			// The authorization endpoint acknowledged that the authorization code
 			// is valid and returned the authorization info
 			return $response;
 		}
 
 		// got an unexpected response from the authorization endpoint
 		$error = new WP_OAuth_Response( 'server_error', __( 'There was an error verifying the authorization code, the authorization server return an expected response', 'indieauth' ), 500 );
-		$error->set_debug( array( 'debug' => $response ));
+		$error->set_debug( array( 'debug' => $response ) );
 		return $error;
 	}
 
