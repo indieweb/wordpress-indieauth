@@ -70,7 +70,7 @@ class IndieAuth_Token_UI {
 		foreach ( $tokens as $key => $value ) {
 			echo '<input type="radio" name="token" value="' . $key . '" />';
 			printf( __( 'Issued for %1$1s at %2$2s', 'indieauth' ), $value['client_id'], date_i18n( DATE_W3C, $value['issued_at'] ) );
-			echo '<br />';
+			echo PHP_EOL . '<br />';
 		}
 		echo '</div>';
 	}
@@ -90,7 +90,7 @@ class IndieAuth_Token_UI {
 		$meta   = get_user_meta( $user_id, '' );
 		$tokens = array();
 		foreach ( $meta as $key => $value ) {
-			if ( $this->str_prefix( $key, '_indieauth_token_' ) ) {
+			if ( IndieAuth_Token_UI::str_prefix( $key, '_indieauth_token_' ) || IndieAuth_Token_UI::str_prefix( $key, '_indieauth_code_' ) ) {
 				delete_user_meta( $user_id, $key );
 			}
 		}

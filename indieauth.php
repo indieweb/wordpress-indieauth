@@ -26,9 +26,15 @@ class IndieAuth_Plugin {
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
+		
+		// OAuth REST Error Class
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';
 
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
+
+		// Authorization Endpoint
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorization-endpoint.php';
 
 		// Token Endpoint
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
@@ -41,6 +47,7 @@ class IndieAuth_Plugin {
 		}
 
 		new IndieAuth_Authenticate();
+		new IndieAuth_Authorization_Endpoint();
 		new IndieAuth_Token_Endpoint();
 		new IndieAuth_Token_UI();
 	}
@@ -51,7 +58,7 @@ class IndieAuth_Plugin {
 				'type'         => 'boolean',
 				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
 				'show_in_rest' => true,
-				'default'      => 1,
+				'default'      => 0,
 			)
 		);
 
@@ -61,7 +68,7 @@ class IndieAuth_Plugin {
 				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
-				'default'           => 'https://indieauth.com/auth',
+				'default'           => rest_url( '/indieauth/1.0/auth' ), // Defaults to the built in Endpoint
 			)
 		);
 

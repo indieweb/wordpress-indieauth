@@ -39,15 +39,15 @@ class IndieAuth_Token_Endpoint {
 						'grant_type'   => array(),
 						'code'         => array(),
 						'client_id'    => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'redirect_uri' => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'me'           => array(
-							'validate_callback' => array( $this, 'is_valid_url' ),
+							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'action'       => array(),
@@ -67,76 +67,19 @@ class IndieAuth_Token_Endpoint {
 		);
 	}
 
-	/**
-	 * Returns if valid URL for REST validation
-	 *
-	 * @param string $url
-	 *
-	 * @return boolean
-	 */
-	public static function is_valid_url( $url, $request = null, $key = null ) {
-		if ( ! is_string( $url ) || empty( $url ) ) {
-			return false;
-		}
-		return filter_var( $url, FILTER_VALIDATE_URL );
-	}
-
-	public function generate() {
-		return wp_generate_password( 128, false );
-	}
-
-	public function hash( $string ) {
-		return base64_encode( wp_hash( $string, 'secure_auth' ) );
-	}
-
 	public function get_token( $token, $hash = true ) {
-		$key = '_indieauth_token_';
-		// Either token is already hashed or is not
-		$key    .= $hash ? $this->hash( $token ) : $token;
-		$args    = array(
-			'number'      => 1,
-			'count_total' => false,
-			'meta_query'  => array(
-				array(
-					'key'     => $key,
-					'compare' => 'EXISTS',
-				),
-			),
-		);
-		$query   = new WP_User_Query( $args );
-		$results = $query->get_results();
-		if ( empty( $results ) ) {
-			return null;
-		}
-		$user  = $results[0];
-		$value = get_user_meta( $user->ID, $key, true );
-		if ( empty( $value ) ) {
-				return null;
-		}
-		$value['user'] = $user->ID;
-		return $value;
+		return get_indieauth_user_token( '_indieauth_token_', $token, $hash );
 	}
 
 	public function get( $request ) {
 		$params       = $request->get_params();
 		$access_token = $this->get_token_from_bearer_header( $request->get_header( 'Authorization' ) );
 		if ( ! $access_token ) {
-			return new WP_Error(
-				'invalid_request', __( 'Bearer Token Not Supplied', 'indieauth' ),
-				array(
-					'status' => '401',
-				)
-			);
+			return new WP_OAuth_Response( 'parameter_absent', __( 'Bearer Token Not Supplied', 'indieauth' ), 400 );
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new WP_Error(
-				'invalid_access_token', __( 'Invalid Token', 'indieauth' ),
-				array(
-					'status'   => '401',
-					'response' => $access_token,
-				)
-			);
+			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
 		return rest_ensure_response( $token );
 	}
@@ -146,13 +89,13 @@ class IndieAuth_Token_Endpoint {
 		if ( ! isset( $token['access_token'] ) || ! isset( $token['me'] ) ) {
 			return false;
 		}
-		$access_token = $this->hash( $token['access_token'] );
+		$access_token = indieauth_hash_token( $token['access_token'] );
 		unset( $token['access_token'] );
 		$user = get_user_by_identifier( $token['me'] );
 		if ( ! $user ) {
 			return false;
 		}
-		return add_user_meta( $user->ID, '_indieauth_token_' . $access_token, $token );
+		return set_indieauth_user_token( $user->ID, '_indieauth_token_', $access_token, $token );
 	}
 
 	public function delete_token( $id, $user_id = null ) {
@@ -167,7 +110,7 @@ class IndieAuth_Token_Endpoint {
 				return false;
 			}
 		}
-		$id = $hash ? $this->hash( $id ) : $id;
+		$id = $hash ? indieauth_hash_token( $id ) : $id;
 		return delete_user_meta( $user_id, '_indieauth_token_' . $id );
 	}
 
@@ -184,46 +127,39 @@ class IndieAuth_Token_Endpoint {
 			return $this->request( $params );
 		}
 		// Everything Failed
-		return new WP_Error(
-			'invalid_request', __( 'Invalid Request', 'indieauth' ),
-			array(
-				'status'   => '400',
-				'response' => $params,
-			)
-		);
-
+		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
 
 	// Request a Token
 	public function request( $params ) {
 		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri', 'me' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
-			return new WP_Error(
-				'invalid_request', __( 'Invalid Request', 'indieauth' ),
-				array(
-					'status'   => '400',
-					'response' => $params,
-				)
-			);
+			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$response = IndieAuth_Authenticate::verify_authorization_code( $params['code'], $params['redirect_uri'], $params['client_id'] );
-		if ( is_wp_error( $response ) ) {
-			return $response;
+		if ( $error = get_oauth_error( $response ) ) {
+			return $error;
 		}
-		$token  = array(
-			'access_token' => $this->generate(),
-			'token_type'   => 'Bearer',
-			'scope'        => $response['scope'],
-			'me'           => $response['me'],
-			'issued_by'    => rest_url( 'indieauth/1.0/token' ),
-			'client_id'    => $params['client_id'],
-			'issued_at'    => current_time( 'timestamp', 1 ),
-		);
-		$return = $this->set_token( $token );
-		if ( $token ) {
-			return( $token );
+		// Do not issue a token if the authorization code contains no scope
+		if ( isset( $response['scope'] ) ) {
+			$token  = array(
+				'access_token' => indieauth_generate_token(),
+				'token_type'   => 'Bearer',
+				'scope'        => $response['scope'],
+				'me'           => $response['me'],
+				'issued_by'    => rest_url( 'indieauth/1.0/token' ),
+				'client_id'    => $params['client_id'],
+				'issued_at'    => current_time( 'timestamp', 1 ),
+			);
+			$return = $this->set_token( $token );
+			if ( $token ) {
+				// Return only the standard keys in the response
+				return( wp_array_slice_assoc($token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
+			}
+		} else {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
 		}
-		return new WP_Error( 'error', __( 'Set Token Error', 'indieauth' ) );
+		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
 }
 

@@ -101,15 +101,24 @@ function indieauth_discover_endpoint( $me ) {
 /**
  * Get the user associated with the specified Identifier-URI.
  *
- * @param string $$identifier identifier to match
- * @return int|null ID of associated user, or null if no associated user
+ * @param string $identifier identifier to match
+ * @return WP_User $user Associated user, or null if no associated user
  */
 function get_user_by_identifier( $identifier ) {
 	if ( empty( $identifier ) ) {
 		return null;
 	}
 	// try it without trailing slash
-	$no_slash   = untrailingslashit( $identifier );
+	$no_slash = untrailingslashit( $identifier );
+	// Try to save the expense of a search query if the URL is the site URL
+	if ( home_url() === $no_slash ) {
+		// Use the Indieweb settings to set the default author
+		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
+			return get_user_by( 'id', get_option( 'iw_default_author' ) );
+		}
+
+		// TODO: Add in search for whether there is only one author
+	}
 	$args       = array(
 		'search'         => $no_slash,
 		'search_columns' => array( 'user_url' ),
@@ -151,4 +160,86 @@ function get_user_by_identifier( $identifier ) {
 		return $user_query->results[0];
 	}
 	return null;
+}
+
+	/**
+ * Returns if valid URL for REST validation
+ *
+ * @param string $url
+ *
+ * @return boolean
+ */
+function rest_is_valid_url( $url, $request = null, $key = null ) {
+	if ( ! is_string( $url ) || empty( $url ) ) {
+		return false;
+	}
+	return filter_var( $url, FILTER_VALIDATE_URL );
+}
+
+	/**
+ * Generates a random string using the WordPress password for use as a token.
+ *
+ * @return string
+ */
+function indieauth_generate_token() {
+	return wp_generate_password( 128, false );
+}
+
+	/**
+ * Hashes and Base64 encodes a token for storage so it cannot be retrieved
+ *
+ * @param string $string
+ *
+ * @return string
+ */
+function indieauth_hash_token( $string ) {
+	return base64_encode( wp_hash( $string, 'secure_auth' ) );
+}
+
+	/**
+ * Get the token from meta
+ *
+ * @param string $key Prefix for the meta keys for this type of token
+ * @param string $token Token to search for
+ * @param boolean $hash If the token is already hashed or not
+ * @return array|null Token, or null if no token found
+ */
+function get_indieauth_user_token( $key, $token, $hash = true ) {
+	// Either token is already hashed or is not
+	$key    .= $hash ? indieauth_hash_token( $token ) : $token;
+	$args    = array(
+		'number'      => 1,
+		'count_total' => false,
+		'meta_query'  => array(
+			array(
+				'key'     => $key,
+				'compare' => 'EXISTS',
+			),
+		),
+	);
+	$query   = new WP_User_Query( $args );
+	$results = $query->get_results();
+	if ( empty( $results ) ) {
+		return null;
+	}
+	$user  = $results[0];
+	$value = get_user_meta( $user->ID, $key, true );
+	if ( empty( $value ) ) {
+		return null;
+	}
+	$value['user'] = $user->ID;
+	return $value;
+}
+
+	/**
+ * Get the token from meta
+ *
+ * @param num $id User ID
+ * @param string $key Prefix for the meta keys for this type of token
+ * @param string $token Token
+ * @param array $token_data Actual contents of token
+ * @return boolean if successful
+ */
+function set_indieauth_user_token( $id, $key, $token, $token_data ) {
+	return add_user_meta( $id, $key . $token, $token_data );
 }
