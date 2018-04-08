@@ -136,8 +136,17 @@ class IndieAuth_Token_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$response = IndieAuth_Authenticate::verify_authorization_code( $params['code'], $params['redirect_uri'], $params['client_id'] );
-		if ( $error = get_oauth_error( $response ) ) {
+		$endpoint = indieauth_discover_endpoint( $params['me'] );
+		$endpoint = isset( $endpoint['authorization_endpoint'] ) ? $endpoint['authorization_endpoint'] : null;
+		$response = IndieAuth_Authenticate::verify_authorization_code(
+			array(
+				'code'         => $params['code'],
+				'redirect_url' => $params['redirect_uri'],
+				'client_id'    => $params['client_id'],
+			), $endpoint
+		);
+		$error    = get_oauth_error( $response );
+		if ( $error ) {
 			return $error;
 		}
 		// Do not issue a token if the authorization code contains no scope

@@ -114,14 +114,17 @@ class IndieAuth_Authenticate {
 
 	}
 
-	public function verify_access_token( $token ) {
+	public function verify_access_token( $token, $endpoint = null ) {
+		if ( ! $endpoint ) {
+			$endpoint = get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) );
+		}
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',
 				'Authorization' => 'Bearer ' . $token,
 			),
 		);
-		$response = wp_safe_remote_get( get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) ), $args );
+		$response = wp_safe_remote_get( $endpoint, $args );
 		if ( is_oauth_error( $response ) ) {
 			return $response;
 		}
@@ -188,23 +191,25 @@ class IndieAuth_Authenticate {
 		wp_redirect( $query );
 	}
 
-	public static function verify_authorization_code( $code, $redirect_uri, $client_id = null ) {
-		if ( ! $client_id ) {
-			$client_id = home_url();
+	// $args must consist of redirect_uri, client_id, and code
+	public static function verify_authorization_code( $post_args, $endpoint = null ) {
+		if ( ! $endpoint ) {
+			$endpoint = get_option( 'indieauth_authorization_endpoint' );
 		}
-		$args     = array(
+		$defaults = array(
+			'client_id' => home_url(),
+		);
+
+		$post_args = wp_parse_args( $post_args, $defaults );
+		$args      = array(
 			'headers' => array(
 				'Accept'       => 'application/json',
 				'Content-Type' => 'application/x-www-form-urlencoded',
 			),
-			'body'    => array(
-				'code'         => $code,
-				'redirect_uri' => $redirect_uri,
-				'client_id'    => $client_id,
-			),
+			'body'    => $post_args,
 		);
-		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ), $args );
-		$error    = get_oauth_error( $response );
+		$response  = wp_remote_post( $endpoint, $args );
+		$error     = get_oauth_error( $response );
 		if ( is_oauth_error( $error ) ) {
 			// Pass through well-formed error messages from the authorization endpoint
 			return $error;
@@ -344,7 +349,12 @@ class IndieAuth_Authenticate {
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
-			$response = $this->verify_authorization_code( $_REQUEST['code'], wp_login_url( $redirect_to ) );
+			$response = $this->verify_authorization_code(
+				array(
+					'code'         => $_REQUEST['code'],
+					'redirect_uri' => wp_login_url( $redirect_to ),
+				)
+			);
 			if ( is_wp_error( $response ) ) {
 				return $response;
 			}
