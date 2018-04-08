@@ -16,7 +16,7 @@ login_header(
 	// Hook to allow adding to form
 	do_action( 'indieauth_login_form' );
 ?>
-	<input class="input" type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php _e( 'Sign in', 'indieauth' ); ?>" />
+	<input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php _e( 'Sign in', 'indieauth' ); ?>" />
 </p>
 <a href="https://indieauth.net/" target="_blank"><?php _e( 'Learn about IndieAuth', 'indieauth' ); ?></a>
 </form>
