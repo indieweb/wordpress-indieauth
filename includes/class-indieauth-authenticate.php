@@ -173,6 +173,7 @@ class IndieAuth_Authenticate {
 		$authorization_endpoint = null;
 		if ( isset( $endpoints['authorization_endpoint'] ) ) {
 			$authorization_endpoint = $endpoints['authorization_endpoint'];
+			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp' ) + 120, '/', false, true );
 		}
 		$state = $this->generate_state();
 		$query = add_query_arg(
@@ -348,7 +349,8 @@ class IndieAuth_Authenticate {
 				array(
 					'code'         => $_REQUEST['code'],
 					'redirect_uri' => wp_login_url( $redirect_to ),
-				)
+				),
+				$_COOKIE['indieauth_authorization_endpoint']
 			);
 			if ( is_wp_error( $response ) ) {
 				return $response;
