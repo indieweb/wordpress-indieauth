@@ -114,10 +114,8 @@ class IndieAuth_Authenticate {
 
 	}
 
-	public function verify_access_token( $token, $endpoint = null ) {
-		if ( ! $endpoint ) {
-			$endpoint = get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) );
-		}
+	public function verify_access_token( $token ) {
+		$endpoint = get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) );
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',
@@ -192,10 +190,7 @@ class IndieAuth_Authenticate {
 	}
 
 	// $args must consist of redirect_uri, client_id, and code
-	public static function verify_authorization_code( $post_args, $endpoint = null ) {
-		if ( ! $endpoint ) {
-			$endpoint = get_option( 'indieauth_authorization_endpoint' );
-		}
+	public static function verify_authorization_code( $post_args, $endpoint ) {
 		$defaults = array(
 			'client_id' => home_url(),
 		);
