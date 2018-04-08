@@ -19,7 +19,7 @@ login_header(
 	add_action( 'indieauth_login_form' );
 ?>
 <br />
-	<input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php _e( 'Sign in', 'indieauth' ); ?>" />
+	<input class="input" type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="<?php _e( 'Sign in', 'indieauth' ); ?>" />
 </p>
 <br />
 <a href="https://indieauth.net/" target="_blank"><?php _e( 'Learn about IndieAuth', 'indieauth' ); ?></a>
