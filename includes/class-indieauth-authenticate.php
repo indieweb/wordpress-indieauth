@@ -11,6 +11,8 @@ class IndieAuth_Authenticate {
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
+		add_action( 'login_form_indielogin', array( $this, 'login_form_indielogin' ) );
+
 		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
 		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
 
@@ -57,6 +59,33 @@ class IndieAuth_Authenticate {
 		return $translated_text;
 	}
 
+	public function login_form_indielogin() {
+		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
+					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
+					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
+		}
+		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			$redirect_to         = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+					$redirect_to = rawurldecode( $redirect_to );
+			if ( array_key_exists( 'indieauth_identifier', $_POST ) ) {
+					$me = esc_url_raw( $_POST['indieauth_identifier'] );
+					// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
+				if ( ! wp_http_validate_url( $me ) ) {
+						return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
+				}
+					$return = $this->authorization_redirect( $me, wp_login_url( $redirect_to ) );
+				if ( is_wp_error( $return ) ) {
+					return $return;
+				}
+				if ( is_oauth_error( $return ) ) {
+					return $return->to_wp_error();
+				}
+			}
+		}
+				exit;
+	}
+
+
 	public function determine_current_user( $user_id ) {
 		// If the Indieauth endpoint is being requested do not use this authentication method
 		if ( strpos( $_SERVER['REQUEST_URI'], '/indieauth/1.0' ) ) {
@@ -86,14 +115,15 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
+		$endpoint = get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) );
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',
 				'Authorization' => 'Bearer ' . $token,
 			),
 		);
-		$response = wp_safe_remote_get( get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) ), $args );
-		if ( is_wp_error( $response ) ) {
+		$response = wp_safe_remote_get( $endpoint, $args );
+		if ( is_oauth_error( $response ) ) {
 			return $response;
 		}
 		$code = wp_remote_retrieve_response_code( $response );
@@ -143,6 +173,7 @@ class IndieAuth_Authenticate {
 		$authorization_endpoint = null;
 		if ( isset( $endpoints['authorization_endpoint'] ) ) {
 			$authorization_endpoint = $endpoints['authorization_endpoint'];
+			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp' ) + 120, '/', false, true );
 		}
 		$state = $this->generate_state();
 		$query = add_query_arg(
@@ -159,23 +190,23 @@ class IndieAuth_Authenticate {
 		wp_redirect( $query );
 	}
 
-	public static function verify_authorization_code( $code, $redirect_uri, $client_id = null ) {
-		if ( ! $client_id ) {
-			$client_id = home_url();
-		}
-		$args     = array(
+	// $args must consist of redirect_uri, client_id, and code
+	public static function verify_authorization_code( $post_args, $endpoint ) {
+		$defaults = array(
+			'client_id' => home_url(),
+		);
+
+		$post_args = wp_parse_args( $post_args, $defaults );
+		$args      = array(
 			'headers' => array(
 				'Accept'       => 'application/json',
 				'Content-Type' => 'application/x-www-form-urlencoded',
 			),
-			'body'    => array(
-				'code'         => $code,
-				'redirect_uri' => $redirect_uri,
-				'client_id'    => $client_id,
-			),
+			'body'    => $post_args,
 		);
-		$response = wp_remote_post( get_option( 'indieauth_authorization_endpoint' ), $args );
-		if ( $error = get_oauth_error( $response ) ) {
+		$response  = wp_remote_post( $endpoint, $args );
+		$error     = get_oauth_error( $response );
+		if ( is_oauth_error( $error ) ) {
 			// Pass through well-formed error messages from the authorization endpoint
 			return $error;
 		}
@@ -189,14 +220,14 @@ class IndieAuth_Authenticate {
 		}
 
 		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
-			// The authorization endpoint acknowledged that the authorization code 
+			// The authorization endpoint acknowledged that the authorization code
 			// is valid and returned the authorization info
 			return $response;
 		}
 
 		// got an unexpected response from the authorization endpoint
 		$error = new WP_OAuth_Response( 'server_error', __( 'There was an error verifying the authorization code, the authorization server return an expected response', 'indieauth' ), 500 );
-		$error->set_debug( array( 'debug' => $response ));
+		$error->set_debug( array( 'debug' => $response ) );
 		return $error;
 	}
 
@@ -230,6 +261,9 @@ class IndieAuth_Authenticate {
 		if ( empty( $url ) || empty( $password ) ) {
 			if ( is_wp_error( $user ) ) {
 				return $user;
+			}
+			if ( is_oauth_error( $user ) ) {
+				return $user->to_wp_error();
 			}
 			$error = new WP_Error();
 
@@ -311,9 +345,18 @@ class IndieAuth_Authenticate {
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
-			$response = $this->verify_authorization_code( $_REQUEST['code'], wp_login_url( $redirect_to ) );
+			$response = $this->verify_authorization_code(
+				array(
+					'code'         => $_REQUEST['code'],
+					'redirect_uri' => wp_login_url( $redirect_to ),
+				),
+				$_COOKIE['indieauth_authorization_endpoint']
+			);
 			if ( is_wp_error( $response ) ) {
 				return $response;
+			}
+			if ( is_oauth_error( $response ) ) {
+				return $response->to_wp_error();
 			}
 			$user = get_user_by_identifier( $response['me'] );
 			if ( ! $user ) {

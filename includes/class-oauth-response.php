@@ -17,6 +17,12 @@ class WP_OAuth_Response extends WP_REST_Response {
 		$this->set_data( array_merge( $data, $array ) );
 	}
 
+	public function to_wp_error() {
+		$data   = $this->get_data();
+		$status = $this->get_status();
+		return new WP_Error( $data['error'], $data['error_description'], array( 'status' => $status ) );
+	}
+
 }
 
 function get_oauth_error( $obj ) {
@@ -39,4 +45,8 @@ function get_oauth_error( $obj ) {
 		}
 	}
 	return false;
+}
+
+function is_oauth_error( $obj ) {
+	return ( $obj instanceof WP_OAuth_Response );
 }

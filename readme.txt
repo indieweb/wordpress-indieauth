@@ -88,6 +88,8 @@ You can revoke tokens under User->Manage Tokens.
 * Allow login using URL
 * Add built-in token endpoint ( props to @aaronpk for support on this )
 * Add built-in authorization endpoint ( props to @aaronpk for support on this )
+* Hide option to login with your domain by default
+* Option to sign into your domain is now a separate form
 
 = 1.1.3 =
 * update README
