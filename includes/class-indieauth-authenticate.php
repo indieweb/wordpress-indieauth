@@ -61,17 +61,18 @@ class IndieAuth_Authenticate {
 
 	public function login_form_indielogin() {
 		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
-					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
-					include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
+			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
+			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
 		}
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			$redirect_to         = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
-					$redirect_to = rawurldecode( $redirect_to );
+			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+			$redirect_to = rawurldecode( $redirect_to );
+
 			if ( array_key_exists( 'indieauth_identifier', $_POST ) ) {
-					$me = esc_url_raw( $_POST['indieauth_identifier'] );
-					// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
+				$me = esc_url_raw( $_POST['indieauth_identifier'] );
+				// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
 				if ( ! wp_http_validate_url( $me ) ) {
-						return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
+					return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
 				}
 					$return = $this->authorization_redirect( $me, wp_login_url( $redirect_to ) );
 				if ( is_wp_error( $return ) ) {
@@ -82,7 +83,7 @@ class IndieAuth_Authenticate {
 				}
 			}
 		}
-				exit;
+		exit;
 	}
 
 
@@ -363,7 +364,7 @@ class IndieAuth_Authenticate {
 				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
 			}
 		}
-					return $user;
+		return $user;
 	}
 
 	/**

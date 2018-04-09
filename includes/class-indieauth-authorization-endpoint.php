@@ -114,9 +114,8 @@ class IndieAuth_Authorization_Endpoint {
 					return false;
 			}
 		}
-				$id = indieauth_hash_token( $code );
-				return delete_user_meta( $user_id, '_indieauth_code_' . $id );
-
+		$id = indieauth_hash_token( $code );
+		return delete_user_meta( $user_id, '_indieauth_code_' . $id );
 	}
 
 	public function verify( $request ) {
@@ -208,4 +207,3 @@ class IndieAuth_Authorization_Endpoint {
 		wp_redirect( $url );
 	}
 }
-

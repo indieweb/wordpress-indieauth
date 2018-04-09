@@ -21,12 +21,13 @@ class IndieAuth_Plugin {
 		add_action( 'admin_init', array( 'IndieAuth_Plugin', 'admin_init' ) );
 		add_action( 'init', array( 'IndieAuth_Plugin', 'init' ) );
 		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
+
 		// Compatibility Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
-		
+
 		// OAuth REST Error Class
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';
 
@@ -93,7 +94,7 @@ class IndieAuth_Plugin {
 	public static function login_form() {
 		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-domain-login.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
-				load_template( $template );
+			load_template( $template );
 		}
 	}
 
@@ -103,6 +104,4 @@ class IndieAuth_Plugin {
 	public static function general_settings() {
 		load_template( plugin_dir_path( __FILE__ ) . 'templates/indieauth-general-settings.php' );
 	}
-
 }
-

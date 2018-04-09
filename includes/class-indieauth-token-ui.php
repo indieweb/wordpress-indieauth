@@ -96,7 +96,4 @@ class IndieAuth_Token_UI {
 		}
 		return $tokens;
 	}
-
 } // End Class
-
-
