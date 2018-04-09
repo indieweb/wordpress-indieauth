@@ -4,4 +4,3 @@
 	<?php _e( 'Sign in with your Domain', 'indieauth' ); ?></a>
 	<br />
 </p>
-

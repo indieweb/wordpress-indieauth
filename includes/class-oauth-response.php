@@ -22,7 +22,6 @@ class WP_OAuth_Response extends WP_REST_Response {
 		$status = $this->get_status();
 		return new WP_Error( $data['error'], $data['error_description'], array( 'status' => $status ) );
 	}
-
 }
 
 function get_oauth_error( $obj ) {

@@ -8,7 +8,6 @@
 class IndieAuth_Token_Endpoint {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-
 	}
 
 
@@ -23,7 +22,7 @@ class IndieAuth_Token_Endpoint {
 		if ( is_string( $header ) && preg_match( '/Bearer ([\x20-\x7E]+)/', trim( $header ), $matches ) ) {
 				return $matches[1];
 		}
-			return null;
+		return null;
 	}
 
 	/**
@@ -171,4 +170,3 @@ class IndieAuth_Token_Endpoint {
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
 }
-
