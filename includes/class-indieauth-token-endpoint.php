@@ -20,7 +20,7 @@ class IndieAuth_Token_Endpoint {
 	 */
 	public function get_token_from_bearer_header( $header ) {
 		if ( is_string( $header ) && preg_match( '/Bearer ([\x20-\x7E]+)/', trim( $header ), $matches ) ) {
-				return $matches[1];
+			return $matches[1];
 		}
 		return null;
 	}
@@ -140,7 +140,7 @@ class IndieAuth_Token_Endpoint {
 		$response = IndieAuth_Authenticate::verify_authorization_code(
 			array(
 				'code'         => $params['code'],
-				'redirect_url' => $params['redirect_uri'],
+				'redirect_uri' => $params['redirect_uri'],
 				'client_id'    => $params['client_id'],
 			), $endpoint
 		);

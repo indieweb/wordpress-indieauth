@@ -21,6 +21,7 @@ class IndieAuth_Plugin {
 		add_action( 'admin_init', array( 'IndieAuth_Plugin', 'admin_init' ) );
 		add_action( 'init', array( 'IndieAuth_Plugin', 'init' ) );
 		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
+		add_filter( 'pre_user_url', array( 'IndieAuth_Plugin', 'pre_user_url' ) );
 
 		// Compatibility Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
@@ -62,6 +63,14 @@ class IndieAuth_Plugin {
 				'default'      => 0,
 			)
 		);
+		register_setting(
+			'general', 'indieauth_config', array(
+				'type'         => 'string',
+				'description'  => __( 'Indieauth Configuration Setting', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 'local',
+			)
+		);
 
 		register_setting(
 			'general', 'indieauth_authorization_endpoint', array(
@@ -69,7 +78,7 @@ class IndieAuth_Plugin {
 				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
-				'default'           => rest_url( '/indieauth/1.0/auth' ), // Defaults to the built in Endpoint
+				'default'           => get_indieauth_authorization_endpoint(),
 			)
 		);
 
@@ -79,13 +88,13 @@ class IndieAuth_Plugin {
 				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'esc_url_raw',
-				'default'           => rest_url( '/indieauth/1.0/token' ), // Defaults to the built in Token Endpoint
+				'default'           => get_indieauth_token_endpoint(),
 			)
 		);
 	}
 
 	public static function admin_init() {
-		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( 'IndieAuth_Plugin', 'general_settings' ), 'general', 'default' );
+		add_settings_section( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( 'IndieAuth_Plugin', 'general_settings' ), 'general', 'default' );
 	}
 
 		/**
@@ -103,5 +112,9 @@ class IndieAuth_Plugin {
 	 */
 	public static function general_settings() {
 		load_template( plugin_dir_path( __FILE__ ) . 'templates/indieauth-general-settings.php' );
+	}
+
+	public static function pre_user_url( $user_url ) {
+		return trailingslashit( $user_url );
 	}
 }

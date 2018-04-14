@@ -6,7 +6,7 @@
 **Stable tag:** 2.0.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
-**Donate link:** http://14101978.de  
+**Donate link:** https://opencollective.com/indieweb  
 
 IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in to other places.
 
@@ -15,7 +15,7 @@ IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in 
 The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication
 mechanism for WordPress and its REST API, as well as an identity mechanism for other sites.
 
-Alternatively, you can use a third-party IndieAuth authorization endpoint, which will allow you to log 
+Alternatively, you can use a third-party IndieAuth authorization endpoint, which will allow you to log
 into your own site using an IndieAuth endpoint.
 
 It uses the URL from the profile page to identify the blog user or your author url.
@@ -39,19 +39,19 @@ which is used by many websites.
 
 ### Why IndieAuth? ###
 
-IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises 
-much of the process so completely separate implementations and services can be used for each part. 
+IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises
+much of the process so completely separate implementations and services can be used for each part.
 
 IndieAuth was developed as part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity.
 
 ### How is this different from OpenID? ###
 
-The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. 
-However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. 
+The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name.
+However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol.
 
 ### How is this different from OAuth? ###
 
-IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of 
+IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of
 a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources..
 
 ### Does this require users to have their own domain name? ###
@@ -63,7 +63,7 @@ No. You can use your author profile URL to login if you do not have a domain nam
 That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
 IndieAuth.com works by linking your website to one or more authentication providers such as Twitter or Github.
 
-You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing 
+You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing
 the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
 
 By adding Indieauth support, you can log into sites simply by providing your URL.
@@ -90,6 +90,7 @@ You can revoke tokens under User->Manage Tokens.
 * Add built-in authorization endpoint ( props to @aaronpk for support on this )
 * Hide option to login with your domain by default
 * Option to sign into your domain is now a separate form
+* Automatically add trailing slash to user_url
 
 ### 1.1.3 ###
 * update README
