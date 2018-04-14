@@ -139,7 +139,12 @@ class IndieAuth_Authorization_Endpoint {
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code );
 			// Return the user profile URL and scope
-			$return = array( 'me' => $user->user_url );
+			if ( ! empty ( $user->user_url ) ) {
+				$return = array( 'me' => $user->user_url );
+			}
+			else {
+				$return = array( 'me' => get_author_posts_url( $user->ID ) );
+			}
 			if ( isset( $token['scope'] ) ) {
 				$return['scope'] = $token['scope'];
 			}
