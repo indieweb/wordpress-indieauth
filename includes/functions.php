@@ -121,8 +121,10 @@ function get_user_by_identifier( $identifier ) {
 		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
 			return get_user_by( 'id', get_option( 'iw_default_author' ) );
 		}
-
-		// TODO: Add in search for whether there is only one author
+		$users = get_users( array( 'role__not_in' => array( 'subscriber' ) ) );
+		if ( 1 === count( $users ) ) {
+			return $users[0];
+		}
 	}
 	$args       = array(
 		'search'         => $identifier,
@@ -168,7 +170,8 @@ function url_to_author( $url ) {
 	$author_regexp  = str_replace( '%author%', '', $author_rewrite );
 	// match the rewrite rule with the passed url
 	if ( preg_match( '/https?:\/\/(.+)' . preg_quote( $author_regexp, '/' ) . '([^\/]+)/i', $url, $match ) ) {
-		if ( $user = get_user_by( 'slug', $match[2] ) ) {
+		$user = get_user_by( 'slug', $match[2] );
+		if ( $user ) {
 			return $user->ID;
 		}
 	}
