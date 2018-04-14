@@ -21,12 +21,12 @@ class IndieAuth_Authenticate {
 	}
 
 	public static function http_header() {
-		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', get_option( 'indieauth_authorization_endpoint' ) ), false );
-		header( sprintf( 'Link: <%s>; rel="token_endpoint"', get_option( 'indieauth_token_endpoint' ) ), false );
+		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', get_indieauth_authorization_endpoint(), false ) );
+		header( sprintf( 'Link: <%s>; rel="token_endpoint"', get_indieauth_token_endpoint(), false ) );
 	}
 	public static function html_header() {
-		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, get_option( 'indieauth_authorization_endpoint' ) );
-		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, get_option( 'indieauth_token_endpoint' ) );
+		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, get_indieauth_authorization_endpoint() );
+		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, get_indieauth_token_endpoint() );
 	}
 
 
@@ -116,7 +116,7 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
-		$endpoint = get_option( 'indieauth_token_endpoint', rest_url( 'indieauth/1.0/token' ) );
+		$endpoint = get_indieauth_token_endpoint();
 		$args     = array(
 			'headers' => array(
 				'Accept'        => 'application/json',

@@ -108,10 +108,15 @@ function get_user_by_identifier( $identifier ) {
 	if ( empty( $identifier ) ) {
 		return null;
 	}
-	// try it without trailing slash
-	$no_slash = untrailingslashit( $identifier );
+	// Ensure has trailing slash
+	$identifier = trailingslashit( $identifier );
+	// Check if this is a author post URL
+	$user = url_to_author( $identifier );
+	if ( $user ) {
+		return $user;
+	}
 	// Try to save the expense of a search query if the URL is the site URL
-	if ( home_url() === $no_slash ) {
+	if ( home_url( '/' ) === $identifier ) {
 		// Use the Indieweb settings to set the default author
 		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
 			return get_user_by( 'id', get_option( 'iw_default_author' ) );
@@ -120,47 +125,56 @@ function get_user_by_identifier( $identifier ) {
 		// TODO: Add in search for whether there is only one author
 	}
 	$args       = array(
-		'search'         => $no_slash,
+		'search'         => $identifier,
 		'search_columns' => array( 'user_url' ),
 	);
 	$user_query = new WP_User_Query( $args );
 		// check result
 	if ( ! empty( $user_query->results ) ) {
-			return $user_query->results[0];
-	}
-	// try it with trailing slash
-	$slash      = trailingslashit( $identifier );
-	$args       = array(
-		'search'         => $slash,
-		'search_columns' => array( 'user_url' ),
-	);
-	$user_query = new WP_User_Query( $args );
-	// check result
-	if ( ! empty( $user_query->results ) ) {
-		return $user_query->results[0];
-	}
-	// Check author page
-	global $wp_rewrite;
-	$link = $wp_rewrite->get_author_permastruct();
-	if ( empty( $link ) ) {
-		$login = str_replace( home_url( '/' ) . '?author=', '', $identifier );
-	} else {
-		$link  = str_replace( '%author%', '', $link );
-		$link  = home_url( user_trailingslashit( $link ) );
-		$login = str_replace( $link, '', $identifier );
-	}
-	if ( ! $login ) {
-		return null;
-	}
-	$args       = array(
-		'login' => $login,
-	);
-	$user_query = new WP_User_Query( $args );
-	if ( ! empty( $user_query->results ) ) {
 		return $user_query->results[0];
 	}
 	return null;
 }
+
+/**
+ * Examine a url and try to determine the author ID it represents.
+ *
+ *
+ * @param string $url Permalink to check.
+ *
+ * @return WP_User, or null on failure.
+ */
+function url_to_author( $url ) {
+	global $wp_rewrite;
+	// check if url hase the same host
+	if ( wp_parse_url( site_url(), PHP_URL_HOST ) !== wp_parse_url( $url, PHP_URL_HOST ) ) {
+		return null;
+	}
+	// first, check to see if there is a 'author=N' to match against
+	if ( preg_match( '/[?&]author=(\d+)/i', $url, $values ) ) {
+		$id = absint( $values[1] );
+		if ( $id ) {
+			return $id;
+		}
+	}
+	// check to see if we are using rewrite rules
+	$rewrite = $wp_rewrite->wp_rewrite_rules();
+	// not using rewrite rules, and 'author=N' method failed, so we're out of options
+	if ( empty( $rewrite ) ) {
+		return null;
+	}
+	// generate rewrite rule for the author url
+	$author_rewrite = $wp_rewrite->get_author_permastruct();
+	$author_regexp  = str_replace( '%author%', '', $author_rewrite );
+	// match the rewrite rule with the passed url
+	if ( preg_match( '/https?:\/\/(.+)' . preg_quote( $author_regexp, '/' ) . '([^\/]+)/i', $url, $match ) ) {
+		if ( $user = get_user_by( 'slug', $match[2] ) ) {
+			return $user->ID;
+		}
+	}
+	return null;
+}
+
 
 	/**
  * Returns if valid URL for REST validation
@@ -243,3 +257,30 @@ function get_indieauth_user_token( $key, $token, $hash = true ) {
 function set_indieauth_user_token( $id, $key, $token, $token_data ) {
 	return add_user_meta( $id, $key . $token, $token_data );
 }
+
+function get_indieauth_authorization_endpoint() {
+	$option = get_option( 'indieauth_config' );
+	switch ( $option ) {
+		case 'indieauth':
+			return 'https://indieauth.com/auth';
+		case 'custom':
+			$return = get_option( 'indieauth_authorization_endpoint', rest_url( '/indieauth/1.0/auth' ) );
+			return empty( $return ) ? rest_url( '/indieauth/1.0/auth' ) : $return;
+		default:
+			return rest_url( '/indieauth/1.0/auth' );
+	}
+}
+
+function get_indieauth_token_endpoint() {
+	$option = get_option( 'indieauth_config' );
+	switch ( $option ) {
+		case 'indieauth':
+			return 'https://tokens.indieauth.com/token';
+		case 'custom':
+			$return = get_option( 'indieauth_token_endpoint', rest_url( '/indieauth/1.0/token' ) );
+			return empty( $return ) ? rest_url( '/indieauth/1.0/token' ) : $return;
+		default:
+			return rest_url( '/indieauth/1.0/token' );
+	}
+}
+
