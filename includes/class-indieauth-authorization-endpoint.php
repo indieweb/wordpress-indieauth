@@ -23,39 +23,30 @@ class IndieAuth_Authorization_Endpoint {
 					'args'     => array(
 						'response_type' => array(),
 						'client_id'     => array(
-							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'redirect_uri'  => array(
-							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'me'            => array(
-							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'state'         => array(
-							'required' => true,
-						),
+						'state'         => array(),
 					),
 				),
 				array(
 					'methods'  => WP_REST_Server::CREATABLE,
 					'callback' => array( $this, 'verify' ),
 					'args'     => array(
-						'code'         => array(
-							'required' => true,
-						),
+						'code'         => array(),
 						'client_id'    => array(
-							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'redirect_uri' => array(
-							'required'          => true,
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
@@ -72,6 +63,12 @@ class IndieAuth_Authorization_Endpoint {
 		}
 		if ( 'code' !== $params['response_type'] && 'id' !== $params['response_type'] ) {
 			return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
+		}
+		$required = array( 'redirect_uri', 'client_id', 'state', 'me' );
+		foreach ( $required as $require ) {
+			if ( ! isset( $params[ $require ] ) ) {
+				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
+			}
 		}
 		if ( wp_parse_url( $params['client_id'], PHP_URL_HOST ) !== wp_parse_url( $params['redirect_uri'], PHP_URL_HOST ) ) {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Redirect not on same host as client', 'indieauth' ), 400 );
@@ -119,7 +116,14 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	public function verify( $request ) {
-		$params = wp_array_slice_assoc( $request->get_params(), array( 'client_id', 'redirect_uri' ) );
+		$params   = $request->get_params();
+		$required = array( 'redirect_uri', 'client_id', 'code' );
+		foreach ( $required as $require ) {
+			if ( ! isset( $params[ $require ] ) ) {
+				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
+			}
+		}
+		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
 		if ( ! $token ) {
