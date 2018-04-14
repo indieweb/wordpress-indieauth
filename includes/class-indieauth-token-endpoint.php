@@ -140,7 +140,7 @@ class IndieAuth_Token_Endpoint {
 		$response = IndieAuth_Authenticate::verify_authorization_code(
 			array(
 				'code'         => $params['code'],
-				'redirect_url' => $params['redirect_uri'],
+				'redirect_uri' => $params['redirect_uri'],
 				'client_id'    => $params['client_id'],
 			), $endpoint
 		);
