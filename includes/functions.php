@@ -110,11 +110,6 @@ function get_user_by_identifier( $identifier ) {
 	}
 	// Ensure has trailing slash
 	$identifier = trailingslashit( $identifier );
-	// Check if this is a author post URL
-	$user = url_to_author( $identifier );
-	if ( $user ) {
-		return $user;
-	}
 	// Try to save the expense of a search query if the URL is the site URL
 	if ( home_url( '/' ) === $identifier ) {
 		// Use the Indieweb settings to set the default author
@@ -125,6 +120,11 @@ function get_user_by_identifier( $identifier ) {
 		if ( 1 === count( $users ) ) {
 			return $users[0];
 		}
+	}
+	// Check if this is a author post URL
+	$user = url_to_author( $identifier );
+	if ( $user ) {
+		return $user;
 	}
 	$args       = array(
 		'search'         => $identifier,
