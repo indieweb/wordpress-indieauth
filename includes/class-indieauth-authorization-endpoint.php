@@ -106,9 +106,9 @@ class IndieAuth_Authorization_Endpoint {
 		if ( ! $user_id ) {
 				$token = IndieAuth_Authorization_Endpoint::get_code( $code );
 			if ( isset( $token['user'] ) ) {
-					$user_id = $token['user'];
+				$user_id = $token['user'];
 			} else {
-					return false;
+				return false;
 			}
 		}
 		$id = indieauth_hash_token( $code );

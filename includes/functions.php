@@ -131,7 +131,7 @@ function get_user_by_identifier( $identifier ) {
 		'search_columns' => array( 'user_url' ),
 	);
 	$user_query = new WP_User_Query( $args );
-		// check result
+	// check result
 	if ( ! empty( $user_query->results ) ) {
 		return $user_query->results[0];
 	}
@@ -286,4 +286,3 @@ function get_indieauth_token_endpoint() {
 			return rest_url( '/indieauth/1.0/token' );
 	}
 }
-

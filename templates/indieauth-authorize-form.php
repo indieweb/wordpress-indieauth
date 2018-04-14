@@ -19,7 +19,6 @@ login_header(
 	);
 ?>
 </div>
-<br />
 <div class="scope-info">
 	<?php _e( 'The app is requesting the following <a href="https://indieweb.org/scope">scopes</a>', 'indieauth' ); ?>
 	<ul>
@@ -29,7 +28,6 @@ login_header(
 	}
 	?>
 	</ul>
-	<br>
 </div>
 <p class="submit">
 <?php
