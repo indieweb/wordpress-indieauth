@@ -17,7 +17,6 @@ login_header(
 	);
 ?>
 </div>
-<br />
 <p class="submit">
 <?php
 	// Hook to allow adding to form

@@ -8,6 +8,11 @@
 .login-info p {
 	margin-top: 1em;
 }
+
+#login form p.submit {
+	margin-top: 1em;
+}
+
 .scope-info ul {
 	margin-top: 1em;
 	margin-left: 2em;
@@ -19,6 +24,7 @@
 form input {
 	width: 100%;
 }
+
 </style>
 <?php
 login_footer();
