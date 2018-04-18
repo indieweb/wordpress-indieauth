@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 2.0.0\n"
+"Project-Id-Version: IndieAuth 2.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-04-14 19:42:41+00:00\n"
+"POT-Creation-Date: 2018-04-18 04:30:52+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,7 +19,7 @@ msgid "Username, Email Address, or URL"
 msgstr ""
 
 #: includes/class-indieauth-authenticate.php:75
-#: includes/class-indieauth-authenticate.php:338
+#: includes/class-indieauth-authenticate.php:342
 msgid "Invalid User Profile URL"
 msgstr ""
 
@@ -35,45 +35,49 @@ msgstr ""
 msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:220
+#: includes/class-indieauth-authenticate.php:197
+msgid "Did Not Receive a Valid Authorization Endpoint"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:224
 msgid "The authorization endpoint did not return a JSON response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:230
+#: includes/class-indieauth-authenticate.php:234
 msgid ""
 "There was an error verifying the authorization code, the authorization "
 "server return an expected response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:251
+#: includes/class-indieauth-authenticate.php:255
 msgid "IndieAuth Server did not return the same state parameter"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:272
+#: includes/class-indieauth-authenticate.php:276
 msgid "<strong>ERROR</strong>: The URL field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:276
+#: includes/class-indieauth-authenticate.php:280
 msgid "<strong>ERROR</strong>: The password field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:290
+#: includes/class-indieauth-authenticate.php:294
 msgid "<strong>ERROR</strong>: Invalid URL."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:292
-#: includes/class-indieauth-authenticate.php:313
+#: includes/class-indieauth-authenticate.php:296
+#: includes/class-indieauth-authenticate.php:317
 msgid "Lost your password?"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:309
+#: includes/class-indieauth-authenticate.php:313
 #. translators: %s: url
 msgid ""
 "<strong>ERROR</strong>: The password you entered for the URL %s is "
 "incorrect."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:364
+#: includes/class-indieauth-authenticate.php:368
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 
@@ -167,7 +171,7 @@ msgid "IndieAuth Settings"
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:4
-#: templates/indieauth-authenticate-form.php:31
+#: templates/indieauth-authenticate-form.php:30
 msgid "Authenticate"
 msgstr ""
 
@@ -177,12 +181,12 @@ msgid ""
 "<strong>%2$s</strong>."
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:32
+#: templates/indieauth-authenticate-form.php:31
 #: templates/indieauth-authorize-form.php:44
 msgid "Cancel"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:35
+#: templates/indieauth-authenticate-form.php:34
 msgid "You will be redirected to <code>%1$s</code> after authenticating."
 msgstr ""
 
