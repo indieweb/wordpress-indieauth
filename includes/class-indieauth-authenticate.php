@@ -149,7 +149,7 @@ class IndieAuth_Authenticate {
 	public static function generate_state() {
 		$state = wp_generate_password( 128, false );
 		$value = wp_hash( $state, 'nonce' );
-		setcookie( 'indieauth_state', $value, current_time( 'timestamp' ) + 120, '/', false, true );
+		setcookie( 'indieauth_state', $value, current_time( 'timestamp', 1 ) + 120, '/', false, true );
 		return $state;
 	}
 
@@ -174,7 +174,7 @@ class IndieAuth_Authenticate {
 		$authorization_endpoint = null;
 		if ( isset( $endpoints['authorization_endpoint'] ) ) {
 			$authorization_endpoint = $endpoints['authorization_endpoint'];
-			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp' ) + 120, '/', false, true );
+			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp', 1 ) + 120, '/', false, true );
 		}
 		$state = $this->generate_state();
 		$query = add_query_arg(
@@ -193,6 +193,10 @@ class IndieAuth_Authenticate {
 
 	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_authorization_code( $post_args, $endpoint ) {
+		if ( ! wp_http_validate_url( $endpoint ) ) {
+			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth', 500 ) );
+		}
+
 		$defaults = array(
 			'client_id' => home_url(),
 		);

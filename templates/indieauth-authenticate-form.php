@@ -17,11 +17,10 @@ login_header(
 	);
 ?>
 </div>
-<br />
 <p class="submit">
 <?php
 	// Hook to allow adding to form
-	do_action( 'indieauth_authentication_form', $current_user->user_id, $class_id );
+	do_action( 'indieauth_authentication_form', $current_user->user_id, $client_id );
 ?>
 	<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
 	<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
