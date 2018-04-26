@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.5
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -77,6 +77,9 @@ You can revoke tokens under User->Manage Tokens.
 
 
 == Changelog ==
+
+= 2.0.2 =
+* Make token available as a global variable so the parameters can be accessed
 
 = 2.0.1 =
 * Improve error handling if null endpoint sent through

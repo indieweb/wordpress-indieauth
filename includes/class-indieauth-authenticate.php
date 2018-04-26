@@ -143,6 +143,8 @@ class IndieAuth_Authenticate {
 		$params = json_decode( $body, true );
 		global $indieauth_scopes;
 		$indieauth_scopes = explode( ' ', $params['scope'] );
+		global $indieauth_token;
+		$indieauth_token = $params;
 		return $params['me'];
 	}
 
