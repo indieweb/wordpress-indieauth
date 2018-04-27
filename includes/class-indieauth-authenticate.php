@@ -100,6 +100,10 @@ class IndieAuth_Authenticate {
 		if ( ! $me ) {
 			return $user_id;
 		}
+		if ( is_oauth_error( $me ) ) {
+			$this->error = $me->to_wp_error();
+			return $user_id;
+		}
 		$user = get_user_by_identifier( $me );
 		if ( $user instanceof WP_User ) {
 			return $user->ID;
@@ -116,6 +120,26 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
+		$option = get_option( 'indieauth_config' );
+		if ( 'local' === $option ) {
+			$params = $this->verify_local_access_token( $token );
+		}
+		else { 
+			$params = $this->verify_remote_access_token( $token );
+		}
+		if ( is_oauth_error( $params ) ) {
+			$this->error = $params->to_wp_error();
+			return $params;
+		}
+
+		global $indieauth_scopes;
+		$indieauth_scopes = explode( ' ', $params['scope'] );
+		global $indieauth_token;
+		$indieauth_token = $params;
+		return $params['me'];
+	}
+
+	public function verify_remote_access_token( $token ) {
 		$endpoint = get_indieauth_token_endpoint();
 		$args     = array(
 			'headers' => array(
@@ -130,22 +154,17 @@ class IndieAuth_Authenticate {
 		$code = wp_remote_retrieve_response_code( $response );
 		$body = wp_remote_retrieve_body( $response );
 		if ( 2 !== (int) ( $code / 100 ) ) {
-			$this->error = new WP_Error(
-				'indieauth.invalid_access_token',
-				__( 'Supplied Token is Invalid', 'indieauth' ),
-				array(
-					'status'   => $code,
-					'response' => $body,
-				)
-			);
-			return false;
+			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
-		$params = json_decode( $body, true );
-		global $indieauth_scopes;
-		$indieauth_scopes = explode( ' ', $params['scope'] );
-		global $indieauth_token;
-		$indieauth_token = $params;
-		return $params['me'];
+		return json_decode( $body, true );
+	}
+
+	public function verify_local_access_token( $token ) {
+		$return = get_indieauth_user_token( '_indieauth_token_', $token );
+		if ( ! $return ) {
+			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
+		}
+		return $return;
 	}
 
 	public static function generate_state() {
