@@ -6,6 +6,8 @@
 class IndieAuth_Authenticate {
 
 	public $error = null;
+	public $scopes = null;
+	public $response = null;
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
@@ -18,6 +20,17 @@ class IndieAuth_Authenticate {
 
 		add_action( 'send_headers', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
+
+		add_filter( 'indieauth_scopes', array( $this, 'indieauth_scopes' ), 9 );
+		add_filter( 'indieauth_response', array( $this, 'indieauth_response' ), 9 );
+	}
+
+	public static function indieauth_scopes( $scopes ) {
+		return $scopes ? $scopes : $this->scopes;
+	}
+
+	public static function indieauth_response( $response ) {
+		return $response ? $response : $this->response;
 	}
 
 	public static function http_header() {
@@ -132,10 +145,8 @@ class IndieAuth_Authenticate {
 			return $params;
 		}
 
-		global $indieauth_scopes;
-		$indieauth_scopes = explode( ' ', $params['scope'] );
-		global $indieauth_token;
-		$indieauth_token = $params;
+		$this->scopes = explode( ' ', $params['scope'] );
+		$this->response = $params;
 		return $params['me'];
 	}
 
