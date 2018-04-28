@@ -79,8 +79,8 @@ You can revoke tokens under User->Manage Tokens.
 == Changelog ==
 
 = 2.0.2 =
-* Make token available as a global variable so the parameters can be accessed
 * If using local endpoint verify token locally without making remote call
+* Add filters for scope and response so they can be accessed elsewhere
 
 = 2.0.1 =
 * Improve error handling if null endpoint sent through
