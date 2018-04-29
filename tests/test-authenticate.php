@@ -41,7 +41,8 @@ class AuthenticateTest extends WP_UnitTestCase {
 		return $this->httpreturn( $headers, $response, $body );
 	}
 
-	public function test_verify_access_token() {
+	public function test_verify_remote_access_token() {
+		update_option( 'indieauth_config', 'indieauth' );
 		$authenticate = new IndieAuth_Authenticate();
 		add_filter( 'pre_http_request', array( $this, 'verification_token_response' ) );
 		$me = $authenticate->verify_access_token( 'test' );

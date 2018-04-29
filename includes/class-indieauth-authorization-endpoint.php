@@ -76,11 +76,11 @@ class IndieAuth_Authorization_Endpoint {
 		$url  = wp_login_url( $params['redirect_uri'], true );
 		$args = array(
 			'action'        => 'indieauth',
+			'_wpnonce'      => wp_create_nonce( 'wp_rest' ),
 			'response_type' => $params['response_type'],
 			'client_id'     => $params['client_id'],
-			'state'         => $params['state'],
 			'me'            => $params['me'],
-			'_wpnonce'      => wp_create_nonce( 'wp_rest' ),
+			'state'         => rawurlencode(  $params['state'] ),
 		);
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = rawurlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' );

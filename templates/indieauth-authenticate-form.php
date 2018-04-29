@@ -24,9 +24,9 @@ login_header(
 ?>
 	<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
 	<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
-	<input type="hidden" name="state" value="<?php echo $state; ?>" />
 	<input type="hidden" name="me" value="<?php echo $me; ?>" />
 	<input type="hidden" name="response_type" value="<?php echo $response_type; ?>" />
+	<input type="hidden" name="state" value="<?php echo $state; ?>" />
 	<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php _e( 'Authenticate', 'indieauth' ); ?></button>
 	<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
 </p>
