@@ -73,7 +73,7 @@ By adding Indieauth support, you can log into sites simply by providing your URL
 Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site.
 The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
 
-You can revoke tokens under User->Manage Tokens.
+You can revoke local tokens under User->Manage Tokens.
 
 
 == Changelog ==
@@ -82,7 +82,8 @@ You can revoke tokens under User->Manage Tokens.
 * If using local endpoint verify token locally without making remote call
 * Add filters for scope and response so they can be accessed elsewhere
 * urlencode state as some encode information into state that was being lost
-
+* Switch from failure to warning message for different domains for redirect
+* Hide token endpoint management page if local endpoint not enabled
 
 = 2.0.1 =
 * Improve error handling if null endpoint sent through

@@ -70,9 +70,6 @@ class IndieAuth_Authorization_Endpoint {
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
-		if ( wp_parse_url( $params['client_id'], PHP_URL_HOST ) !== wp_parse_url( $params['redirect_uri'], PHP_URL_HOST ) ) {
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Redirect not on same host as client', 'indieauth' ), 400 );
-		}
 		$url  = wp_login_url( $params['redirect_uri'], true );
 		$args = array(
 			'action'        => 'indieauth',
