@@ -13,6 +13,10 @@
 	margin-top: 1em;
 }
 
+.scope-info {
+	margin-top: 1em;
+}
+
 .scope-info ul {
 	margin-top: 1em;
 	margin-left: 2em;
@@ -23,6 +27,10 @@
 
 form input {
 	width: 100%;
+}
+
+.redirect {
+	margin: 1em;
 }
 
 </style>

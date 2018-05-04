@@ -17,7 +17,13 @@ login_header(
 		$current_user->display_name,
 		$current_user->user_nicename
 	);
-?>
+
+if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
+?>	
+<p class="redirect">
+	<?php _e( '<strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
+</p>
+<?php } ?>
 </div>
 <div class="scope-info">
 	<?php _e( 'The app is requesting the following <a href="https://indieweb.org/scope">scopes</a>', 'indieauth' ); ?>
