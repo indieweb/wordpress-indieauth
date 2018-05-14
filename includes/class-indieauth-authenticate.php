@@ -223,8 +223,33 @@ class IndieAuth_Authenticate {
 		wp_redirect( $query );
 	}
 
-	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_authorization_code( $post_args, $endpoint ) {
+		$option = get_option( 'indieauth_config' );
+		if ( 'local' === $option ) {
+			$params = self::verify_local_authorization_code( $post_args );
+		}
+		else {
+			$params = self::verify_remote_authorization_code( $post_args, $endpoint );
+		}
+		return $params;
+	}
+
+	public static function verify_local_authorization_code( $post_args ) {
+		$return = get_indieauth_user_token( '_indieauth_code_', $post_args['code'] );
+		if ( ! $return ) {
+			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		return $return;
+	}
+
+	// $args must consist of redirect_uri, client_id, and code
+	public static function verify_remote_authorization_code( $post_args, $endpoint ) {
+
+		$option = get_option( 'indieauth_config' );
+		if ( 'local' === $option ) {
+
+		}
+
 		if ( ! wp_http_validate_url( $endpoint ) ) {
 			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth', 500 ) );
 		}
