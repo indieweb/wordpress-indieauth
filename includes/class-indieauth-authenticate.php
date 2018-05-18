@@ -417,13 +417,12 @@ class IndieAuth_Authenticate {
 		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
 			return wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
 		}
-		if ( function_exists( 'getallheaders' ) ) {
-			$headers = getallheaders();
-			// Check for the authorization header case-insensitively
-			foreach ( $headers as $key => $value ) {
-				if ( strtolower( $key ) === 'authorization' ) {
-					return $value;
-				}
+		$headers = getallheaders();
+		// Check for the authorization header case-insensitively
+		foreach ( $headers as $key => $value ) {
+			if ( strtolower( $key ) === 'authorization' ) {
+				return $value;
+			}
 			}
 		}
 		return null;
