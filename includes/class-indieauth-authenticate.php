@@ -225,7 +225,7 @@ class IndieAuth_Authenticate {
 	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_authorization_code( $post_args, $endpoint ) {
 		if ( ! wp_http_validate_url( $endpoint ) ) {
-			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 ) );
+			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 );
 		}
 
 		$defaults = array(
