@@ -23,8 +23,8 @@ class IndieAuth_Plugin {
 		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
 		add_filter( 'pre_user_url', array( 'IndieAuth_Plugin', 'pre_user_url' ) );
 
-		// Compatibility Functions
-		require_once plugin_dir_path( __FILE__ ) . 'includes/compat-functions.php';
+		// Get All Headers
+		require_once plugin_dir_path( __FILE__ ) . 'includes/getallheaders.php';
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
