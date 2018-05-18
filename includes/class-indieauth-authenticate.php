@@ -5,8 +5,8 @@
  */
 class IndieAuth_Authenticate {
 
-	public $error = null;
-	public $scopes = null;
+	public $error    = null;
+	public $scopes   = null;
 	public $response = null;
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
@@ -136,8 +136,7 @@ class IndieAuth_Authenticate {
 		$option = get_option( 'indieauth_config' );
 		if ( 'local' === $option ) {
 			$params = $this->verify_local_access_token( $token );
-		}
-		else { 
+		} else {
 			$params = $this->verify_remote_access_token( $token );
 		}
 		if ( is_oauth_error( $params ) ) {
@@ -145,7 +144,7 @@ class IndieAuth_Authenticate {
 			return $params;
 		}
 
-		$this->scopes = explode( ' ', $params['scope'] );
+		$this->scopes   = explode( ' ', $params['scope'] );
 		$this->response = $params;
 		return $params['me'];
 	}
@@ -226,7 +225,7 @@ class IndieAuth_Authenticate {
 	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_authorization_code( $post_args, $endpoint ) {
 		if ( ! wp_http_validate_url( $endpoint ) ) {
-			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth', 500 ) );
+			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 ) );
 		}
 
 		$defaults = array(
@@ -367,6 +366,10 @@ class IndieAuth_Authenticate {
 		}
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		$redirect_to = rawurldecode( $redirect_to );
+		if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
+			return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
+		}
+
 		if ( ! empty( $url ) && array_key_exists( 'indieauth_identifier', $_POST ) ) {
 			$me = esc_url_raw( $url );
 			// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
@@ -422,7 +425,6 @@ class IndieAuth_Authenticate {
 		foreach ( $headers as $key => $value ) {
 			if ( strtolower( $key ) === 'authorization' ) {
 				return $value;
-			}
 			}
 		}
 		return null;
