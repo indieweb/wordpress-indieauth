@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 2.0.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-05-04 04:25:35+00:00\n"
+"POT-Creation-Date: 2018-05-18 04:43:46+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,7 +19,7 @@ msgid "Username, Email Address, or URL"
 msgstr ""
 
 #: includes/class-indieauth-authenticate.php:88
-#: includes/class-indieauth-authenticate.php:374
+#: includes/class-indieauth-authenticate.php:377
 msgid "Invalid User Profile URL"
 msgstr ""
 
@@ -27,59 +27,63 @@ msgstr ""
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:168
-#: includes/class-indieauth-authenticate.php:176
+#: includes/class-indieauth-authenticate.php:167
+#: includes/class-indieauth-authenticate.php:175
 #: includes/class-indieauth-token-endpoint.php:81
 msgid "Invalid access token"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:200
+#: includes/class-indieauth-authenticate.php:199
 msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:229
+#: includes/class-indieauth-authenticate.php:228
 msgid "Did Not Receive a Valid Authorization Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:256
+#: includes/class-indieauth-authenticate.php:255
 msgid "The authorization endpoint did not return a JSON response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:266
+#: includes/class-indieauth-authenticate.php:265
 msgid ""
 "There was an error verifying the authorization code, the authorization "
 "server return an expected response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:287
+#: includes/class-indieauth-authenticate.php:286
 msgid "IndieAuth Server did not return the same state parameter"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:308
+#: includes/class-indieauth-authenticate.php:307
 msgid "<strong>ERROR</strong>: The URL field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:312
+#: includes/class-indieauth-authenticate.php:311
 msgid "<strong>ERROR</strong>: The password field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:326
+#: includes/class-indieauth-authenticate.php:325
 msgid "<strong>ERROR</strong>: Invalid URL."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:328
-#: includes/class-indieauth-authenticate.php:349
+#: includes/class-indieauth-authenticate.php:327
+#: includes/class-indieauth-authenticate.php:348
 msgid "Lost your password?"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:345
+#: includes/class-indieauth-authenticate.php:344
 #. translators: %s: url
 msgid ""
 "<strong>ERROR</strong>: The password you entered for the URL %s is "
 "incorrect."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:400
+#: includes/class-indieauth-authenticate.php:370
+msgid "Cannot Find IndieAuth Endpoint Cookie"
+msgstr ""
+
+#: includes/class-indieauth-authenticate.php:403
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 

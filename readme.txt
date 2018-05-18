@@ -78,6 +78,11 @@ You can revoke local tokens under User->Manage Tokens.
 
 == Changelog ==
 
+= 2.0.3 =
+* Add improved getallheaders polyfill
+* Check for missing cookie
+* Check for alternate authorization location
+
 = 2.0.2 =
 * If using local endpoint verify token locally without making remote call
 * Add filters for scope and response so they can be accessed elsewhere
