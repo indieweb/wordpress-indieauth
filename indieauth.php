@@ -12,7 +12,7 @@
  * Domain Path: /languages
  */
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ) );
+add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 9 );
 
 class IndieAuth_Plugin {
 
