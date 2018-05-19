@@ -9,6 +9,9 @@ if ( ! $other ) {
 }
 
 ?>
+
+	<p><?php _e( 'Use the endpoint built into the plugin, IndieAuth.com, or any custom IndieAuth endpoint to support logins into your site. If you change your endpoint, you will have to reauthorize any sites that you may have previously granted access', 'indieauth' ); ?></p>
+
 <table class="form-table">
 	<tbody>
 		<tr>
@@ -19,7 +22,7 @@ if ( ! $other ) {
 				<label for="indieauth_show_login_form">
 					<input type="checkbox" name="indieauth_show_login_form" id="indieauth_show_login_form" value="1" <?php
 						echo checked( true, get_option( 'indieauth_show_login_form' ) );  ?> />
-					<?php _e( 'Add a link to the login form to authenticate using an IndieAuth endpoint.', 'indieauth' ); ?>
+					<?php _e( 'Add a link to the login form to authenticate using an IndieAuth endpoint. This is not necessary if you choose the endpoint built into your site.', 'indieauth' ); ?>
 				</label>
 			</td>
 		</tr>
