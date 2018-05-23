@@ -113,7 +113,7 @@ function get_user_by_identifier( $identifier ) {
 	// Try to save the expense of a search query if the URL is the site URL
 	if ( home_url( '/' ) === $identifier ) {
 		// Use the Indieweb settings to set the default author
-		if ( class_exists( 'Indieweb_Plugin' ) && (get_option( 'iw_single_author' ) || !is_multi_author() )) {
+		if ( class_exists( 'Indieweb_Plugin' ) && ( get_option( 'iw_single_author' ) || ! is_multi_author() ) ) {
 			return get_user_by( 'id', get_option( 'iw_default_author' ) );
 		}
 		$users = get_users( array( 'role__not_in' => array( 'subscriber' ) ) );
