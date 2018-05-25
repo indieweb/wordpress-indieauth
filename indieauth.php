@@ -12,16 +12,14 @@
  * Domain Path: /languages
  */
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 9 );
-
 class IndieAuth_Plugin {
 
-	public static function plugins_loaded() {
+	public function __construct() {
 		// initialize admin settings
-		add_action( 'admin_init', array( 'IndieAuth_Plugin', 'admin_init' ) );
-		add_action( 'init', array( 'IndieAuth_Plugin', 'init' ) );
-		add_action( 'login_form', array( 'IndieAuth_Plugin', 'login_form' ) );
-		add_filter( 'pre_user_url', array( 'IndieAuth_Plugin', 'pre_user_url' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'init', array( $this, 'settings' ) );
+		add_action( 'login_form', array( $this, 'login_form' ) );
+		add_filter( 'pre_user_url', array( $this, 'pre_user_url' ) );
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
@@ -55,7 +53,7 @@ class IndieAuth_Plugin {
 		}
 	}
 
-	public static function init() {
+	public function settings() {
 		register_setting(
 			'general', 'indieauth_show_login_form', array(
 				'type'         => 'boolean',
@@ -94,14 +92,14 @@ class IndieAuth_Plugin {
 		);
 	}
 
-	public static function admin_init() {
+	public function admin_init() {
 		add_settings_section( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( 'IndieAuth_Plugin', 'general_settings' ), 'general', 'default' );
 	}
 
 		/**
 		 * render the login form
 		 */
-	public static function login_form() {
+	public function login_form() {
 		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-domain-login.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
 			load_template( $template );
@@ -111,11 +109,13 @@ class IndieAuth_Plugin {
 	/**
 	 * Add Webmention options to the WordPress general settings page.
 	 */
-	public static function general_settings() {
+	public function general_settings() {
 		load_template( plugin_dir_path( __FILE__ ) . 'templates/indieauth-general-settings.php' );
 	}
 
-	public static function pre_user_url( $user_url ) {
+	public function pre_user_url( $user_url ) {
 		return trailingslashit( $user_url );
 	}
 }
+
+new IndieAuth_Plugin();
