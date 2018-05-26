@@ -11,6 +11,7 @@ class IndieAuth_Authenticate {
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
+		add_filter( 'rest_index', array( $this, 'register_index' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
 		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
@@ -23,6 +24,18 @@ class IndieAuth_Authenticate {
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
+	}
+
+	public static function register_index( WP_REST_Response $response ) {
+		$data = $response->get_data();
+		$data['authentication']['indieauth'] = array(
+			'endpoints'   => array( 
+				'authorization' => get_indieauth_authorization_endpoint(),
+				'token'         => get_indieauth_token_endpoint(),
+			)
+		);
+		$response->set_data( $data );
+		return $response;
 	}
 
 	public static function get_indieauth_scopes( $scopes ) {

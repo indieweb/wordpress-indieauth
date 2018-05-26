@@ -270,6 +270,10 @@ function get_indieauth_authorization_endpoint() {
 			$return = get_option( 'indieauth_authorization_endpoint', rest_url( '/indieauth/1.0/auth' ) );
 			return empty( $return ) ? rest_url( '/indieauth/1.0/auth' ) : $return;
 		default:
+			global $wp_rewrite;
+			if ( ! $wp_rewrite ) {
+				$wp_rewrite = new WP_Rewrite();
+			}
 			return rest_url( '/indieauth/1.0/auth' );
 	}
 }
@@ -283,6 +287,10 @@ function get_indieauth_token_endpoint() {
 			$return = get_option( 'indieauth_token_endpoint', rest_url( '/indieauth/1.0/token' ) );
 			return empty( $return ) ? rest_url( '/indieauth/1.0/token' ) : $return;
 		default:
+			global $wp_rewrite;
+			if ( ! $wp_rewrite ) {
+				$wp_rewrite = new WP_Rewrite();
+			}
 			return rest_url( '/indieauth/1.0/token' );
 	}
 }
