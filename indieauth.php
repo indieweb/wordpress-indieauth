@@ -30,11 +30,12 @@ class IndieAuth_Plugin {
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
 
+		// Token Endpoint
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
+
 		// Authorization Endpoint
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorization-endpoint.php';
 
-		// Token Endpoint
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
 
 		// Token Endpoint UI
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-ui.php';
