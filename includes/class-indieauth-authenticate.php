@@ -112,6 +112,13 @@ class IndieAuth_Authenticate {
 		exit;
 	}
 
+	public function is_rest() {
+		return ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+	}
+
+	public function is_micropub() {
+		return ( isset( $_REQUEST['micropub'] )  );
+	}
 
 	public function determine_current_user( $user_id ) {
 		// If the Indieauth endpoint is being requested do not use this authentication method
@@ -120,6 +127,16 @@ class IndieAuth_Authenticate {
 		}
 		$token = $this->get_provided_token();
 		if ( ! $token ) {
+			if ( $this->is_rest() || $this->is_micropub() ) {
+				$this->error = new WP_Error(
+					'missing_bearer_token',
+					__( 'Missing OAuth Bearer Token', 'indieauth' ),
+					array(
+						'status' => '401',
+						'server' => $_SERVER
+					)
+				);
+			}
 			return $user_id;
 		}
 		$me = $this->verify_access_token( $token );
