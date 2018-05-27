@@ -9,7 +9,7 @@ class IndieAuth_Authenticate {
 	public $scopes   = null;
 	public $response = null;
 	public function __construct() {
-		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
+		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
@@ -27,12 +27,12 @@ class IndieAuth_Authenticate {
 	}
 
 	public static function register_index( WP_REST_Response $response ) {
-		$data = $response->get_data();
+		$data                                = $response->get_data();
 		$data['authentication']['indieauth'] = array(
-			'endpoints'   => array( 
+			'endpoints' => array(
 				'authorization' => get_indieauth_authorization_endpoint(),
 				'token'         => get_indieauth_token_endpoint(),
-			)
+			),
 		);
 		$response->set_data( $data );
 		return $response;
@@ -117,10 +117,14 @@ class IndieAuth_Authenticate {
 	}
 
 	public function is_micropub() {
-		return ( isset( $_REQUEST['micropub'] )  );
+		return ( isset( $_REQUEST['micropub'] ) );
 	}
 
 	public function determine_current_user( $user_id ) {
+		// Do not try to find a user if one has already been found
+		if ( ! empty( $user_id ) ) {
+			return $user_id;
+		}
 		// If the Indieauth endpoint is being requested do not use this authentication method
 		if ( strpos( $_SERVER['REQUEST_URI'], '/indieauth/1.0' ) ) {
 			return $user_id;
@@ -133,7 +137,7 @@ class IndieAuth_Authenticate {
 					__( 'Missing OAuth Bearer Token', 'indieauth' ),
 					array(
 						'status' => '401',
-						'server' => $_SERVER
+						'server' => $_SERVER,
 					)
 				);
 			}
@@ -256,8 +260,7 @@ class IndieAuth_Authenticate {
 		$option = get_option( 'indieauth_config' );
 		if ( 'local' === $option ) {
 			$params = self::verify_local_authorization_code( $post_args );
-		}
-		else {
+		} else {
 			$params = self::verify_remote_authorization_code( $post_args, $endpoint );
 		}
 		return $params;
