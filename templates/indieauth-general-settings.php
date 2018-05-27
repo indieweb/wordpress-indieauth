@@ -30,7 +30,7 @@ if ( ! $other ) {
 			<th>
 				<label for="indieauth_config_local">
 					<input type="radio" name="indieauth_config" id="indieauth_config_local" value="local" <?php checked( $config, 'local' );  ?> />
-					<?php _e( 'Local Endpoint', 'indieauth' ); ?>
+					<?php _e( 'Built-In Endpoint', 'indieauth' ); ?>
 				</label>
 			</th>
 			<td>
