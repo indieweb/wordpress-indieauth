@@ -526,10 +526,10 @@ class IndieAuth_Authenticate {
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_request() {
-		if ( empty( $_GET['access_token'] ) ) {
+		if ( empty( $_REQUEST['access_token'] ) ) {
 			return null;
 		}
-		$token = $_GET['access_token'];
+		$token = $_REQUEST['access_token'];
 		if ( is_string( $token ) ) {
 			return $token;
 		}
