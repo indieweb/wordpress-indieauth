@@ -93,7 +93,7 @@ class IndieAuth_Plugin {
 	}
 
 	public function admin_init() {
-		add_settings_section( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( 'IndieAuth_Plugin', 'general_settings' ), 'general', 'default' );
+		add_settings_section( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
 	}
 
 		/**
