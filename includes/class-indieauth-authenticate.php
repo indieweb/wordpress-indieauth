@@ -167,7 +167,7 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
-		$option = get_option( 'indieauth_config' );
+		$option = get_option( 'indieauth_config', 'local' );
 		if ( 'local' === $option ) {
 			$params = $this->verify_local_access_token( $token );
 		} else {
