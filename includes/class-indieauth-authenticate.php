@@ -419,9 +419,6 @@ class IndieAuth_Authenticate {
 		}
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		$redirect_to = rawurldecode( $redirect_to );
-		if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
-			return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
-		}
 
 		if ( ! empty( $url ) && array_key_exists( 'indieauth_identifier', $_POST ) ) {
 			$me = esc_url_raw( $url );
@@ -434,6 +431,9 @@ class IndieAuth_Authenticate {
 				return $return;
 			}
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
+			if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
+				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
+			}
 			$state = $this->verify_state( $_REQUEST['state'] );
 			if ( is_wp_error( $state ) ) {
 				return $state;
