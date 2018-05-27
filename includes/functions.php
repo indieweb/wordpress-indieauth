@@ -262,7 +262,7 @@ function set_indieauth_user_token( $id, $key, $token, $token_data ) {
 }
 
 function get_indieauth_authorization_endpoint() {
-	$option = get_option( 'indieauth_config' );
+	$option = get_option( 'indieauth_config', 'local' );
 	switch ( $option ) {
 		case 'indieauth':
 			return 'https://indieauth.com/auth';
@@ -279,7 +279,7 @@ function get_indieauth_authorization_endpoint() {
 }
 
 function get_indieauth_token_endpoint() {
-	$option = get_option( 'indieauth_config' );
+	$option = get_option( 'indieauth_config', 'local' );
 	switch ( $option ) {
 		case 'indieauth':
 			return 'https://tokens.indieauth.com/token';
