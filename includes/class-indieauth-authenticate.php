@@ -496,7 +496,10 @@ class IndieAuth_Authenticate {
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
 		if ( $header ) {
-			return $this->get_token_from_bearer_header( $header );
+			$token = $this->get_token_from_bearer_header( $header );
+			if ( $token ) {
+				return $token;
+			}
 		}
 		$token = $this->get_token_from_request();
 		if ( $token ) {
