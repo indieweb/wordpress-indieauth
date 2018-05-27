@@ -530,3 +530,6 @@ class IndieAuth_Authenticate {
 		return null;
 	}
 }
+
+new IndieAuth_Authenticate();
+

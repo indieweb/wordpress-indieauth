@@ -213,3 +213,5 @@ class IndieAuth_Authorization_Endpoint {
 		wp_redirect( $url );
 	}
 }
+
+new IndieAuth_Authorization_Endpoint();

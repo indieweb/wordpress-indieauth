@@ -42,15 +42,6 @@ class IndieAuth_Plugin {
 		if ( WP_DEBUG ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
 		}
-
-		new IndieAuth_Authenticate();
-		new IndieAuth_Authorization_Endpoint();
-		new IndieAuth_Token_Endpoint();
-
-		// Only show token ui if local endpoint is enabled
-		if ( 'local' === get_option( 'indieauth_config', 'local' ) ) {
-			new IndieAuth_Token_UI();
-		}
 	}
 
 	public function settings() {

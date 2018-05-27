@@ -170,3 +170,5 @@ class IndieAuth_Token_Endpoint {
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
 }
+
+new IndieAuth_Token_Endpoint();
