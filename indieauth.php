@@ -48,7 +48,7 @@ class IndieAuth_Plugin {
 		new IndieAuth_Token_Endpoint();
 
 		// Only show token ui if local endpoint is enabled
-		if ( 'local' === get_option( 'indieauth_config' ) ) {
+		if ( 'local' === get_option( 'indieauth_config', 'local' ) ) {
 			new IndieAuth_Token_UI();
 		}
 	}
