@@ -12,13 +12,10 @@ IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in 
 
 ## Description ##
 
-The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication
-mechanism for WordPress and its REST API, as well as an identity mechanism for other sites.
+The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, 
+as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url.
 
-Alternatively, you can use a third-party IndieAuth authorization endpoint, which will allow you to log
-into your own site using an IndieAuth endpoint.
-
-It uses the URL from the profile page to identify the blog user or your author url.
+You can also install this plugin to enable web sign-in for your site using your domain. 
 
 ## Installation ##
 
@@ -44,12 +41,12 @@ much of the process so completely separate implementations and services can be u
 
 IndieAuth was developed as part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity.
 
-### How is this different from OpenID? ###
+### How is Web Sign In different from OpenID? ###
 
-The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name.
+The goals of OpenID and Web Sign In are similar. Both encourage you to sign in to a website using your own domain name.
 However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol.
 
-### How is this different from OAuth? ###
+### How is IndieAuth different from OAuth? ###
 
 IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of
 a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources..
