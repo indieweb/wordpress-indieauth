@@ -258,7 +258,7 @@ class IndieAuth_Authenticate {
 
 	public static function verify_authorization_code( $post_args, $endpoint ) {
 		$option = get_option( 'indieauth_config' );
-		if ( 'local' === $option ) {
+		if ( 'local' === $option && wp_parse_url( $endpoint, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) {
 			$params = self::verify_local_authorization_code( $post_args );
 		} else {
 			$params = self::verify_remote_authorization_code( $post_args, $endpoint );
