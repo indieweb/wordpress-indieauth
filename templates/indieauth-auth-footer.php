@@ -25,6 +25,10 @@
 	margin-top: 1em;
 }
 
+.learn {
+	margin-top: 5em;
+}
+
 form input {
 	width: 100%;
 }
