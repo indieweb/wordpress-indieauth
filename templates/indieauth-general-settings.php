@@ -7,7 +7,6 @@ if ( ! $other ) {
 	$authorization = '';
 	$token = '';
 }
-
 ?>
 
 	<p><?php _e( 'Use the endpoint built into the plugin, IndieAuth.com, or any custom IndieAuth endpoint to support logins into your site. If you change your endpoint, you will have to reauthorize any sites that you may have previously granted access', 'indieauth' ); ?></p>

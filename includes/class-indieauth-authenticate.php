@@ -13,7 +13,7 @@ class IndieAuth_Authenticate {
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
-		add_action( 'login_form_indielogin', array( $this, 'login_form_indielogin' ) );
+		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
 
 		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
 		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
@@ -72,7 +72,7 @@ class IndieAuth_Authenticate {
 		return $translated_text;
 	}
 
-	public function login_form_indielogin() {
+	public function login_form_websignin() {
 		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
