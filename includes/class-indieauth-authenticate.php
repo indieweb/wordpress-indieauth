@@ -167,12 +167,8 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
-		$option = get_option( 'indieauth_config', 'local' );
-		if ( 'local' === $option ) {
-			$params = $this->verify_local_access_token( $token );
-		} else {
-			$params = $this->verify_remote_access_token( $token );
-		}
+		$params = $this->verify_remote_access_token( $token );
+
 		if ( is_oauth_error( $params ) ) {
 			$this->error = $params->to_wp_error();
 			return $params;
@@ -257,12 +253,8 @@ class IndieAuth_Authenticate {
 	}
 
 	public static function verify_authorization_code( $post_args, $endpoint ) {
-		$option = get_option( 'indieauth_config' );
-		if ( 'local' === $option && wp_parse_url( $endpoint, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) {
-			$params = self::verify_local_authorization_code( $post_args );
-		} else {
-			$params = self::verify_remote_authorization_code( $post_args, $endpoint );
-		}
+		$params = self::verify_remote_authorization_code( $post_args, $endpoint );
+
 		return $params;
 	}
 
@@ -276,7 +268,6 @@ class IndieAuth_Authenticate {
 
 	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_remote_authorization_code( $post_args, $endpoint ) {
-
 		if ( ! wp_http_validate_url( $endpoint ) ) {
 			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 );
 		}
