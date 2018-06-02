@@ -9,8 +9,9 @@ class IndieAuth_Authenticate {
 	public $scopes   = null;
 	public $response = null;
 	public function __construct() {
-		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 11 );
+		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
+		add_filter( 'rest_index', array( $this, 'register_index' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
 		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
@@ -23,6 +24,18 @@ class IndieAuth_Authenticate {
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
+	}
+
+	public static function register_index( WP_REST_Response $response ) {
+		$data                                = $response->get_data();
+		$data['authentication']['indieauth'] = array(
+			'endpoints' => array(
+				'authorization' => get_indieauth_authorization_endpoint(),
+				'token'         => get_indieauth_token_endpoint(),
+			),
+		);
+		$response->set_data( $data );
+		return $response;
 	}
 
 	public static function get_indieauth_scopes( $scopes ) {
@@ -99,14 +112,35 @@ class IndieAuth_Authenticate {
 		exit;
 	}
 
+	public function is_rest() {
+		return ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+	}
+
+	public function is_micropub() {
+		return ( isset( $_REQUEST['micropub'] ) );
+	}
 
 	public function determine_current_user( $user_id ) {
+		// Do not try to find a user if one has already been found
+		if ( ! empty( $user_id ) ) {
+			return $user_id;
+		}
 		// If the Indieauth endpoint is being requested do not use this authentication method
 		if ( strpos( $_SERVER['REQUEST_URI'], '/indieauth/1.0' ) ) {
 			return $user_id;
 		}
 		$token = $this->get_provided_token();
 		if ( ! $token ) {
+			if ( $this->is_rest() || $this->is_micropub() ) {
+				$this->error = new WP_Error(
+					'missing_bearer_token',
+					__( 'Missing OAuth Bearer Token', 'indieauth' ),
+					array(
+						'status' => '401',
+						'server' => $_SERVER,
+					)
+				);
+			}
 			return $user_id;
 		}
 		$me = $this->verify_access_token( $token );
@@ -133,12 +167,8 @@ class IndieAuth_Authenticate {
 	}
 
 	public function verify_access_token( $token ) {
-		$option = get_option( 'indieauth_config' );
-		if ( 'local' === $option ) {
-			$params = $this->verify_local_access_token( $token );
-		} else {
-			$params = $this->verify_remote_access_token( $token );
-		}
+		$params = $this->verify_remote_access_token( $token );
+
 		if ( is_oauth_error( $params ) ) {
 			$this->error = $params->to_wp_error();
 			return $params;
@@ -223,13 +253,8 @@ class IndieAuth_Authenticate {
 	}
 
 	public static function verify_authorization_code( $post_args, $endpoint ) {
-		$option = get_option( 'indieauth_config' );
-		if ( 'local' === $option ) {
-			$params = self::verify_local_authorization_code( $post_args );
-		}
-		else {
-			$params = self::verify_remote_authorization_code( $post_args, $endpoint );
-		}
+		$params = self::verify_remote_authorization_code( $post_args, $endpoint );
+
 		return $params;
 	}
 
@@ -243,7 +268,6 @@ class IndieAuth_Authenticate {
 
 	// $args must consist of redirect_uri, client_id, and code
 	public static function verify_remote_authorization_code( $post_args, $endpoint ) {
-
 		if ( ! wp_http_validate_url( $endpoint ) ) {
 			return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 );
 		}
@@ -386,9 +410,6 @@ class IndieAuth_Authenticate {
 		}
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		$redirect_to = rawurldecode( $redirect_to );
-		if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
-			return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
-		}
 
 		if ( ! empty( $url ) && array_key_exists( 'indieauth_identifier', $_POST ) ) {
 			$me = esc_url_raw( $url );
@@ -401,6 +422,9 @@ class IndieAuth_Authenticate {
 				return $return;
 			}
 		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
+			if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
+				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
+			}
 			$state = $this->verify_state( $_REQUEST['state'] );
 			if ( is_wp_error( $state ) ) {
 				return $state;
@@ -463,7 +487,10 @@ class IndieAuth_Authenticate {
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
 		if ( $header ) {
-			return $this->get_token_from_bearer_header( $header );
+			$token = $this->get_token_from_bearer_header( $header );
+			if ( $token ) {
+				return $token;
+			}
 		}
 		$token = $this->get_token_from_request();
 		if ( $token ) {
@@ -490,13 +517,16 @@ class IndieAuth_Authenticate {
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_request() {
-		if ( empty( $_GET['access_token'] ) ) {
+		if ( empty( $_REQUEST['access_token'] ) ) {
 			return null;
 		}
-		$token = $_GET['access_token'];
+		$token = $_REQUEST['access_token'];
 		if ( is_string( $token ) ) {
 			return $token;
 		}
 		return null;
 	}
 }
+
+new IndieAuth_Authenticate();
+

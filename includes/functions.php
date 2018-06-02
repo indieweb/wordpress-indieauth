@@ -261,8 +261,18 @@ function set_indieauth_user_token( $id, $key, $token, $token_data ) {
 	return add_user_meta( $id, $key . $token, $token_data );
 }
 
+function indieauth_rest_url( $path = '' ) {
+	// rest_url is being called too early for wp_rewrite to be set
+	// This fallback checks and returns the non rewritten version
+	global $wp_rewrite;
+	if ( ! $wp_rewrite ) {
+		return home_url( 'index.php?rest_route=' . $path );
+	}
+	return rest_url( $path );
+}
+
 function get_indieauth_authorization_endpoint() {
-	$option = get_option( 'indieauth_config' );
+	$option = get_option( 'indieauth_config', 'local' );
 	switch ( $option ) {
 		case 'indieauth':
 			return 'https://indieauth.com/auth';
@@ -270,12 +280,12 @@ function get_indieauth_authorization_endpoint() {
 			$return = get_option( 'indieauth_authorization_endpoint', rest_url( '/indieauth/1.0/auth' ) );
 			return empty( $return ) ? rest_url( '/indieauth/1.0/auth' ) : $return;
 		default:
-			return rest_url( '/indieauth/1.0/auth' );
+			return indieauth_rest_url( '/indieauth/1.0/auth' );
 	}
 }
 
 function get_indieauth_token_endpoint() {
-	$option = get_option( 'indieauth_config' );
+	$option = get_option( 'indieauth_config', 'local' );
 	switch ( $option ) {
 		case 'indieauth':
 			return 'https://tokens.indieauth.com/token';
@@ -283,7 +293,7 @@ function get_indieauth_token_endpoint() {
 			$return = get_option( 'indieauth_token_endpoint', rest_url( '/indieauth/1.0/token' ) );
 			return empty( $return ) ? rest_url( '/indieauth/1.0/token' ) : $return;
 		default:
-			return rest_url( '/indieauth/1.0/token' );
+			return indieauth_rest_url( '/indieauth/1.0/token' );
 	}
 }
 

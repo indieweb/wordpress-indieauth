@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.6
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -74,6 +74,11 @@ You can revoke local tokens under User->Manage Tokens.
 
 
 == Changelog ==
+
+= 2.0.4 =
+* Refactor to change load order
+* Textual fix
+* Add defaults when core functions not yet enabled
 
 = 2.0.3 =
 * Add improved getallheaders polyfill

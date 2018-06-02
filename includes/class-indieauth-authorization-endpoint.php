@@ -77,7 +77,7 @@ class IndieAuth_Authorization_Endpoint {
 			'response_type' => $params['response_type'],
 			'client_id'     => $params['client_id'],
 			'me'            => $params['me'],
-			'state'         => rawurlencode(  $params['state'] ),
+			'state'         => rawurlencode( $params['state'] ),
 		);
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = rawurlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' );
@@ -136,10 +136,9 @@ class IndieAuth_Authorization_Endpoint {
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code );
 			// Return the user profile URL and scope
-			if ( ! empty ( $user->user_url ) ) {
+			if ( ! empty( $user->user_url ) ) {
 				$return = array( 'me' => $user->user_url );
-			}
-			else {
+			} else {
 				$return = array( 'me' => get_author_posts_url( $user->ID ) );
 			}
 			if ( isset( $token['scope'] ) ) {
@@ -213,3 +212,5 @@ class IndieAuth_Authorization_Endpoint {
 		wp_redirect( $url );
 	}
 }
+
+new IndieAuth_Authorization_Endpoint();

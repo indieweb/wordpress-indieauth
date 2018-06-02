@@ -21,8 +21,8 @@ add_filter( 'http_request_args', 'indieauth_allow_localhost', 10, 2 );
  */
 function log_rest_api_errors( $result, $server, $request ) {
 	$request_route = $request->get_route();
-	$result_route = $result->get_matched_route();
-	$routes = array( 'indieauth/1.0/auth', '/indieauth/1.0/token' );
+	$result_route  = $result->get_matched_route();
+	$routes        = array( 'indieauth/1.0/auth', '/indieauth/1.0/token' );
 	if ( in_array( $request_route, $routes ) || in_array( $result_route, $routes ) ) {
 		return $result;
 	}

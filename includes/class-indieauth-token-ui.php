@@ -12,8 +12,10 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function __construct() {
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
+		if ( 'local' === get_option( 'indieauth_config', 'local' ) ) {
+			add_action( 'admin_init', array( $this, 'admin_init' ) );
+			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
+		}
 	}
 
 	/**
@@ -97,3 +99,6 @@ class IndieAuth_Token_UI {
 		return $tokens;
 	}
 } // End Class
+
+new IndieAuth_Token_UI();
+
