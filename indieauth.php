@@ -15,9 +15,6 @@
 class IndieAuth_Plugin {
 
 	public function __construct() {
-		// initialize admin settings
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'init', array( $this, 'settings' ) );
 		add_action( 'login_form', array( $this, 'login_form' ) );
 		add_filter( 'pre_user_url', array( $this, 'pre_user_url' ) );
 
@@ -36,73 +33,25 @@ class IndieAuth_Plugin {
 		// Authorization Endpoint
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorization-endpoint.php';
 
-
 		// Token Endpoint UI
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-ui.php';
+
+		// Token Endpoint UI
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-admin.php';
 
 		if ( WP_DEBUG ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
 		}
 	}
 
-	public function settings() {
-		register_setting(
-			'general', 'indieauth_show_login_form', array(
-				'type'         => 'boolean',
-				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 0,
-			)
-		);
-		register_setting(
-			'general', 'indieauth_config', array(
-				'type'         => 'string',
-				'description'  => __( 'Indieauth Configuration Setting', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 'local',
-			)
-		);
-
-		register_setting(
-			'general', 'indieauth_authorization_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_authorization_endpoint(),
-			)
-		);
-
-		register_setting(
-			'general', 'indieauth_token_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_token_endpoint(),
-			)
-		);
-	}
-
-	public function admin_init() {
-		add_settings_section( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
-	}
-
-		/**
-		 * render the login form
-		 */
+	/**
+	 * render the login form
+	 */
 	public function login_form() {
 		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-domain-login.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
 			load_template( $template );
 		}
-	}
-
-	/**
-	 * Add Webmention options to the WordPress general settings page.
-	 */
-	public function general_settings() {
-		load_template( plugin_dir_path( __FILE__ ) . 'templates/indieauth-general-settings.php' );
 	}
 
 	public function pre_user_url( $user_url ) {
