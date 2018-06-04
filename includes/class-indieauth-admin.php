@@ -1,6 +1,6 @@
 <?php
 /**
- * Webmention Admin Class
+ * IndieAuth Admin Class
  *
  * @author Matthias Pfefferle
  */
@@ -15,7 +15,7 @@ class IndieAuth_Admin {
 
 	public function settings() {
 		register_setting(
-			'general', 'indieauth_show_login_form', array(
+			'indieauth', 'indieauth_show_login_form', array(
 				'type'         => 'boolean',
 				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
 				'show_in_rest' => true,
@@ -23,7 +23,7 @@ class IndieAuth_Admin {
 			)
 		);
 		register_setting(
-			'general', 'indieauth_config', array(
+			'indieauth', 'indieauth_config', array(
 				'type'         => 'string',
 				'description'  => __( 'Indieauth Configuration Setting', 'indieauth' ),
 				'show_in_rest' => true,
@@ -32,7 +32,7 @@ class IndieAuth_Admin {
 		);
 
 		register_setting(
-			'general', 'indieauth_authorization_endpoint', array(
+			'indieauth', 'indieauth_authorization_endpoint', array(
 				'type'              => 'string',
 				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
@@ -42,7 +42,7 @@ class IndieAuth_Admin {
 		);
 
 		register_setting(
-			'general', 'indieauth_token_endpoint', array(
+			'indieauth', 'indieauth_token_endpoint', array(
 				'type'              => 'string',
 				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
 				'show_in_rest'      => true,
@@ -57,7 +57,7 @@ class IndieAuth_Admin {
 	}
 
 	/**
-	 * Add Webmention options to the WordPress general settings page.
+	 * Add IndieAuth options to the WordPress general settings page.
 	 */
 	public function general_settings() {
 		if ( class_exists( 'Indieweb_Plugin' ) ) {
