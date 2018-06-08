@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.6
-Stable tag: 2.0.4
+Stable tag: 2.1.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -12,10 +12,10 @@ IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in 
 
 == Description ==
 
-The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, 
+The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API,
 as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url.
 
-You can also install this plugin to enable web sign-in for your site using your domain. 
+You can also install this plugin to enable web sign-in for your site using your domain.
 
 == Installation ==
 
@@ -75,17 +75,21 @@ You can revoke local tokens under User->Manage Tokens.
 
 == Changelog ==
 
-= 2.0.4 =
+= 2.1.0 =
+
 * Refactor to change load order
 * Textual fix
 * Add defaults when core functions not yet enabled
+* Rework of the admin-interface
 
 = 2.0.3 =
+
 * Add improved getallheaders polyfill
 * Check for missing cookie
 * Check for alternate authorization location
 
 = 2.0.2 =
+
 * If using local endpoint verify token locally without making remote call
 * Add filters for scope and response so they can be accessed elsewhere
 * urlencode state as some encode information into state that was being lost
@@ -93,11 +97,13 @@ You can revoke local tokens under User->Manage Tokens.
 * Hide token endpoint management page if local endpoint not enabled
 
 = 2.0.1 =
+
 * Improve error handling if null endpoint sent through
 * Adjust cookie to GMT
 * Add whitepace to form
 
 = 2.0.0 =
+
 * Support author profiles in addition to user URLs
 * Change token verification method to match current Indieauth specification
 * Add support for token verification to act as a WordPress authentication mechanism.
@@ -112,6 +118,7 @@ You can revoke local tokens under User->Manage Tokens.
 * Automatically add trailing slash to user_url
 
 = 1.1.3 =
+
 * update README
 
 = 1.1.2 =

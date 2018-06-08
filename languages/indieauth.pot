@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 2.0.4\n"
+"Project-Id-Version: IndieAuth 2.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-05-30 22:38:57+00:00\n"
+"POT-Creation-Date: 2018-06-04 19:48:19+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,13 +13,119 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 0.5.4\n"
 
+#: includes/class-indieauth-admin.php:20
+msgid "Offer IndieAuth on Login Form"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:28
+msgid "Indieauth Configuration Setting"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:37
+msgid "IndieAuth Authorization Endpoint"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:47
+msgid "IndieAuth Token Endpoint"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:56 templates/indieauth-settings.php:13
+msgid "IndieAuth Settings"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:69
+msgid ""
+"Based on your feedback and to improve the user experience, we decided to "
+"move the settings to a separate <a href=\"%1$s\">settings-page</a>."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "IndieAuth"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:111
+msgid "Overview"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:113
+msgid ""
+"IndieAuth is a way for doing Web sign-in, where you use your own homepage "
+"to sign in to other places."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:114
+msgid ""
+"IndieAuth was build on ideas and technology from existing proven "
+"technologies like OAuth and OpenID but aims at making it easier for users "
+"as well as developers. It also decentralises much of the process so "
+"completely separate implementations and services can be used for each part."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:122
+msgid "The IndieWeb"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:124
+msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:126
+msgid "Your content is yours"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:127
+msgid ""
+"When you post something on the web, it should belong to you, not a "
+"corporation. Too many companies have gone out of business and lost all of "
+"their users’ data. By joining the IndieWeb, your content stays yours and in "
+"your control."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:130
+msgid "You are better connected"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:131
+msgid ""
+"Your articles and status messages can go to all services, not just one, "
+"allowing you to engage with everyone. Even replies and likes on other "
+"services can come back to your site so they’re all in one place."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:134
+msgid "You are in control"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:135
+msgid ""
+"You can post anything you want, in any format you want, with no one "
+"monitoring you. In addition, you share simple readable links such as "
+"example.com/ideas. These links are permanent and will always work."
+msgstr ""
+
+#: includes/class-indieauth-admin.php:141
+msgid "For more information:"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:142
+msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:143
+msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:144
+msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
+msgstr ""
+
 #: includes/class-indieauth-authenticate.php:77
 #: includes/class-indieauth-authenticate.php:83
 msgid "Username, Email Address, or URL"
 msgstr ""
 
 #: includes/class-indieauth-authenticate.php:101
-#: includes/class-indieauth-authenticate.php:427
+#: includes/class-indieauth-authenticate.php:418
 msgid "Invalid User Profile URL"
 msgstr ""
 
@@ -31,68 +137,68 @@ msgstr ""
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:201
-#: includes/class-indieauth-authenticate.php:209
+#: includes/class-indieauth-authenticate.php:197
+#: includes/class-indieauth-authenticate.php:205
 #: includes/class-indieauth-token-endpoint.php:81
 msgid "Invalid access token"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:233
+#: includes/class-indieauth-authenticate.php:229
 msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:272
+#: includes/class-indieauth-authenticate.php:264
 #: includes/class-indieauth-authorization-endpoint.php:127
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:281
+#: includes/class-indieauth-authenticate.php:272
 msgid "Did Not Receive a Valid Authorization Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:308
+#: includes/class-indieauth-authenticate.php:299
 msgid "The authorization endpoint did not return a JSON response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:318
+#: includes/class-indieauth-authenticate.php:309
 msgid ""
 "There was an error verifying the authorization code, the authorization "
 "server return an expected response"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:339
+#: includes/class-indieauth-authenticate.php:330
 msgid "IndieAuth Server did not return the same state parameter"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:360
+#: includes/class-indieauth-authenticate.php:351
 msgid "<strong>ERROR</strong>: The URL field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:364
+#: includes/class-indieauth-authenticate.php:355
 msgid "<strong>ERROR</strong>: The password field is empty."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:378
+#: includes/class-indieauth-authenticate.php:369
 msgid "<strong>ERROR</strong>: Invalid URL."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:380
-#: includes/class-indieauth-authenticate.php:401
+#: includes/class-indieauth-authenticate.php:371
+#: includes/class-indieauth-authenticate.php:392
 msgid "Lost your password?"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:397
+#: includes/class-indieauth-authenticate.php:388
 #. translators: %s: url
 msgid ""
 "<strong>ERROR</strong>: The password you entered for the URL %s is "
 "incorrect."
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:435
+#: includes/class-indieauth-authenticate.php:426
 msgid "Cannot Find IndieAuth Endpoint Cookie"
 msgstr ""
 
-#: includes/class-indieauth-authenticate.php:456
+#: includes/class-indieauth-authenticate.php:447
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 
@@ -153,26 +259,6 @@ msgstr ""
 msgid "Issued for %1$1s at %2$2s"
 msgstr ""
 
-#: indieauth.php:52
-msgid "Offer IndieAuth on Login Form"
-msgstr ""
-
-#: indieauth.php:60
-msgid "Indieauth Configuration Setting"
-msgstr ""
-
-#: indieauth.php:69
-msgid "IndieAuth Authorization Endpoint"
-msgstr ""
-
-#: indieauth.php:79
-msgid "IndieAuth Token Endpoint"
-msgstr ""
-
-#: indieauth.php:88
-msgid "IndieAuth Settings"
-msgstr ""
-
 #: templates/indieauth-authenticate-form.php:4
 #: templates/indieauth-authenticate-form.php:36
 msgid "Authenticate"
@@ -223,50 +309,8 @@ msgid ""
 "application."
 msgstr ""
 
-#: templates/indieauth-domain-login.php:4
+#: templates/indieauth-domain-login.php:4 templates/indieauth-settings.php:93
 msgid "Web Sign-In"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:12
-msgid ""
-"Use the endpoint built into the plugin, IndieAuth.com, or any custom "
-"IndieAuth endpoint to support logins into your site. If you change your "
-"endpoint, you will have to reauthorize any sites that you may have "
-"previously granted access"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:18
-msgid "Use IndieAuth login"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:24
-msgid ""
-"Add a link to the login form to authenticate using an IndieAuth endpoint. "
-"This is not necessary if you choose the endpoint built into your site."
-msgstr ""
-
-#: templates/indieauth-general-settings.php:33
-msgid "Built-In Endpoint"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:38
-#: templates/indieauth-general-settings.php:57
-#: templates/indieauth-general-settings.php:77
-msgid "Authorization Endpoint"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:42
-#: templates/indieauth-general-settings.php:61
-#: templates/indieauth-general-settings.php:83
-msgid "Token Endpoint"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:52
-msgid "indieauth.com"
-msgstr ""
-
-#: templates/indieauth-general-settings.php:71
-msgid "Custom"
 msgstr ""
 
 #: templates/indieauth-login-form.php:4
@@ -289,16 +333,68 @@ msgstr ""
 msgid "Learn about Web Sign-in"
 msgstr ""
 
+#: templates/indieauth-settings.php:20
+msgid ""
+"With IndieAuth, you can use your blog, to log into sites like the "
+"IndieWeb-Wiki."
+msgstr ""
+
+#: templates/indieauth-settings.php:22
+msgid "Endpoint"
+msgstr ""
+
+#: templates/indieauth-settings.php:24
+msgid ""
+"Use the endpoint built into the plugin, IndieAuth.com, or any custom "
+"IndieAuth endpoint to support logins into your site. If you change your "
+"endpoint, you will have to reauthorize any sites that you may have "
+"previously granted access"
+msgstr ""
+
+#: templates/indieauth-settings.php:32
+msgid "Built-In Endpoint"
+msgstr ""
+
+#: templates/indieauth-settings.php:37 templates/indieauth-settings.php:56
+#: templates/indieauth-settings.php:76
+msgid "Authorization Endpoint"
+msgstr ""
+
+#: templates/indieauth-settings.php:41 templates/indieauth-settings.php:60
+#: templates/indieauth-settings.php:82
+msgid "Token Endpoint"
+msgstr ""
+
+#: templates/indieauth-settings.php:51
+msgid "indieauth.com"
+msgstr ""
+
+#: templates/indieauth-settings.php:70
+msgid "Custom"
+msgstr ""
+
+#: templates/indieauth-settings.php:95
+msgid ""
+"Enable the Web Sign-In for your blog, so others can use IndieAuth or "
+"RelMeAuth to log into this site."
+msgstr ""
+
+#: templates/indieauth-settings.php:101
+msgid "Use IndieAuth login"
+msgstr ""
+
+#: templates/indieauth-settings.php:107
+msgid ""
+"Add a link to the login form to authenticate using an IndieAuth endpoint. "
+"This is not necessary if you choose the endpoint built into your site."
+msgstr ""
+
 #: templates/indieauth-token-ui.php:2
 msgid "IndieAuth Tokens"
 msgstr ""
 
 #: templates/indieauth-token-ui.php:9
 msgid "Revoke"
-msgstr ""
-
-#. Plugin Name of the plugin/theme
-msgid "IndieAuth"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
