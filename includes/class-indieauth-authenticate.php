@@ -222,6 +222,7 @@ class IndieAuth_Authenticate {
 	 *
 	 */
 	public function authorization_redirect( $me, $redirect_uri ) {
+		setcookie( 'indieauth_identifier', $me, current_time( 'timestamp', 1 ) + 120, '/', false, true );
 		$endpoints = indieauth_discover_endpoint( $me );
 		if ( ! $endpoints ) {
 			return new WP_Error(
@@ -442,6 +443,9 @@ class IndieAuth_Authenticate {
 			if ( is_oauth_error( $response ) ) {
 				return $response->to_wp_error();
 			}
+			if ( trailingslashit( $_COOKIE['indieauth_identifier'] ) !== trailingslashit( $response['me'] ) ) {
+				return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
+			}
 			$user = get_user_by_identifier( $response['me'] );
 			if ( ! $user ) {
 				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
@@ -529,4 +533,3 @@ class IndieAuth_Authenticate {
 }
 
 new IndieAuth_Authenticate();
-
