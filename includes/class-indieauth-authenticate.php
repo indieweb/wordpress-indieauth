@@ -35,11 +35,11 @@ class IndieAuth_Authenticate {
 		return $response;
 	}
 
-	public static function get_indieauth_scopes( $scopes ) {
+	public function get_indieauth_scopes( $scopes ) {
 		return $scopes ? $scopes : $this->scopes;
 	}
 
-	public static function get_indieauth_response( $response ) {
+	public function get_indieauth_response( $response ) {
 		return $response ? $response : $this->response;
 	}
 
