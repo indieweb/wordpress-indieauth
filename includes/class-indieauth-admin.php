@@ -100,7 +100,7 @@ class IndieAuth_Admin {
 	 * Load settings page
 	 */
 	public function settings_page() {
-		load_template( dirname( __FILE__ ) . '/../templates/indieauth-settings.php' );
+		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
 	}
 
 

@@ -8,16 +8,13 @@ class IndieAuth_Authenticate {
 	public $error    = null;
 	public $scopes   = null;
 	public $response = null;
+
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
-		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
-		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
-		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
 
 		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
-		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
 
 		add_action( 'send_headers', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
@@ -73,53 +70,6 @@ class IndieAuth_Authenticate {
 		return $this->error;
 	}
 
-	public function login_form_defaults( $defaults ) {
-		$defaults['label_username'] = __( 'Username, Email Address, or URL', 'indieauth' );
-		return $defaults;
-	}
-
-	public function register_text( $translated_text, $untranslated_text, $domain ) {
-		if ( 'Username or Email Address' === $untranslated_text ) {
-			$translated_text = __( 'Username, Email Address, or URL', 'indieauth' );
-		}
-		return $translated_text;
-	}
-
-	public function login_form_websignin() {
-		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
-			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-login-form.php';
-			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
-		}
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
-			$redirect_to = rawurldecode( $redirect_to );
-
-			if ( array_key_exists( 'indieauth_identifier', $_POST ) ) {
-				$me = esc_url_raw( $_POST['indieauth_identifier'] );
-				// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
-				if ( ! wp_http_validate_url( $me ) ) {
-					return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
-				}
-					$return = $this->authorization_redirect( $me, wp_login_url( $redirect_to ) );
-				if ( is_wp_error( $return ) ) {
-					return $return;
-				}
-				if ( is_oauth_error( $return ) ) {
-					return $return->to_wp_error();
-				}
-			}
-		}
-		exit;
-	}
-
-	public function is_rest() {
-		return ( defined( 'REST_REQUEST' ) && REST_REQUEST );
-	}
-
-	public function is_micropub() {
-		return ( isset( $_REQUEST['micropub'] ) );
-	}
-
 	public function determine_current_user( $user_id ) {
 		// Do not try to find a user if one has already been found
 		if ( ! empty( $user_id ) ) {
@@ -131,7 +81,7 @@ class IndieAuth_Authenticate {
 		}
 		$token = $this->get_provided_token();
 		if ( ! $token ) {
-			if ( $this->is_rest() || $this->is_micropub() ) {
+			if ( is_rest_request() || is_micropub_request() ) {
 				$this->error = new WP_Error(
 					'missing_bearer_token',
 					__( 'Missing OAuth Bearer Token', 'indieauth' ),
@@ -214,45 +164,6 @@ class IndieAuth_Authenticate {
 		return $state;
 	}
 
-	/**
-	 * Redirect to Authorization Endpoint for Authentication
-	 *
-	 * @param string $me URL parameter
-	 * @param string $redirect_uri where to redirect
-	 *
-	 */
-	public function authorization_redirect( $me, $redirect_uri ) {
-		setcookie( 'indieauth_identifier', $me, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		$endpoints = indieauth_discover_endpoint( $me );
-		if ( ! $endpoints ) {
-			return new WP_Error(
-				'authentication_failed',
-				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
-				array(
-					'status' => 401,
-				)
-			);
-		}
-		$authorization_endpoint = null;
-		if ( isset( $endpoints['authorization_endpoint'] ) ) {
-			$authorization_endpoint = $endpoints['authorization_endpoint'];
-			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		}
-		$state = $this->generate_state();
-		$query = add_query_arg(
-			array(
-				'me'            => rawurlencode( $me ),
-				'redirect_uri'  => rawurlencode( $redirect_uri ),
-				'client_id'     => rawurlencode( home_url() ),
-				'state'         => $state,
-				'response_type' => 'id',
-			),
-			$authorization_endpoint
-		);
-		// redirect to authentication endpoint
-		wp_redirect( $query );
-	}
-
 	public static function verify_authorization_code( $post_args, $endpoint ) {
 		$params = self::verify_remote_authorization_code( $post_args, $endpoint );
 
@@ -332,73 +243,6 @@ class IndieAuth_Authenticate {
 	}
 
 	/**
-	 * Authenticate user to WordPress using URL and Password
-	 *
-	 */
-	public function authenticate_url_password( $user, $url, $password ) {
-		if ( $user instanceof WP_User ) {
-			return $user;
-		}
-		if ( empty( $url ) || empty( $password ) ) {
-			if ( is_wp_error( $user ) ) {
-				return $user;
-			}
-			if ( is_oauth_error( $user ) ) {
-				return $user->to_wp_error();
-			}
-			$error = new WP_Error();
-
-			if ( empty( $url ) ) {
-				$error->add( 'empty_username', __( '<strong>ERROR</strong>: The URL field is empty.', 'indieauth' ) ); // Uses 'empty_username' for back-compat with wp_signon()
-			}
-
-			if ( empty( $password ) ) {
-				$error->add( 'empty_password', __( '<strong>ERROR</strong>: The password field is empty.', 'indieauth' ) );
-			}
-
-			return $error;
-		}
-
-		if ( ! wp_http_validate_url( $url ) ) {
-			return $user;
-		}
-		$user = get_user_by_identifier( $url );
-
-		if ( ! $user ) {
-			return new WP_Error(
-				'invalid_url',
-				__( '<strong>ERROR</strong>: Invalid URL.', 'indieauth' ) .
-				' <a href="' . wp_lostpassword_url() . '">' .
-				__( 'Lost your password?', 'indieauth' ) .
-				'</a>'
-			);
-		}
-
-		/** This filter is documented in wp-includes/user.php */
-		$user = apply_filters( 'wp_authenticate_user', $user, $password );
-
-		if ( is_wp_error( $user ) ) {
-			return $user;
-		}
-
-		if ( ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
-			return new WP_Error(
-				'incorrect_password',
-				sprintf(
-					/* translators: %s: url */
-					__( '<strong>ERROR</strong>: The password you entered for the URL %s is incorrect.', 'indieauth' ),
-					'<strong>' . $url . '</strong>'
-				) .
-				' <a href="' . wp_lostpassword_url() . '">' .
-				__( 'Lost your password?', 'indieauth' ) .
-				'</a>'
-			);
-		}
-
-		return $user;
-	}
-
-	/**
 	 * Authenticate user to WordPress using IndieAuth.
 	 *
 	 * @action: authenticate
@@ -412,17 +256,7 @@ class IndieAuth_Authenticate {
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		$redirect_to = rawurldecode( $redirect_to );
 
-		if ( ! empty( $url ) && array_key_exists( 'indieauth_identifier', $_POST ) ) {
-			$me = esc_url_raw( $url );
-			// Check for valid URLs https://indieauth.spec.indieweb.org/#user-profile-url
-			if ( ! wp_http_validate_url( $me ) ) {
-				return new WP_Error( 'indieauth_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
-			}
-			$return = $this->authorization_redirect( $me, wp_login_url( $redirect_to ) );
-			if ( is_wp_error( $return ) ) {
-				return $return;
-			}
-		} elseif ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
+		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
 			if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
 				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
 			}

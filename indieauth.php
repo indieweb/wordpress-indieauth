@@ -15,7 +15,6 @@
 class IndieAuth_Plugin {
 
 	public function __construct() {
-		add_action( 'login_form', array( $this, 'login_form' ) );
 		add_filter( 'pre_user_url', array( $this, 'pre_user_url' ) );
 
 		// Global Functions
@@ -26,6 +25,9 @@ class IndieAuth_Plugin {
 
 		// Indieauth Authentication Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
+
+		// Web Sign-In
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-web-signin.php';
 
 		// Token Endpoint
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-endpoint.php';
@@ -41,16 +43,6 @@ class IndieAuth_Plugin {
 
 		if ( WP_DEBUG ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
-		}
-	}
-
-	/**
-	 * render the login form
-	 */
-	public function login_form() {
-		$template = plugin_dir_path( __FILE__ ) . 'templates/indieauth-domain-login.php';
-		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
-			load_template( $template );
 		}
 	}
 

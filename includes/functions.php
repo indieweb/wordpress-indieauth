@@ -340,3 +340,16 @@ if ( ! function_exists( 'getallheaders' ) ) {
 		return $headers;
 	}
 }
+
+if ( ! function_exists( 'is_rest_request' ) ) {
+	function is_rest_request() {
+		return ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+	}
+}
+
+if ( ! function_exists( 'is_micropub_request' ) ) {
+	function is_micropub_request() {
+		return ( isset( $_REQUEST['micropub'] ) );
+	}
+}
+
