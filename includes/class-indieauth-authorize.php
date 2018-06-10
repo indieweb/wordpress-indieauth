@@ -77,20 +77,23 @@ class IndieAuth_Authorize {
 		if ( strpos( $_SERVER['REQUEST_URI'], '/indieauth/1.0' ) ) {
 			return $user_id;
 		}
-		$token = $this->get_provided_token();
-		if ( ! $token ) {
-			if ( is_rest_request() || is_micropub_request() ) {
-				$this->error = new WP_Error(
-					'missing_bearer_token',
-					__( 'Missing OAuth Bearer Token', 'indieauth' ),
-					array(
-						'status' => '401',
-						'server' => $_SERVER,
-					)
-				);
-			}
+		// If this is not a REST request or a Micropub request then do not continue
+		if ( ! strpos( $_SERVER['REQUEST_URI'], rest_get_url_prefix() ) && ! isset( $_REQUEST['micropub'] ) ) {
 			return $user_id;
 		}
+		$token = $this->get_provided_token();
+		if ( ! $token ) {
+			$this->error = new WP_Error(
+				'missing_bearer_token',
+				__( 'Missing OAuth Bearer Token', 'indieauth' ),
+				array(
+					'status' => '401',
+					'server' => $_SERVER,
+				)
+			);
+			return $user_id;
+		}
+
 		$me = $this->verify_access_token( $token );
 		if ( ! $me ) {
 			return $user_id;
