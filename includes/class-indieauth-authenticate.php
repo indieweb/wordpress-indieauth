@@ -162,14 +162,6 @@ class IndieAuth_Authenticate {
 		return $params;
 	}
 
-	public static function verify_local_authorization_code( $post_args ) {
-		$return = get_indieauth_user_token( '_indieauth_code_', $post_args['code'] );
-		if ( ! $return ) {
-			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
-		}
-		return $return;
-	}
-
 	/**
 	 * Verify State
 	 *

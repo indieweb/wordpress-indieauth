@@ -21,9 +21,7 @@ function parse_link_rels( $links, $url ) {
 			foreach ( $relarray as $rel ) {
 				$rel = strtolower( trim( $rel ) );
 				if ( ! empty( $rel ) ) {
-					if ( ! in_array( $href, $rels[ $rel ], true ) ) {
-						$rels[ $rel ] = WP_Http::make_absolute_url( $href, $url );
-					}
+					$rels[ $rel ] = WP_Http::make_absolute_url( $href, $url );
 				}
 			}
 		}
@@ -235,26 +233,6 @@ function rest_is_valid_url( $url, $request = null, $key = null ) {
 	return filter_var( $url, FILTER_VALIDATE_URL );
 }
 
-/**
- * Generates a random string using the WordPress password for use as a token.
- *
- * @return string
- */
-function indieauth_generate_token() {
-	return wp_generate_password( 128, false );
-}
-
-	/**
- * Hashes and Base64 encodes a token for storage so it cannot be retrieved
- *
- * @param string $string
- *
- * @return string
- */
-function indieauth_hash_token( $string ) {
-	return base64_encode( wp_hash( $string, 'secure_auth' ) );
-}
-
 function indieauth_rest_url( $path = '' ) {
 	// rest_url is being called too early for wp_rewrite to be set
 	// This fallback checks and returns the non rewritten version
@@ -320,3 +298,11 @@ if ( ! function_exists( 'is_micropub_request' ) ) {
 		return ( isset( $_REQUEST['micropub'] ) );
 	}
 }
+
+function generate_state() {
+				$state = wp_generate_password( 128, false );
+				$value = wp_hash( $state, 'nonce' );
+				setcookie( 'indieauth_state', $value, current_time( 'timestamp', 1 ) + 120, '/', false, true );
+				return $state;
+}
+

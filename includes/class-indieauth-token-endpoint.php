@@ -6,7 +6,9 @@
  */
 
 class IndieAuth_Token_Endpoint {
+	private $tokens;
 	public function __construct() {
+		$this->tokens = new Token_User( '_indieauth_token_' );
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
@@ -67,7 +69,7 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public function get_token( $token, $hash = true ) {
-		return get_indieauth_user_token( '_indieauth_token_', $token, $hash );
+		$this->tokens->get( $token, $hash );
 	}
 
 	public function get( $request ) {
@@ -84,33 +86,20 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public function set_token( $token ) {
-		// Token consists of properties at minimum: access_token, me, scope
-		if ( ! isset( $token['access_token'] ) || ! isset( $token['me'] ) ) {
+		if ( ! isset( $token['me'] ) ) {
 			return false;
 		}
-		$access_token = indieauth_hash_token( $token['access_token'] );
-		unset( $token['access_token'] );
 		$user = get_user_by_identifier( $token['me'] );
 		if ( ! $user ) {
 			return false;
 		}
-		return set_indieauth_user_token( $user->ID, '_indieauth_token_', $access_token, $token );
+		$this->tokens->set_user( $user-ID );
+		return $this->tokens->set( $token );
 	}
 
 	public function delete_token( $id, $user_id = null ) {
-		if ( ! $user_id ) {
-			$token = $this->get_token( $id );
-			if ( ! isset( $token ) ) {
-				$token = $this->get_token( $id, false );
-			}
-			if ( isset( $token['user'] ) ) {
-				$user_id = $token['user'];
-			} else {
-				return false;
-			}
-		}
-		$id = $hash ? indieauth_hash_token( $id ) : $id;
-		return delete_user_meta( $user_id, '_indieauth_token_' . $id );
+		$this->tokens->set_user( $user_id );
+		return $this->tokens->destroy( $id );
 	}
 
 	// Request or revoke a token
@@ -150,7 +139,6 @@ class IndieAuth_Token_Endpoint {
 		// Do not issue a token if the authorization code contains no scope
 		if ( isset( $response['scope'] ) ) {
 			$token  = array(
-				'access_token' => indieauth_generate_token(),
 				'token_type'   => 'Bearer',
 				'scope'        => $response['scope'],
 				'me'           => $response['me'],
@@ -158,7 +146,7 @@ class IndieAuth_Token_Endpoint {
 				'client_id'    => $params['client_id'],
 				'issued_at'    => current_time( 'timestamp', 1 ),
 			);
-			$return = $this->set_token( $token );
+			$token['access_token'] = $this->set_token( $token );
 			if ( $token ) {
 				// Return only the standard keys in the response
 				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
@@ -170,11 +158,11 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public static function verify_local_access_token( $token ) {
-			$return = get_indieauth_user_token( '_indieauth_token_', $token );
+		$return = $this->tokens->get( $token );
 		if ( ! $return ) {
 				return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
-			return $return;
+		return $return;
 	}
 
 

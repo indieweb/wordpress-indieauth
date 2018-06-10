@@ -1,54 +1,6 @@
 <?php
 
 
-/**
- * Get the token from meta
- *
- * @param string $key Prefix for the meta keys for this type of token
- * @param string $token Token to search for
- * @param boolean $hash If the token is already hashed or not
- * @return array|null Token, or null if no token found
- */
-function get_indieauth_user_token( $key, $token, $hash = true ) {
-	// Either token is already hashed or is not
-	$key    .= $hash ? indieauth_hash_token( $token ) : $token;
-	$args    = array(
-		'number'      => 1,
-		'count_total' => false,
-		'meta_query'  => array(
-			array(
-				'key'     => $key,
-				'compare' => 'EXISTS',
-			),
-		),
-	);
-	$query   = new WP_User_Query( $args );
-	$results = $query->get_results();
-	if ( empty( $results ) ) {
-		return null;
-	}
-	$user  = $results[0];
-	$value = get_user_meta( $user->ID, $key, true );
-	if ( empty( $value ) ) {
-		return null;
-	}
-	$value['user'] = $user->ID;
-	return $value;
-}
-
-/**
- * Get the token from meta
- *
- * @param num $id User ID
- * @param string $key Prefix for the meta keys for this type of token
- * @param string $token Token
- * @param array $token_data Actual contents of token
- * @return boolean if successful
- */
-function set_indieauth_user_token( $id, $key, $token, $token_data ) {
-	return add_user_meta( $id, $key . $token, $token_data );
-}
-
 function get_indieauth_authorization_endpoint() {
 	$option = get_option( 'indieauth_config', 'local' );
 	switch ( $option ) {

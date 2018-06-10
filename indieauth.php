@@ -21,6 +21,10 @@ class IndieAuth_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
 		require_once plugin_dir_path( __FILE__ ) . 'includes/indieauth-functions.php';
 
+		// Token Management
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-generic.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-user.php';
+
 		// OAuth REST Error Class
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';
 

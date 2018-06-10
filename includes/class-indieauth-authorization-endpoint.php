@@ -6,9 +6,11 @@
  */
 
 class IndieAuth_Authorization_Endpoint {
+	private $tokens;
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
+		$this->tokens = new Token_User( '_indieauth_code_' );
 	}
 
 	/**
@@ -87,29 +89,19 @@ class IndieAuth_Authorization_Endpoint {
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
 
-	public static function set_code( $user_id, $token ) {
-		$code                = indieauth_generate_token();
-		$token['expiration'] = time() + 600;
-		set_indieauth_user_token( $user_id, '_indieauth_code_', indieauth_hash_token( $code ), $token );
-		return $code;
+	public function set_code( $user_id, $token ) {
+		$this->tokens->set_user( $user_id );
+		return $this->tokens->set( $token, 600 );
 	}
 
-	public static function get_code( $code, $hash = true ) {
-		$token = get_indieauth_user_token( '_indieauth_code_', $code, $hash );
+	public function get_code( $code, $hash = true ) {
+		$token = $this->tokens->get( $code, $hash );
 		return $token;
 	}
 
-	public static function delete_code( $code, $user_id = null ) {
-		if ( ! $user_id ) {
-				$token = IndieAuth_Authorization_Endpoint::get_code( $code );
-			if ( isset( $token['user'] ) ) {
-				$user_id = $token['user'];
-			} else {
-				return false;
-			}
-		}
-		$id = indieauth_hash_token( $code );
-		return delete_user_meta( $user_id, '_indieauth_code_' . $id );
+	public function delete_code( $code, $user_id = null ) {
+		$this->tokens->set_user( $user_id );
+		return $this->tokens->destroy( $code );
 	}
 
 	public function verify( $request ) {

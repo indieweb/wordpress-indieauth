@@ -5,7 +5,6 @@
  * @package IndieAuth
  */
 class IndieAuth_Token_UI {
-
 	/**
 	 * Function to Initialize the Configuration.
 	 *
@@ -64,7 +63,9 @@ class IndieAuth_Token_UI {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
 
-	public static function token_form_table( $tokens ) {
+	public function token_form_table() {
+		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
+		$tokens = $t->get_all();
 		if ( ! is_array( $tokens ) ) {
 			return;
 		}
@@ -75,28 +76,6 @@ class IndieAuth_Token_UI {
 			echo PHP_EOL . '<br />';
 		}
 		echo '</div>';
-	}
-
-	public static function get_all_tokens( $user_id ) {
-		$meta   = get_user_meta( $user_id, '' );
-		$tokens = array();
-		foreach ( $meta as $key => $value ) {
-			if ( self::str_prefix( $key, '_indieauth_token_' ) ) {
-				$tokens[ str_replace( '_indieauth_token_', '', $key ) ] = maybe_unserialize( array_pop( $value ) );
-			}
-		}
-		return $tokens;
-	}
-
-	public static function delete_all_tokens( $user_id ) {
-		$meta   = get_user_meta( $user_id, '' );
-		$tokens = array();
-		foreach ( $meta as $key => $value ) {
-			if ( IndieAuth_Token_UI::str_prefix( $key, '_indieauth_token_' ) || IndieAuth_Token_UI::str_prefix( $key, '_indieauth_code_' ) ) {
-				delete_user_meta( $user_id, $key );
-			}
-		}
-		return $tokens;
 	}
 } // End Class
 
