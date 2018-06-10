@@ -1,9 +1,9 @@
 <?php
 /**
- * Authentication class
+ * Authorize class
  * Helper functions for extracting tokens from the WP-API team Oauth2 plugin
  */
-class IndieAuth_Authenticate {
+class IndieAuth_Authorize {
 
 	public $error    = null;
 	public $scopes   = null;
@@ -13,8 +13,6 @@ class IndieAuth_Authenticate {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
-
-		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
 
 		add_action( 'send_headers', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
@@ -156,55 +154,6 @@ class IndieAuth_Authenticate {
 	}
 
 	/**
-	 * Authenticate user to WordPress using IndieAuth.
-	 *
-	 * @action: authenticate
-	 * @param mixed $user authenticated user object, or WP_Error or null
-	 * @return mixed authenticated user object, or WP_Error or null
-	 */
-	public function authenticate( $user, $url ) {
-		if ( $user instanceof WP_User ) {
-			return $user;
-		}
-		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
-		$redirect_to = rawurldecode( $redirect_to );
-		$token       = new Token_Transient( 'indieauth_state' );
-		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			$state = $token->verify( $_REQUEST['state'] );
-			if ( ! $state ) {
-				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
-			}
-			if ( ! isset( $state['authorization_endpoint'] ) ) {
-				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
-			}
-			if ( is_wp_error( $state ) ) {
-				return $state;
-			}
-			$response = $this->verify_authorization_code(
-				array(
-					'code'         => $_REQUEST['code'],
-					'redirect_uri' => wp_login_url( $redirect_to ),
-				),
-				$state['authorization_endpoint']
-			);
-			if ( is_wp_error( $response ) ) {
-				return $response;
-			}
-			if ( is_oauth_error( $response ) ) {
-				return $response->to_wp_error();
-			}
-			if ( trailingslashit( $state['me'] ) !== trailingslashit( $response['me'] ) ) {
-				return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
-			}
-			$user = get_user_by_identifier( $response['me'] );
-			if ( ! $user ) {
-				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
-			}
-		}
-		return $user;
-	}
-
-	/**
 	 * Get the authorization header
 	 *
 	 * On certain systems and configurations, the Authorization header will be
@@ -282,4 +231,4 @@ class IndieAuth_Authenticate {
 	}
 }
 
-new IndieAuth_Authenticate();
+new IndieAuth_Authorize();

@@ -10,6 +10,7 @@ class Web_Signin {
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
 		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
 
+		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
 		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
 	}
 
@@ -46,6 +47,57 @@ class Web_Signin {
 		// redirect to authentication endpoint
 		wp_redirect( $query );
 	}
+
+	/**
+	 * Authenticate user to WordPress using IndieAuth.
+	 *
+	 * @action: authenticate
+	 * @param mixed $user authenticated user object, or WP_Error or null
+	 * @return mixed authenticated user object, or WP_Error or null
+	 */
+	public function authenticate( $user, $url ) {
+		if ( $user instanceof WP_User ) {
+				return $user;
+		}
+			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+			$redirect_to = rawurldecode( $redirect_to );
+			$token       = new Token_Transient( 'indieauth_state' );
+		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
+				$state = $token->verify( $_REQUEST['state'] );
+			if ( ! $state ) {
+					return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+			}
+			if ( ! isset( $state['authorization_endpoint'] ) ) {
+					return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
+			}
+			if ( is_wp_error( $state ) ) {
+					return $state;
+			}
+				$response = verify_indieauth_authorization_code(
+					array(
+						'code'         => $_REQUEST['code'],
+						'redirect_uri' => wp_login_url( $redirect_to ),
+					),
+					$state['authorization_endpoint']
+				);
+			if ( is_wp_error( $response ) ) {
+					return $response;
+			}
+			if ( is_oauth_error( $response ) ) {
+					return $response->to_wp_error();
+			}
+			if ( trailingslashit( $state['me'] ) !== trailingslashit( $response['me'] ) ) {
+					return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
+			}
+				$user = get_user_by_identifier( $response['me'] );
+			if ( ! $user ) {
+					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
+			}
+		}
+			return $user;
+	}
+
+
 
 	/**
 	 * Authenticate user to WordPress using URL and Password
@@ -162,7 +214,6 @@ class Web_Signin {
 		}
 		exit;
 	}
-
 }
 
 new Web_Signin();

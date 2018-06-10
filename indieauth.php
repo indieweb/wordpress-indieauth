@@ -29,8 +29,8 @@ class IndieAuth_Plugin {
 		// OAuth REST Error Class
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';
 
-		// Indieauth Authentication Functions
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authenticate.php';
+		// Indieauth Authorize Functions
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorize.php';
 
 		// Web Sign-In
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-web-signin.php';
@@ -44,7 +44,7 @@ class IndieAuth_Plugin {
 		// Token Endpoint UI
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-ui.php';
 
-		// Token Endpoint UI
+		// IndieAuth Admin
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-admin.php';
 
 		if ( WP_DEBUG ) {
