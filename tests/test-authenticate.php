@@ -43,7 +43,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 
 	public function test_verify_remote_access_token() {
 		update_option( 'indieauth_config', 'indieauth' );
-		$authenticate = new IndieAuth_Authenticate();
+		$authenticate = new IndieAuth_Authorize();
 		add_filter( 'pre_http_request', array( $this, 'verification_token_response' ) );
 		$me = $authenticate->verify_access_token( 'test' );
 		$this->assertEquals( 'http://example.com/', $me );
