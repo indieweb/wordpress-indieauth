@@ -21,7 +21,6 @@ class Web_Signin {
 	 *
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
-		setcookie( 'indieauth_identifier', $me, current_time( 'timestamp', 1 ) + 120, '/', false, true );
 		$authorization_endpoint = find_rels( $me, 'authorization_endpoint' );
 		if ( ! $authorization_endpoint ) {
 			return new WP_Error(
@@ -32,15 +31,14 @@ class Web_Signin {
 				)
 			);
 		}
-		setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-
-		$state = $this->generate_state();
+		$state = compact( 'me', 'authorization_endpoint' );
+		$token = new Token_Transient( 'indieauth_state' );
 		$query = add_query_arg(
 			array(
 				'me'            => rawurlencode( $me ),
 				'redirect_uri'  => rawurlencode( $redirect_uri ),
 				'client_id'     => rawurlencode( home_url() ),
-				'state'         => $state,
+				'state'         => $token->set_with_cookie( $state, 120 ),
 				'response_type' => 'id',
 			),
 			$authorization_endpoint
@@ -116,17 +114,9 @@ class Web_Signin {
 		return $user;
 	}
 
-
-	public static function generate_state() {
-		$state = wp_generate_password( 128, false );
-		$value = wp_hash( $state, 'nonce' );
-		setcookie( 'indieauth_state', $value, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		return $state;
-	}
-
-		/**
-		 * render the login form
-		 */
+	/**
+	 * render the login form
+	 */
 	public function login_form() {
 			$template = plugin_dir_path( __DIR__ ) . 'templates/websignin-link.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {

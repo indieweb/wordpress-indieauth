@@ -93,7 +93,7 @@ class IndieAuth_Token_Endpoint {
 		if ( ! $user ) {
 			return false;
 		}
-		$this->tokens->set_user( $user-ID );
+		$this->tokens->set_user( $user->ID );
 		return $this->tokens->set( $token );
 	}
 
@@ -138,13 +138,13 @@ class IndieAuth_Token_Endpoint {
 		}
 		// Do not issue a token if the authorization code contains no scope
 		if ( isset( $response['scope'] ) ) {
-			$token  = array(
-				'token_type'   => 'Bearer',
-				'scope'        => $response['scope'],
-				'me'           => $response['me'],
-				'issued_by'    => rest_url( 'indieauth/1.0/token' ),
-				'client_id'    => $params['client_id'],
-				'issued_at'    => current_time( 'timestamp', 1 ),
+			$token                 = array(
+				'token_type' => 'Bearer',
+				'scope'      => $response['scope'],
+				'me'         => $response['me'],
+				'issued_by'  => rest_url( 'indieauth/1.0/token' ),
+				'client_id'  => $params['client_id'],
+				'issued_at'  => current_time( 'timestamp', 1 ),
 			);
 			$token['access_token'] = $this->set_token( $token );
 			if ( $token ) {

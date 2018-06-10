@@ -149,36 +149,10 @@ class IndieAuth_Authenticate {
 		return json_decode( $body, true );
 	}
 
-	public static function generate_state() {
-		$state = wp_generate_password( 128, false );
-		$value = wp_hash( $state, 'nonce' );
-		setcookie( 'indieauth_state', $value, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		return $state;
-	}
-
 	public static function verify_authorization_code( $post_args, $endpoint ) {
 		$params = verify_indieauth_authorization_code( $post_args, $endpoint );
 
 		return $params;
-	}
-
-	/**
-	 * Verify State
-	 *
-	 * @param string $state
-	 *
-	 * @return boolean|WP_Error
-	 */
-	public function verify_state( $state ) {
-		if ( ! isset( $_COOKIE['indieauth_state'] ) ) {
-			return false;
-		}
-		$value = $_COOKIE['indieauth_state'];
-		setcookie( 'indieauth_state', '', current_time( 'timestamp' ) - 1000, '/', false, true );
-		if ( wp_hash( $state, 'nonce' ) === $value ) {
-			return true;
-		}
-		return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
 	}
 
 	/**
@@ -194,12 +168,15 @@ class IndieAuth_Authenticate {
 		}
 		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 		$redirect_to = rawurldecode( $redirect_to );
-
+		$token       = new Token_Transient( 'indieauth_state' );
 		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			if ( ! isset( $_COOKIE['indieauth_authorization_endpoint'] ) ) {
+			$state = $token->verify( $_REQUEST['state'] );
+			if ( ! $state ) {
+				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+			}
+			if ( ! isset( $state['authorization_endpoint'] ) ) {
 				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
 			}
-			$state = $this->verify_state( $_REQUEST['state'] );
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
@@ -208,7 +185,7 @@ class IndieAuth_Authenticate {
 					'code'         => $_REQUEST['code'],
 					'redirect_uri' => wp_login_url( $redirect_to ),
 				),
-				$_COOKIE['indieauth_authorization_endpoint']
+				$state['authorization_endpoint']
 			);
 			if ( is_wp_error( $response ) ) {
 				return $response;
@@ -216,7 +193,7 @@ class IndieAuth_Authenticate {
 			if ( is_oauth_error( $response ) ) {
 				return $response->to_wp_error();
 			}
-			if ( trailingslashit( $_COOKIE['indieauth_identifier'] ) !== trailingslashit( $response['me'] ) ) {
+			if ( trailingslashit( $state['me'] ) !== trailingslashit( $response['me'] ) ) {
 				return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
 			}
 			$user = get_user_by_identifier( $response['me'] );

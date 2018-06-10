@@ -299,10 +299,3 @@ if ( ! function_exists( 'is_micropub_request' ) ) {
 	}
 }
 
-function generate_state() {
-				$state = wp_generate_password( 128, false );
-				$value = wp_hash( $state, 'nonce' );
-				setcookie( 'indieauth_state', $value, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-				return $state;
-}
-
