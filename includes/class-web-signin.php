@@ -10,8 +10,8 @@ class Web_Signin {
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
 		add_action( 'login_form_websignin', array( $this, 'login_form_websignin' ) );
 
-		add_action( 'authenticate', array( $this, 'authenticate' ), 10, 2 );
-		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 20, 3 );
+		add_action( 'authenticate', array( $this, 'authenticate' ), 20, 2 );
+		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 10, 3 );
 	}
 
 	/**
@@ -57,44 +57,44 @@ class Web_Signin {
 	 */
 	public function authenticate( $user, $url ) {
 		if ( $user instanceof WP_User ) {
-				return $user;
+			return $user;
 		}
-			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
-			$redirect_to = rawurldecode( $redirect_to );
-			$token       = new Token_Transient( 'indieauth_state' );
+		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+		$redirect_to = rawurldecode( $redirect_to );
+		$token       = new Token_Transient( 'indieauth_state' );
 		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-				$state = $token->verify( $_REQUEST['state'] );
+			$state = $token->verify( $_REQUEST['state'] );
 			if ( ! $state ) {
-					return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
+				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
 			}
 			if ( ! isset( $state['authorization_endpoint'] ) ) {
-					return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
+				return new WP_Error( 'indieauth_missing_endpoint', __( 'Cannot Find IndieAuth Endpoint Cookie', 'indieauth' ) );
 			}
 			if ( is_wp_error( $state ) ) {
-					return $state;
+				return $state;
 			}
-				$response = verify_indieauth_authorization_code(
-					array(
-						'code'         => $_REQUEST['code'],
-						'redirect_uri' => wp_login_url( $redirect_to ),
-					),
-					$state['authorization_endpoint']
-				);
+			$response = verify_indieauth_authorization_code(
+				array(
+					'code'         => $_REQUEST['code'],
+					'redirect_uri' => wp_login_url( $redirect_to ),
+				),
+				$state['authorization_endpoint']
+			);
 			if ( is_wp_error( $response ) ) {
-					return $response;
+				return $response;
 			}
 			if ( is_oauth_error( $response ) ) {
-					return $response->to_wp_error();
+				return $response->to_wp_error();
 			}
 			if ( trailingslashit( $state['me'] ) !== trailingslashit( $response['me'] ) ) {
-					return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
+				return new WP_Error( 'indieauth_registration_failure', __( 'The domain does not match the domain you used to start the authentication.', 'indieauth' ) );
 			}
-				$user = get_user_by_identifier( $response['me'] );
+			$user = get_user_by_identifier( $response['me'] );
 			if ( ! $user ) {
-					$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
+				$user = new WP_Error( 'indieauth_registration_failure', __( 'Your have entered a valid Domain, but you have no account on this blog.', 'indieauth' ) );
 			}
 		}
-			return $user;
+		return $user;
 	}
 
 
@@ -205,10 +205,13 @@ class Web_Signin {
 
 				$return = $this->websignin_redirect( $me, wp_login_url( $redirect_to ) );
 				if ( is_wp_error( $return ) ) {
+					echo '<div id="login_error">' . $return->get_error_message() . "</div>\n";
 					return $return;
 				}
 				if ( is_oauth_error( $return ) ) {
-					return $return->to_wp_error();
+					$return = $return->to_wp_error();
+					echo '<div id="login_error">' . $return->get_error_message() . "</div>\n";
+					return $return;
 				}
 			}
 		}

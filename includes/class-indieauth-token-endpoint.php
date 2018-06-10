@@ -69,7 +69,7 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public function get_token( $token, $hash = true ) {
-		$this->tokens->get( $token, $hash );
+		return $this->tokens->get( $token, $hash );
 	}
 
 	public function get( $request ) {

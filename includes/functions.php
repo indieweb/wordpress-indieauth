@@ -77,23 +77,26 @@ function find_rels( $me, $endpoints = null ) {
 		}
 		$return = parse_link_rels( $links, $me );
 	}
-	$code = (int) wp_remote_retrieve_response_code( $response );
-	switch ( $code ) {
-		case 301:
-		case 308:
-			$return['me'] = wp_remote_retrieve_header( $response, 'Location' );
-			break;
-	}
-	if ( isset( $return['me'] ) ) {
-		$me = $return['me'];
-	}
-	if ( is_array( $endpoints ) ) {
-		$return = wp_array_slice_assoc( $return, $endpoints );
-		if ( ! empty( $return ) ) {
-			return $return;
+	if ( $return ) {
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		switch ( $code ) {
+			case 301:
+			case 308:
+				$return['me'] = wp_remote_retrieve_header( $response, 'Location' );
+				break;
 		}
-	} elseif ( is_string( $endpoints ) && isset( $return[ $endpoints ] ) ) {
-		return $return[ $endpoints ];
+		if ( isset( $return['me'] ) ) {
+			$me = $return['me'];
+		}
+		if ( is_array( $endpoints ) ) {
+			$return = wp_array_slice_assoc( $return, $endpoints );
+			if ( ! empty( $return ) ) {
+				return $return;
+			}
+		}
+		if ( is_string( $endpoints ) && isset( $return[ $endpoints ] ) ) {
+				return $return[ $endpoints ];
+		}
 	}
 
 	// not an (x)html, sgml, or xml page, no use going further
@@ -115,7 +118,7 @@ function find_rels( $me, $endpoints = null ) {
 	} elseif ( is_string( $endpoints ) && isset( $return[ $endpoints ] ) ) {
 		return $return[ $endpoints ];
 	}
-	return $return;
+	return false;
 }
 
 /**
