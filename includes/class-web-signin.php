@@ -22,8 +22,8 @@ class Web_Signin {
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
 		setcookie( 'indieauth_identifier', $me, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		$endpoints = indieauth_discover_endpoint( $me );
-		if ( ! $endpoints ) {
+		$authorization_endpoint = find_rels( $me, 'authorization_endpoint' );
+		if ( ! $authorization_endpoint ) {
 			return new WP_Error(
 				'authentication_failed',
 				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
@@ -32,11 +32,8 @@ class Web_Signin {
 				)
 			);
 		}
-		$authorization_endpoint = null;
-		if ( isset( $endpoints['authorization_endpoint'] ) ) {
-			$authorization_endpoint = $endpoints['authorization_endpoint'];
-			setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp', 1 ) + 120, '/', false, true );
-		}
+		setcookie( 'indieauth_authorization_endpoint', $authorization_endpoint, current_time( 'timestamp', 1 ) + 120, '/', false, true );
+
 		$state = $this->generate_state();
 		$query = add_query_arg(
 			array(

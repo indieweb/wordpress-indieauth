@@ -137,7 +137,7 @@ class IndieAuth_Authorization_Endpoint {
 			$this->delete_code( $code );
 
 			if ( class_exists( 'Indieweb_Plugin' ) && ( get_option( 'iw_single_author' ) || ! is_multi_author() ) ) {
-				$return = array( 'me' => site_url('/') );
+				$return = array( 'me' => site_url( '/' ) );
 			} else {
 				// Return the user profile URL and scope
 				$return = array( 'me' => get_author_posts_url( $user->ID ) );

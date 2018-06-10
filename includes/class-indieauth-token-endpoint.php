@@ -135,9 +135,8 @@ class IndieAuth_Token_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$endpoint = indieauth_discover_endpoint( $params['me'] );
-		$endpoint = isset( $endpoint['authorization_endpoint'] ) ? $endpoint['authorization_endpoint'] : null;
-		$response = IndieAuth_Authenticate::verify_authorization_code(
+		$endpoint = find_rels( $params['me'], 'authorization_endpoint' );
+		$response = verify_indieauth_authorization_code(
 			array(
 				'code'         => $params['code'],
 				'redirect_uri' => $params['redirect_uri'],
@@ -169,6 +168,16 @@ class IndieAuth_Token_Endpoint {
 		}
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
+
+	public static function verify_local_access_token( $token ) {
+			$return = get_indieauth_user_token( '_indieauth_token_', $token );
+		if ( ! $return ) {
+				return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
+		}
+			return $return;
+	}
+
+
 }
 
 new IndieAuth_Token_Endpoint();

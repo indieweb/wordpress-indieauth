@@ -19,6 +19,7 @@ class IndieAuth_Plugin {
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/indieauth-functions.php';
 
 		// OAuth REST Error Class
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';

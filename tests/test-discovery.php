@@ -43,7 +43,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 		);
 
 		add_filter( 'pre_http_request', array( $this, 'discover_relative_httplink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -66,7 +66,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 			'token_endpoint' => 'http://www.example.com/test/2/token_endpoint'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_absolute_httplink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -90,7 +90,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 			'token_endpoint' => 'http://www.example.com/test/8/token_endpoint'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_quoted_httplink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -113,7 +113,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 			'token_endpoint' => 'http://www.example.com/test/10/token_endpoint'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_multiple_httplink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -133,7 +133,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 			'token_endpoint' => 'http://www.example.com/test/3/token_endpoint'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_relative_htmllink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -152,7 +152,7 @@ class DiscoveryTest extends WP_UnitTestCase {
 			'token_endpoint' => 'http://www.example.com/test/4/token_endpoint'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_absolute_htmllink' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
@@ -172,15 +172,34 @@ class DiscoveryTest extends WP_UnitTestCase {
 	public function test_discover_redirect() {
 		$url = 'http://www.example.com/test/2';
 		$return = array( 
-			'me' => 'https://www.example.com/test/2',
 			'authorization_endpoint' => 'https://www.example.com/test/2/authorization_endpoint',
-			'token_endpoint' => 'https://www.example.com/test/2/token_endpoint'
+			'token_endpoint' => 'https://www.example.com/test/2/token_endpoint',
+			'me' => 'https://www.example.com/test/2'
 		);
 		add_filter( 'pre_http_request', array( $this, 'discover_redirect' ) );
-		$endpoint = indieauth_discover_endpoint( $url );
+		$endpoint = find_rels( $url );
 		$this->assertSame( $return, $endpoint );
 	}
 
+	public function discover_authorization_endpoint() {
+		$link = array( 
+			'</test/1/authorization_endpoint>; rel=authorization_endpoint',
+			'</test/1/token_endpoint>; rel=token_endpoint',
+
+		);
+		$headers = $this->headers( $link );
+		$response = $this->response( 200, 'OK' );
+		$body = '<html></html>';
+		return $this->httpreturn( $headers, $response, $body );
+	}
+
+	public function test_discover_authorization_endpoint() {
+		$url = 'http://www.example.com/test/1';
+		$return = 'http://www.example.com/test/1/authorization_endpoint';
+		add_filter( 'pre_http_request', array( $this, 'discover_relative_httplink' ) );
+		$endpoint = find_rels( $url, 'authorization_endpoint' );
+		$this->assertSame( $return, $endpoint );
+	}
 
 
 

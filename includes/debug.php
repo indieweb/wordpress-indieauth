@@ -23,7 +23,7 @@ function log_rest_api_errors( $result, $server, $request ) {
 	$request_route = $request->get_route();
 	$result_route  = $result->get_matched_route();
 	$routes        = array( 'indieauth/1.0/auth', '/indieauth/1.0/token' );
-	if ( in_array( $request_route, $routes ) || in_array( $result_route, $routes ) ) {
+	if ( in_array( $request_route, $routes, true ) || in_array( $result_route, $routes, true ) ) {
 		return $result;
 	}
 	if ( $result->is_error() ) {
