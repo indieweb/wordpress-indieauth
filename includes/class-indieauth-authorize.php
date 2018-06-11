@@ -25,8 +25,8 @@ class IndieAuth_Authorize {
 		$data                                = $response->get_data();
 		$data['authentication']['indieauth'] = array(
 			'endpoints' => array(
-				'authorization' => get_indieauth_authorization_endpoint(),
-				'token'         => get_indieauth_token_endpoint(),
+				'authorization' => rest_url( '/indieauth/1.0/auth' ),
+				'token'         => rest_url( '/indieauth/1.0/token' ),
 			),
 		);
 		$response->set_data( $data );
@@ -42,12 +42,12 @@ class IndieAuth_Authorize {
 	}
 
 	public static function http_header() {
-		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', get_indieauth_authorization_endpoint(), false ) );
-		header( sprintf( 'Link: <%s>; rel="token_endpoint"', get_indieauth_token_endpoint(), false ) );
+		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', rest_url( '/indieauth/1.0/auth' ), false ) );
+		header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
 	}
 	public static function html_header() {
-		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, get_indieauth_authorization_endpoint() );
-		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, get_indieauth_token_endpoint() );
+		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) );
+		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) );
 	}
 
 
@@ -118,7 +118,7 @@ class IndieAuth_Authorize {
 	}
 
 	public function verify_access_token( $token ) {
-		$params = $this->verify_remote_access_token( $token );
+		$params = $this->verify_local_access_token( $token );
 
 		if ( is_oauth_error( $params ) ) {
 			$this->error = $params->to_wp_error();
@@ -130,24 +130,13 @@ class IndieAuth_Authorize {
 		return $params['me'];
 	}
 
-	public function verify_remote_access_token( $token ) {
-		$endpoint = get_indieauth_token_endpoint();
-		$args     = array(
-			'headers' => array(
-				'Accept'        => 'application/json',
-				'Authorization' => 'Bearer ' . $token,
-			),
-		);
-		$response = wp_safe_remote_get( $endpoint, $args );
-		if ( is_oauth_error( $response ) ) {
-			return $response;
-		}
-		$code = wp_remote_retrieve_response_code( $response );
-		$body = wp_remote_retrieve_body( $response );
-		if ( 2 !== (int) ( $code / 100 ) ) {
+	public function verify_local_access_token( $token ) {
+		$tokens = new Token_User( '_indieauth_token_' );
+		$return = $tokens->get( $token );
+		if ( ! $return ) {
 			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
-		return json_decode( $body, true );
+		return $return;
 	}
 
 	public static function verify_authorization_code( $post_args ) {

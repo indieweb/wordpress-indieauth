@@ -125,7 +125,7 @@ class IndieAuth_Token_Endpoint {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$endpoint = find_rels( $params['me'], 'authorization_endpoint' );
-		$response = verify_indieauth_authorization_code(
+		$response = $this->verify_local_authorization_code(
 			array(
 				'code'         => $params['code'],
 				'redirect_uri' => $params['redirect_uri'],
@@ -157,14 +157,15 @@ class IndieAuth_Token_Endpoint {
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
 	}
 
-	public static function verify_local_access_token( $token ) {
-		$return = $this->tokens->get( $token );
+	public static function verify_local_authorization_code( $post_args ) {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$return = $tokens->get( $post_args['code'] );
 		if ( ! $return ) {
-				return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
+			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
 		}
+		$tokens->destroy( $post_args['code'] );
 		return $return;
 	}
-
 
 }
 
