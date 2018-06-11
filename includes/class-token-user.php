@@ -58,23 +58,15 @@ class Token_User extends Token_Generic {
 	 * @return boolean Return if successfully destroyed or not
 	 */
 	public function destroy( $key ) {
-		if ( ! $this->user_id ) {
-			$token = $this->get( $key );
-			if ( ! $token ) {
-				// Check if key is already hashed
-				$token = $this->get( $key, false );
-				if ( ! $token ) {
-					return false;
-				}
-			}
-			if ( isset( $token['user'] ) ) {
-				$this->user_id = $token['user'];
-			} else {
-				return false;
-			}
+		$token = $this->get( $key, false );
+		if ( $token ) {
+			return delete_user_meta( $token['user'], $this->prefix . $key );
 		}
-		$id = $this->hash( $key );
-		return delete_user_meta( $this->user_id, $this->prefix . $id );
+
+		$token = $this->get( $key );
+		if ( $token ) {
+			return delete_user_meta( $token['user'], $this->prefix . $this->hash( $key ) );
+		}
 	}
 
 	/**
@@ -144,17 +136,17 @@ class Token_User extends Token_Generic {
 		$query   = new WP_User_Query( $args );
 		$results = $query->get_results();
 		if ( empty( $results ) ) {
-				return null;
+			return false;
 		}
 		$user  = $results[0];
 		$value = get_user_meta( $user->ID, $key, true );
 		if ( empty( $value ) ) {
-				return false;
+			return false;
 		}
 
 		// If this token has expired destroy the token and return false;
 		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
-			$this->destroy( $key );
+			$this->destroy( $key, $user->ID );
 			return false;
 		}
 

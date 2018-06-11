@@ -73,7 +73,7 @@ class Web_Signin {
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
-			$response = verify_indieauth_authorization_code(
+			$response = $this->verify_authorization_code(
 				array(
 					'code'         => $_REQUEST['code'],
 					'redirect_uri' => wp_login_url( $redirect_to ),

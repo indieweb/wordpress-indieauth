@@ -150,10 +150,15 @@ class IndieAuth_Authorize {
 		return json_decode( $body, true );
 	}
 
-	public static function verify_authorization_code( $post_args, $endpoint ) {
-		$params = verify_indieauth_authorization_code( $post_args, $endpoint );
-
-		return $params;
+	public static function verify_authorization_code( $post_args ) {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$return = $tokens->get( $post_args['code'] );
+		if ( ! $return ) {
+			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		// Once the code is verified destroy it
+		$tokens->destroy( $post_args['code'] );
+		return $return;
 	}
 
 	/**

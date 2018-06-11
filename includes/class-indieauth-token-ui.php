@@ -49,6 +49,9 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function options_form() {
+		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
+		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
+		$codes->check_expires();
 		load_template( plugin_dir_path( __DIR__ ) . 'templates/indieauth-token-ui.php' );
 	}
 
@@ -63,7 +66,7 @@ class IndieAuth_Token_UI {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
 
-	public function token_form_table() {
+	public static function token_form_table() {
 		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
 		$tokens = $t->get_all();
 		if ( ! is_array( $tokens ) ) {
