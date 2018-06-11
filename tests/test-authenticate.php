@@ -33,7 +33,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 		);
 	}
 
-
+/*
 	public function verification_token_response() {
 		$headers  = $this->headers();
 		$response = $this->response( 200, 'OK' );
@@ -48,4 +48,5 @@ class AuthenticateTest extends WP_UnitTestCase {
 		$me = $authenticate->verify_access_token( 'test' );
 		$this->assertEquals( 'http://example.com/', $me );
 	}
+*/
 }
