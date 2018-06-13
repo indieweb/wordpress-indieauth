@@ -22,34 +22,6 @@ class IndieAuth_Admin {
 				'default'      => 0,
 			)
 		);
-		register_setting(
-			'indieauth', 'indieauth_config', array(
-				'type'         => 'string',
-				'description'  => __( 'Indieauth Configuration Setting', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 'local',
-			)
-		);
-
-		register_setting(
-			'indieauth', 'indieauth_authorization_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_authorization_endpoint(),
-			)
-		);
-
-		register_setting(
-			'indieauth', 'indieauth_token_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_token_endpoint(),
-			)
-		);
 	}
 
 	public function admin_init() {
@@ -100,7 +72,7 @@ class IndieAuth_Admin {
 	 * Load settings page
 	 */
 	public function settings_page() {
-		load_template( dirname( __FILE__ ) . '/../templates/indieauth-settings.php' );
+		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
 	}
 
 
@@ -112,7 +84,6 @@ class IndieAuth_Admin {
 				'content' =>
 					'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
 					'<p>' . __( 'IndieAuth was build on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
-
 			)
 		);
 
