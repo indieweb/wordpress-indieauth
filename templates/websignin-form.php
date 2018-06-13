@@ -20,29 +20,29 @@ login_header(
 	</p>
 	<p class="learn"><a href="https://indieweb.org/Web_sign-in" target="_blank"><?php _e( 'Learn about Web Sign-in', 'indieauth' ); ?></a></p>
 </form>
+
 <?php login_footer(); ?>
+
 <style>
-.login-info img {
-        width: 78px;
-        display: block;
-        margin: 0 auto;
-        border-radius: 6px;
-}
-.login-info p {
-        margin-top: 1em;
-}
+	.login-info img {
+		width: 78px;
+		display: block;
+		margin: 0 auto;
+		border-radius: 6px;
+	}
+	.login-info p {
+		margin-top: 1em;
+	}
 
-#login form p.submit {
-        margin-top: 1em;
-}
+	#login form p.submit {
+		margin-top: 1em;
+	}
 
-.learn {
-        margin-top: 5em;
-}
+	.learn {
+		margin-top: 5em;
+	}
 
-form input {
-        width: 100%;
-}
-
+	form input {
+		width: 100%;
+	}
 </style>
-
