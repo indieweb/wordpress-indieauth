@@ -99,7 +99,7 @@ class Token_Transient extends Token_Generic {
 		$key   = $this->prefix . $key;
 		$value = get_transient( $key );
 		if ( empty( $value ) ) {
-				return false;
+			return false;
 		}
 
 		// Even though WordPress should do it for us, if this token has expired destroy the token and return false;
@@ -109,7 +109,6 @@ class Token_Transient extends Token_Generic {
 		}
 
 		return $value;
-
 	}
 
 	/**

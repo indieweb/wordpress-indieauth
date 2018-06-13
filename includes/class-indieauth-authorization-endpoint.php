@@ -7,6 +7,7 @@
 
 class IndieAuth_Authorization_Endpoint {
 	private $tokens;
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );

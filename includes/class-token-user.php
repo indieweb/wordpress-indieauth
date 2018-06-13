@@ -78,14 +78,15 @@ class Token_User extends Token_Generic {
 		if ( ! $this->user_id ) {
 			return false;
 		}
-				$meta   = get_user_meta( $this->user_id, '' );
-				$tokens = array();
+		$meta   = get_user_meta( $this->user_id, '' );
+		$tokens = array();
+
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
-					$tokens[ str_replace( $this->prefix, '', $key ) ] = maybe_unserialize( array_pop( $value ) );
+				$tokens[ str_replace( $this->prefix, '', $key ) ] = maybe_unserialize( array_pop( $value ) );
 			}
 		}
-				return $tokens;
+		return $tokens;
 	}
 
 	/**

@@ -3,12 +3,12 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Tested up to:** 4.9.6  
-**Stable tag:** 2.2.0  
+**Stable tag:** 3.0.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
 
-IndieAuth is a way to allow users to use their own domain to sign into other websites and services. 
+IndieAuth is a way to allow users to use their own domain to sign into other websites and services.
 
 ## Description ##
 
@@ -70,16 +70,16 @@ You can revoke local tokens under User->Manage Tokens.
 
 ## Upgrade Notice ##
 
-### 2.2.0 ###
+### 3.0.0 ###
 
-In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 2.2.0 separates
+In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 3.0.0 separates
 the endpoint code from the web sign-in code and removes the ability to use a third-party IndieAuth endpoint with your site. If you use the sign-in
 feature, it will look for the IndieAuth endpoint for the URL you provide. If you use Micropub for WordPress, enabling the plugin will use the built-in
 endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
 
 ## Changelog ##
 
-### 2.2.0 ###
+### 3.0.0 ###
 * Major refactor to abstract out and improve token generation code
 * Set one cookie with the state instead of multiple cookies.
 * Store other parameters as a transient

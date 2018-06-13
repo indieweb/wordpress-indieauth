@@ -84,7 +84,6 @@ class IndieAuth_Admin {
 				'content' =>
 					'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
 					'<p>' . __( 'IndieAuth was build on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
-
 			)
 		);
 

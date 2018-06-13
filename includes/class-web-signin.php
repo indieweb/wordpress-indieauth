@@ -217,9 +217,9 @@ class Web_Signin {
 	 * render the login form
 	 */
 	public function login_form() {
-			$template = plugin_dir_path( __DIR__ ) . 'templates/websignin-link.php';
+		$template = plugin_dir_path( __DIR__ ) . 'templates/websignin-link.php';
 		if ( 1 === (int) get_option( 'indieauth_show_login_form' ) ) {
-				load_template( $template );
+			load_template( $template );
 		}
 	}
 

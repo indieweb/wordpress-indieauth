@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 2.2.0\n"
+"Project-Id-Version: IndieAuth 3.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-06-13 03:34:49+00:00\n"
+"POT-Creation-Date: 2018-06-13 07:31:09+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -49,19 +49,19 @@ msgid ""
 "completely separate implementations and services can be used for each part."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:94
+#: includes/class-indieauth-admin.php:93
 msgid "The IndieWeb"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:96
+#: includes/class-indieauth-admin.php:95
 msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:98
+#: includes/class-indieauth-admin.php:97
 msgid "Your content is yours"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:99
+#: includes/class-indieauth-admin.php:98
 msgid ""
 "When you post something on the web, it should belong to you, not a "
 "corporation. Too many companies have gone out of business and lost all of "
@@ -69,64 +69,64 @@ msgid ""
 "your control."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:102
+#: includes/class-indieauth-admin.php:101
 msgid "You are better connected"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:103
+#: includes/class-indieauth-admin.php:102
 msgid ""
 "Your articles and status messages can go to all services, not just one, "
 "allowing you to engage with everyone. Even replies and likes on other "
 "services can come back to your site so they’re all in one place."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:106
+#: includes/class-indieauth-admin.php:105
 msgid "You are in control"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:107
+#: includes/class-indieauth-admin.php:106
 msgid ""
 "You can post anything you want, in any format you want, with no one "
 "monitoring you. In addition, you share simple readable links such as "
 "example.com/ideas. These links are permanent and will always work."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:113
+#: includes/class-indieauth-admin.php:112
 msgid "For more information:"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:114
+#: includes/class-indieauth-admin.php:113
 msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:115
+#: includes/class-indieauth-admin.php:114
 msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:116
+#: includes/class-indieauth-admin.php:115
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:67
+#: includes/class-indieauth-authorization-endpoint.php:68
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:72
-#: includes/class-indieauth-authorization-endpoint.php:112
+#: includes/class-indieauth-authorization-endpoint.php:73
+#: includes/class-indieauth-authorization-endpoint.php:113
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:119
+#: includes/class-indieauth-authorization-endpoint.php:120
 #: includes/class-indieauth-authorize.php:146
 #: includes/class-indieauth-token-endpoint.php:164
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:124
+#: includes/class-indieauth-authorization-endpoint.php:125
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:143
+#: includes/class-indieauth-authorization-endpoint.php:144
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
