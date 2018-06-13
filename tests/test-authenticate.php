@@ -33,6 +33,12 @@ class AuthenticateTest extends WP_UnitTestCase {
 		);
 	}
 
+ 	public function test_sample() {
+	                 // replace this with some actual testing code
+	                 $this->assertTrue( true );
+			         }
+
+
 /*
 	public function verification_token_response() {
 		$headers  = $this->headers();

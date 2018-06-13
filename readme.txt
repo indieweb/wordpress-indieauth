@@ -8,7 +8,7 @@ License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
 
-IndieAuth is a way for doing Web sign-in, where you use your own URL to sign in to other places.
+IndieAuth is a way to allow users to use their own domain to sign into other websites and services. 
 
 == Description ==
 
@@ -49,7 +49,7 @@ However, OpenID has failed to gain wide adoption, at least in part due to the co
 = How is IndieAuth different from OAuth? =
 
 IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of
-a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources..
+a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources.
 
 = Does this require users to have their own domain name? =
 
@@ -58,10 +58,6 @@ No. You can use your author profile URL to login if you do not have a domain nam
 = How do I authenticate myself to an Indieauth server? =
 
 That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
-IndieAuth.com works by linking your website to one or more authentication providers such as Twitter or Github.
-
-You can link your website to these providers add ['rel-me'](https://indieweb.org/rel-me) links to your site, which can be done manually or by installing
-the [Indieweb plugin](https://wordpress.org/plugins/indieweb)
 
 By adding Indieauth support, you can log into sites simply by providing your URL.
 
@@ -72,6 +68,14 @@ The plugin supports you using an external token endpoint if you want, but by hav
 
 You can revoke local tokens under User->Manage Tokens.
 
+== Upgrade Notice ==
+
+= 2.2.0 = 
+
+In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 2.2.0 separates
+the endpoint code from the web sign-in code and removes the ability to use a third-party IndieAuth endpoint with your site. If you use the sign-in
+feature, it will look for the IndieAuth endpoint for the URL you provide. If you use Micropub for WordPress, enabling the plugin will use the built-in
+endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
 
 == Changelog ==
 
@@ -79,6 +83,7 @@ You can revoke local tokens under User->Manage Tokens.
 * Major refactor to abstract out and improve token generation code
 * Set one cookie with the state instead of multiple cookies.
 * Store other parameters as a transient
+* Remove extra settings
 
 = 2.1.1 =
 * Bug Fix

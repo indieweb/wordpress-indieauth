@@ -22,34 +22,6 @@ class IndieAuth_Admin {
 				'default'      => 0,
 			)
 		);
-		register_setting(
-			'indieauth', 'indieauth_config', array(
-				'type'         => 'string',
-				'description'  => __( 'Indieauth Configuration Setting', 'indieauth' ),
-				'show_in_rest' => true,
-				'default'      => 'local',
-			)
-		);
-
-		register_setting(
-			'indieauth', 'indieauth_authorization_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Authorization Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_authorization_endpoint(),
-			)
-		);
-
-		register_setting(
-			'indieauth', 'indieauth_token_endpoint', array(
-				'type'              => 'string',
-				'description'       => __( 'IndieAuth Token Endpoint', 'indieauth' ),
-				'show_in_rest'      => true,
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => get_indieauth_token_endpoint(),
-			)
-		);
 	}
 
 	public function admin_init() {
