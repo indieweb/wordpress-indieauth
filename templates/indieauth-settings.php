@@ -17,11 +17,27 @@ if ( ! $other ) {
 
 		<h2 class="title"><?php _e( 'IndieAuth', 'indieauth' ); ?></h2>
 
-		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki', 'indieauth' ); ?></p>
+		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki.', 'indieauth' ); ?></p>
 
-		<h3><?php _e( 'Endpoint', 'indieauth' ); ?></h3>
-
-		<p><?php _e( 'Use the endpoint built into the plugin to authorize applications to log into your site', 'indieauth' ); ?></p>
+		<table class="form-table">
+			<tbody>
+				<tr>
+					<th>
+						<?php _e( 'Endpoints', 'indieauth' ); ?>
+					</th>
+					<td>
+						<p>
+							<?php _e( 'Authorization Endpoint:', 'indieauth' ); ?><br />
+							<code><?php echo rest_url( '/indieauth/1.0/auth' ); ?></code>
+						</p>
+						<p>
+							<?php _e( 'Token Endpoint:', 'indieauth' ); ?><br />
+							<code><?php echo rest_url( '/indieauth/1.0/token' ); ?></code>
+						</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 
 		<h2 class="title"><?php _e( 'Web Sign-In', 'indieauth' ); ?></h2>
 
