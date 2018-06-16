@@ -83,14 +83,16 @@ class IndieAuth_Authorize {
 		}
 		$token = $this->get_provided_token();
 		if ( ! $token ) {
-			$this->error = new WP_Error(
-				'missing_bearer_token',
-				__( 'Missing OAuth Bearer Token', 'indieauth' ),
-				array(
-					'status' => '401',
-					'server' => $_SERVER,
-				)
-			);
+			if ( defined( 'INDIEAUTH_TOKEN_ERROR' )  && INDIEAUTH_TOKEN_ERROR ) {
+				$this->error = new WP_Error(
+					'missing_bearer_token',
+					__( 'Missing OAuth Bearer Token', 'indieauth' ),
+					array(
+						'status' => '401',
+						'server' => $_SERVER,
+					)
+				);
+			}
 			return $user_id;
 		}
 

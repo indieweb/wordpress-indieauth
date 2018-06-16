@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.0.0\n"
+"Project-Id-Version: IndieAuth 3.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-06-13 07:44:12+00:00\n"
+"POT-Creation-Date: 2018-06-16 14:53:09+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -117,7 +117,7 @@ msgid "Missing Parameter: %1$s"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:120
-#: includes/class-indieauth-authorize.php:146
+#: includes/class-indieauth-authorize.php:148
 #: includes/class-indieauth-token-endpoint.php:164
 msgid "Invalid authorization code"
 msgstr ""
@@ -132,15 +132,15 @@ msgid ""
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:88
+#: includes/class-indieauth-authorize.php:89
 msgid "Missing OAuth Bearer Token"
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:110
+#: includes/class-indieauth-authorize.php:112
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:137
+#: includes/class-indieauth-authorize.php:139
 #: includes/class-indieauth-token-endpoint.php:83
 msgid "Invalid access token"
 msgstr ""
