@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.6
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -86,6 +86,9 @@ feature, it will look for the IndieAuth endpoint for the URL you provide. If you
 endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
 
 == Changelog ==
+
+= 3.0.2 =
+* Automatically rewrite local URLs to https if the local site is site to SSL
 
 = 3.0.1 =
 * In previous version fixed issue where error message was not returned if there was a missing bearer token. This was needed due fact that some servers filter tokens. However, this meant that it would do this for all API requests, even ones not requiring authentication such as webmentions. Reverted change with flag
