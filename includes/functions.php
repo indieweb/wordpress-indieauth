@@ -153,6 +153,9 @@ function get_user_by_identifier( $identifier ) {
 	}
 	// Ensure has trailing slash
 	$identifier = trailingslashit( $identifier );
+	if ( ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) ) && ( wp_parse_url( home_url(), PHP_URL_HOST ) === wp_parse_url( $identifier, PHP_URL_HOST ) ) ) {
+		$identifier = set_url_scheme( $identifier, 'https' );
+	}
 	// Try to save the expense of a search query if the URL is the site URL
 	if ( home_url( '/' ) === $identifier ) {
 		// Use the Indieweb settings to set the default author

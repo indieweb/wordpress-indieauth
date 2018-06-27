@@ -53,6 +53,9 @@ class IndieAuth_Plugin {
 	}
 
 	public function pre_user_url( $user_url ) {
+		if ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) && ( wp_parse_url( $user_url, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
+			$user_url = set_url_scheme( $user_url, 'https' );
+		}	
 		return trailingslashit( $user_url );
 	}
 }
