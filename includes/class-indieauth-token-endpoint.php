@@ -124,13 +124,12 @@ class IndieAuth_Token_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$endpoint = find_rels( $params['me'], 'authorization_endpoint' );
 		$response = $this->verify_local_authorization_code(
 			array(
 				'code'         => $params['code'],
 				'redirect_uri' => $params['redirect_uri'],
 				'client_id'    => $params['client_id'],
-			), $endpoint
+			)
 		);
 		$error    = get_oauth_error( $response );
 		if ( $error ) {
