@@ -83,7 +83,7 @@ class IndieAuth_Authorize {
 		}
 		$token = $this->get_provided_token();
 		if ( ! $token ) {
-			if ( defined( 'INDIEAUTH_TOKEN_ERROR' )  && INDIEAUTH_TOKEN_ERROR ) {
+			if ( defined( 'INDIEAUTH_TOKEN_ERROR' ) && INDIEAUTH_TOKEN_ERROR ) {
 				$this->error = new WP_Error(
 					'missing_bearer_token',
 					__( 'Missing OAuth Bearer Token', 'indieauth' ),
@@ -96,18 +96,26 @@ class IndieAuth_Authorize {
 			return $user_id;
 		}
 
-		$me = $this->verify_access_token( $token );
-		if ( ! $me ) {
+		$params = $this->verify_access_token( $token );
+		if ( ! $params ) {
 			return $user_id;
 		}
-		if ( is_oauth_error( $me ) ) {
-			$this->error = $me->to_wp_error();
+		if ( is_oauth_error( $params ) ) {
+			$this->error = $params->to_wp_error();
 			return $user_id;
 		}
-		$user = get_user_by_identifier( $me );
-		if ( $user instanceof WP_User ) {
-			return $user->ID;
+		if ( is_array( $params ) ) {
+			// If the user ID is passed in the token use it
+			if ( isset( $params['user'] ) ) {
+				return $params['user'];
+			} elseif ( isset( $params['me'] ) ) {
+				$user = get_user_by_identifier( $me );
+				if ( $user instanceof WP_User ) {
+					return $user->ID;
+				}
+			}
 		}
+
 		$this->error = new WP_Error(
 			'indieauth.user_not_found', __( 'User Not Found on this Site', 'indieauth' ),
 			array(
@@ -129,7 +137,8 @@ class IndieAuth_Authorize {
 
 		$this->scopes   = explode( ' ', $params['scope'] );
 		$this->response = $params;
-		return $params['me'];
+
+		return $params;
 	}
 
 	public function verify_local_access_token( $token ) {

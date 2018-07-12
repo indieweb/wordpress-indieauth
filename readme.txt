@@ -2,8 +2,8 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
-Tested up to: 4.9.6
-Stable tag: 3.0.2
+Tested up to: 4.9.7
+Stable tag: 3.0.3
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -86,6 +86,13 @@ feature, it will look for the IndieAuth endpoint for the URL you provide. If you
 endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
 
 == Changelog ==
+
+Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.0.3 =
+* Verify user ID directly from the token endpoint rather than mapping URL.
+* Display $me parameter instead of user_url on authenticate screen
+* Remove deprecated functions and parameters
 
 = 3.0.2 =
 * Automatically rewrite local URLs to https if the local site is site to SSL

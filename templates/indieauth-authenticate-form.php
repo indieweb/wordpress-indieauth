@@ -13,7 +13,7 @@ login_header(
 			printf(
 				'<p>' . __( 'The app <strong>%1$s</strong> would like to sign you in as <strong>%2$s</strong>.', 'indieauth' ) . '</p>',
 				$client_id,
-				$current_user->user_url
+				$me
 			);
 
 		if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {

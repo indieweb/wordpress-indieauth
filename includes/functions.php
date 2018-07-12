@@ -162,10 +162,12 @@ function get_user_by_identifier( $identifier ) {
 		if ( class_exists( 'Indieweb_Plugin' ) && ( get_option( 'iw_single_author' ) || ! is_multi_author() ) ) {
 			return get_user_by( 'id', get_option( 'iw_default_author' ) );
 		}
-		$users = get_users( array( 'role__not_in' => array( 'subscriber' ) ) );
+		$users = get_users( array( 'who' => 'authors' ) );
 		if ( 1 === count( $users ) ) {
 			return $users[0];
 		}
+		return null;
+
 	}
 	// Check if this is a author post URL
 	$user = url_to_author( $identifier );
@@ -176,10 +178,10 @@ function get_user_by_identifier( $identifier ) {
 		'search'         => $identifier,
 		'search_columns' => array( 'user_url' ),
 	);
-	$user_query = new WP_User_Query( $args );
+	$users = get_users( $args );
 	// check result
-	if ( ! empty( $user_query->results ) ) {
-		return $user_query->results[0];
+	if ( ! empty( $users ) ) {
+		return $users[0];
 	}
 	return null;
 }
