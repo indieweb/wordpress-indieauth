@@ -87,6 +87,8 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 
 ## Changelog ##
 
+Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
 ### 3.0.2 ###
 * Automatically rewrite local URLs to https if the local site is site to SSL
 
