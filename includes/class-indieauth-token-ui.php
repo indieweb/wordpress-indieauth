@@ -11,10 +11,8 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function __construct() {
-		if ( 'local' === get_option( 'indieauth_config', 'local' ) ) {
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
-			add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
-		}
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
+		add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
 	}
 
 	/**
