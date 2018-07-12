@@ -19,7 +19,6 @@ class IndieAuth_Plugin {
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
-		require_once plugin_dir_path( __FILE__ ) . 'includes/indieauth-functions.php';
 
 		// Token Management
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-generic.php';
