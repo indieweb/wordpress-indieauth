@@ -1,14 +1,3 @@
-<?php
-$authorization = get_indieauth_authorization_endpoint();
-$token = get_indieauth_token_endpoint();
-$config = get_option( 'indieauth_config' );
-$other = ( 'custom' === $config );
-if ( ! $other ) {
-	$authorization = '';
-	$token = '';
-}
-?>
-
 <div class="wrap">
 	<h1><?php esc_html_e( 'IndieAuth Settings', 'indieauth' ); ?></h1>
 
