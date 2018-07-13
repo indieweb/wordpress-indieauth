@@ -17,7 +17,7 @@ msgstr ""
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:28 templates/indieauth-settings.php:13
+#: includes/class-indieauth-admin.php:28 templates/indieauth-settings.php:2
 msgid "IndieAuth Settings"
 msgstr ""
 
@@ -298,39 +298,39 @@ msgid ""
 "application."
 msgstr ""
 
-#: templates/indieauth-settings.php:20
+#: templates/indieauth-settings.php:9
 msgid ""
 "With IndieAuth, you can use your blog, to log into sites like the "
 "IndieWeb-Wiki."
 msgstr ""
 
-#: templates/indieauth-settings.php:26
+#: templates/indieauth-settings.php:15
 msgid "Endpoints"
 msgstr ""
 
-#: templates/indieauth-settings.php:30
+#: templates/indieauth-settings.php:19
 msgid "Authorization Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:34
+#: templates/indieauth-settings.php:23
 msgid "Token Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:42 templates/websignin-link.php:3
+#: templates/indieauth-settings.php:31 templates/websignin-link.php:3
 msgid "Web Sign-In"
 msgstr ""
 
-#: templates/indieauth-settings.php:44
+#: templates/indieauth-settings.php:33
 msgid ""
 "Enable Web Sign-In for your blog, so others can use IndieAuth or RelMeAuth "
 "to log into this site."
 msgstr ""
 
-#: templates/indieauth-settings.php:50
+#: templates/indieauth-settings.php:39
 msgid "Use IndieAuth login"
 msgstr ""
 
-#: templates/indieauth-settings.php:56
+#: templates/indieauth-settings.php:45
 msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
 msgstr ""
 

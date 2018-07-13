@@ -93,6 +93,10 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 * Fixed `state` param handling
 
+### 3.0.4 ###
+
+* Fixed admin settings
+
 ### 3.0.3 ###
 
 * Verify user ID directly from the token endpoint rather than mapping URL.
