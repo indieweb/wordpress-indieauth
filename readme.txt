@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.7
-Stable tag: 3.0.3
+Stable tag: 3.1.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -71,7 +71,7 @@ You can revoke local tokens under User->Manage Tokens.
 = I keep getting the response that my request is Unauthorized =
 
 Many server configurations will not pass bearer tokens. The plugin attempts to work with this as best possible, but there may be cases we have not encounter.
-Please temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors, and enable 
+Please temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors, and enable
 `define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed
 allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this
 is off by default.
@@ -89,25 +89,34 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+= 3.1.0 =
+
+* Fixed `state` param handling
+
 = 3.0.3 =
+
 * Verify user ID directly from the token endpoint rather than mapping URL.
 * Display $me parameter instead of user_url on authenticate screen
 * Remove deprecated functions and parameters
 
 = 3.0.2 =
+
 * Automatically rewrite local URLs to https if the local site is site to SSL
 
 = 3.0.1 =
+
 * In previous version fixed issue where error message was not returned if there was a missing bearer token. This was needed due fact that some servers filter tokens. However, this meant that it would do this for all API requests, even ones not requiring authentication such as webmentions. Reverted change with flag
 * Added constant `INDIEAUTH_TOKEN_ERROR` which if set to true will return an error if it cannot find a token.
 
 = 3.0.0 =
+
 * Major refactor to abstract out and improve token generation code
 * Set one cookie with the state instead of multiple cookies.
 * Store other parameters as a transient
 * Remove extra settings
 
 = 2.1.1 =
+
 * Bug Fix
 
 = 2.1.0 =
