@@ -80,12 +80,12 @@ class IndieAuth_Authorization_Endpoint {
 			'response_type' => $params['response_type'],
 			'client_id'     => $params['client_id'],
 			'me'            => $params['me'],
-			'state'         => rawurlencode( $params['state'] ),
+			'state'         => $params['state'],
 		);
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = rawurlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' );
 		}
-		$url = add_query_arg( $args, $url );
+		$url = add_query_params_to_url( $args, $url );
 
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
@@ -162,11 +162,11 @@ class IndieAuth_Authorization_Endpoint {
 		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
-		$state         = isset( $_GET['state'] ) ? wp_unslash( $_GET['state'] ) : null;
+		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
 		$action        = 'indieauth';
-		$url           = add_query_arg(
+		$url           = add_query_params_to_url(
 			compact(
 				'client_id',
 				'redirect_uri',
@@ -191,13 +191,13 @@ class IndieAuth_Authorization_Endpoint {
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? wp_unslash( $_POST['scope'] ) : null;
-		$state         = isset( $_POST['state'] ) ? wp_unslash( $_POST['state'] ) : null;
+		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
 		$token         = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
 		$token         = array_filter( $token );
 		$code          = IndieAuth_Authorization_Endpoint::set_code( $current_user->ID, $token );
-		$url           = add_query_arg(
+		$url           = add_query_params_to_url(
 			array(
 				'code'  => $code,
 				'state' => $state,

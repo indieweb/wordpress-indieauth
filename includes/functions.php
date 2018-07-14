@@ -4,7 +4,7 @@
  * @param array $links  Link headers as a string
  * @param string $url URL to use to make absolute
  * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
-*/
+ */
 function parse_link_rels( $links, $url ) {
 	$rels = array();
 	foreach ( $links as $link ) {
@@ -125,7 +125,7 @@ function find_rels( $me, $endpoints = null ) {
  * @param array $contents HTML to parse for rel links
  * @param string $url URL to use to make absolute
  * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
-*/
+ */
 function parse_html_rels( $contents, $url ) {
 	// unicode to HTML entities
 	$contents = mb_convert_encoding( $contents, 'HTML-ENTITIES', mb_detect_encoding( $contents ) );
@@ -174,10 +174,12 @@ function get_user_by_identifier( $identifier ) {
 	if ( $user ) {
 		return $user;
 	}
-	$args       = array(
+
+	$args = array(
 		'search'         => $identifier,
 		'search_columns' => array( 'user_url' ),
 	);
+
 	$users = get_users( $args );
 	// check result
 	if ( ! empty( $users ) ) {
@@ -293,4 +295,52 @@ if ( ! function_exists( 'getallheaders' ) ) {
 
 		return $headers;
 	}
+}
+
+/**
+ * Add query strings to an URL
+ *
+ * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
+ * Copyright 2017 Aaron Parecki, used with permission under MIT License
+ *
+ * @param array  $args the query stings as array
+ * @param string $url  the final URL
+ */
+function add_query_params_to_url( $args, $url ) {
+	$parts = wp_parse_url( $url );
+	if ( array_key_exists( 'query', $parts ) && $parts['query'] ) {
+		parse_str( $parts['query'], $params );
+	} else {
+		$params = [];
+	}
+	foreach ( $args as $k => $v ) {
+		$params[ $k ] = $v;
+	}
+	$parts['query'] = http_build_query( $params );
+
+	return build_url( $parts );
+}
+
+/**
+ * Inverse of parse_url
+ *
+ * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
+ * Copyright 2017 Aaron Parecki, used with permission under MIT License
+ *
+ * @link http://php.net/parse_url
+ * @param  string $parsed_url the parsed URL (wp_parse_url)
+ * @return string             the final URL
+ */
+function build_url( $parsed_url ) {
+	$scheme   = ! empty( $parsed_url['scheme'] ) ? $parsed_url['scheme'] . '://' : '';
+	$host     = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
+	$port     = ! empty( $parsed_url['port'] ) ? ':' . $parsed_url['port'] : '';
+	$user     = ! empty( $parsed_url['user'] ) ? $parsed_url['user'] : '';
+	$pass     = ! empty( $parsed_url['pass'] ) ? ':' . $parsed_url['pass'] : '';
+	$pass     = ( $user || $pass ) ? "$pass@" : '';
+	$path     = ! empty( $parsed_url['path'] ) ? $parsed_url['path'] : '';
+	$query    = ! empty( $parsed_url['query'] ) ? '?' . $parsed_url['query'] : '';
+	$fragment = ! empty( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
+
+	return "$scheme$user$pass$host$port$path$query$fragment";
 }
