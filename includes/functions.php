@@ -311,7 +311,7 @@ function add_query_params_to_url( $args, $url ) {
 	if ( array_key_exists( 'query', $parts ) && $parts['query'] ) {
 		parse_str( $parts['query'], $params );
 	} else {
-		$params = [];
+		$params = array();
 	}
 	foreach ( $args as $k => $v ) {
 		$params[ $k ] = $v;
