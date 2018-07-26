@@ -92,6 +92,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 = 3.1.2 =
 
 * Fix issue with scope encoding
+* Fix issue where function returned differently than parent function
 
 = 3.1.1 =
 
