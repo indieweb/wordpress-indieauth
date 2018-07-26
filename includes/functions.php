@@ -171,7 +171,7 @@ function get_user_by_identifier( $identifier ) {
 	}
 	// Check if this is a author post URL
 	$user = url_to_author( $identifier );
-	if ( $user ) {
+	if ( $user instanceOf WP_User ) {
 		return $user;
 	}
 
@@ -206,7 +206,7 @@ function url_to_author( $url ) {
 	if ( preg_match( '/[?&]author=(\d+)/i', $url, $values ) ) {
 		$id = absint( $values[1] );
 		if ( $id ) {
-			return $id;
+			return get_user_by( 'id', $id );
 		}
 	}
 	// check to see if we are using rewrite rules
@@ -222,7 +222,7 @@ function url_to_author( $url ) {
 	if ( preg_match( '/https?:\/\/(.+)' . preg_quote( $author_regexp, '/' ) . '([^\/]+)/i', $url, $match ) ) {
 		$user = get_user_by( 'slug', $match[2] );
 		if ( $user ) {
-			return $user->ID;
+			return $user;
 		}
 	}
 	return null;
