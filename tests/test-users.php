@@ -4,7 +4,7 @@ class UsersTest extends WP_UnitTestCase {
 	public function test_authorurl() {
 		$user_id = $this->factory->user->create();
 		$result = get_user_by_identifier( get_author_posts_url( $user_id ) );
-		$this->assertSame( $result, $user_id );
+		$this->assertSame( $result->ID, $user_id );
 	}
 
 	public function test_userurl() {

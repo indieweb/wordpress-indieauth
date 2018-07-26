@@ -90,11 +90,11 @@ class IndieAuth_Token_Endpoint {
 			return false;
 		}
 		$user = get_user_by_identifier( $token['me'] );
-		if ( ! $user ) {
-			return false;
+		if ( $user instanceof WP_User ) {
+			$this->tokens->set_user( $user->ID );
+			return $this->tokens->set( $token );
 		}
-		$this->tokens->set_user( $user->ID );
-		return $this->tokens->set( $token );
+		return false;
 	}
 
 	public function delete_token( $id, $user_id = null ) {

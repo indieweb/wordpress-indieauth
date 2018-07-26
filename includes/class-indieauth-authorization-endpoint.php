@@ -83,7 +83,7 @@ class IndieAuth_Authorization_Endpoint {
 			'state'         => $params['state'],
 		);
 		if ( 'code' === $params['response_type'] ) {
-			$args['scope'] = rawurlencode( isset( $params['scope'] ) ? $params['scope'] : 'create update' );
+			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : 'create update';
 		}
 		$url = add_query_params_to_url( $args, $url );
 
