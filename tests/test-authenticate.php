@@ -2,7 +2,6 @@
 class AuthenticateTest extends WP_UnitTestCase {
 
 	protected static $author_id;
-	protected static $tokens;
 
 	protected static $test_token = array(
 		'token_type' => 'Bearer',
@@ -19,17 +18,17 @@ class AuthenticateTest extends WP_UnitTestCase {
 				'role' => 'author',
 			)
 		);
-		static::$tokens    = new Token_User( '_indieauth_token_' );
 	}
 
-	public static function wpTearDownAfterClass() {
+	public static function pTearDownAfterClass() {
 		self::delete_user( self::$author_id );
 	}
 
 	// Sets a test token
 	public function set_token() {
-		self::$tokens->set_user( self::$author_id );
-		return self::$tokens->set( static::$test_token );
+		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens->set_user( self::$author_id );
+		return $tokens->set( static::$test_token );
 	}
 
 	// Sets a token and verifies it
