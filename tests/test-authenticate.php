@@ -20,7 +20,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 		);
 	}
 
-	public static function pTearDownAfterClass() {
+	public static function wpTearDownAfterClass() {
 		self::delete_user( self::$author_id );
 	}
 
