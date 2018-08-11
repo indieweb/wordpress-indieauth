@@ -72,8 +72,10 @@ class IndieAuth_Token_UI {
 		}
 		echo '<div>';
 		foreach ( $tokens as $key => $value ) {
+			// phpcs:ignore
 			echo '<input type="radio" name="token" value="' . $key . '" />';
-			printf( __( 'Issued for %1$1s at %2$2s', 'indieauth' ), $value['client_id'], date_i18n( DATE_W3C, $value['issued_at'] ) );
+			// translators: Issued for client id url at date
+			echo esc_html( sprintf( __( 'Issued for %1$1s at %2$2s', 'indieauth' ), $value['client_id'], date_i18n( DATE_W3C, $value['issued_at'] ) ) );
 			echo PHP_EOL . '<br />';
 		}
 		echo '</div>';

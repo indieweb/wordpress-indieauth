@@ -7,14 +7,13 @@ abstract class Token_Generic {
 	 * Set a token.
 	 *
 	 * @param array $info token to hash.
-	 * @param int $expiration Time to expire.
+	 * @param int   $expiration Time to expire.
 	 * @return string|boolean The pre-hashed key or false if there is an error.
 	 */
 	abstract public function set( $info, $expiration = null );
 
 	/**
 	 * Destroys a token.
-	 *
 	 *
 	 * @param string $key token to destroy.
 	 * @return boolean Return if successfully destroyed or not
@@ -24,8 +23,7 @@ abstract class Token_Generic {
 	/**
 	 * Retrieves a token
 	 *
-	 *
-	 * @param string $key token to retrieve.
+	 * @param string  $key token to retrieve.
 	 * @param boolean $hash Whether or not the key must be hashed
 	 * @return array|boolean Token or false if not found
 	 */
@@ -75,7 +73,6 @@ abstract class Token_Generic {
 	/**
 	 * Hashes a token.
 	 *
-	 *
 	 * @param string $string string to hash.
 	 * @param string $scheme Hashing sceheme
 	 * @return string A hash of the string encoded to base64.
@@ -87,9 +84,8 @@ abstract class Token_Generic {
 	/**
 	 * Updates an existing token
 	 *
-	 *
 	 * @param string $key token to hash.
-	 * @param array $info An array that will be stored under the token name
+	 * @param array  $info An array that will be stored under the token name
 	 * @return string|boolean A hash of the session token (a verifier) or false if key does not exist.
 	 */
 	abstract public function update( $key, $info );

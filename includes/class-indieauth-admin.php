@@ -38,7 +38,7 @@ class IndieAuth_Admin {
 			$path = 'options-general.php?page=indieauth';
 		}
 
-		printf( __( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ), $path );
+		printf( __( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ), $path ); // phpcs:ignore
 	}
 
 	/**

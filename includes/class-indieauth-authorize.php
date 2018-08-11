@@ -46,8 +46,8 @@ class IndieAuth_Authorize {
 		header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
 	}
 	public static function html_header() {
-		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) );
-		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) );
+		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) ); // phpcs:ignore
+		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) ); //phpcs:ignore
 	}
 
 
@@ -190,7 +190,7 @@ class IndieAuth_Authorize {
 		return null;
 	}
 
-			/**
+	/**
 	 * Extracts the token from the authorization header or the current request.
 	 *
 	 * @return string|null Token on success, null on failure.
@@ -209,7 +209,8 @@ class IndieAuth_Authorize {
 		}
 		return null;
 	}
-			/**
+
+	/**
 	 * Extracts the token from the given authorization header.
 	 *
 	 * @param string $header Authorization header.
@@ -222,7 +223,8 @@ class IndieAuth_Authorize {
 		}
 		return null;
 	}
-			/**
+
+	/**
 	 * Extracts the token from the current request.
 	 *
 	 * @return string|null Token on success, null on failure.

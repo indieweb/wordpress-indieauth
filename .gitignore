@@ -5,3 +5,4 @@ npm-debug.log
 package-lock.json
 /.data
 .DS_Store
+composer.lock

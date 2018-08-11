@@ -17,7 +17,7 @@ class Token_Transient extends Token_Generic {
 	 * Set a token.
 	 *
 	 * @param array $info token to hash.
-	 * @param int $expiration Time in seconds to expire the token
+	 * @param int   $expiration Time in seconds to expire the token
 	 * @return string|boolean The pre-hashed key or false if there is an error.
 	 */
 	public function set( $info, $expiration = 120 ) {
@@ -76,7 +76,6 @@ class Token_Transient extends Token_Generic {
 	/**
 	 * Destroys a token
 	 *
-	 *
 	 * @param string $key token to destroy.
 	 * @return boolean Return if successfully destroyed or not
 	 */
@@ -88,8 +87,7 @@ class Token_Transient extends Token_Generic {
 	/**
 	 * Retrieves a token
 	 *
-	 *
-	 * @param string $key token to retrieve.
+	 * @param string  $key token to retrieve.
 	 * @param boolean $hash Whether or not the key should be hashed
 	 * @return array|boolean Token or false if not found
 	 */
@@ -114,9 +112,8 @@ class Token_Transient extends Token_Generic {
 	/**
 	 * Updates an existing token
 	 *
-	 *
 	 * @param string $key token. Must not be hashed
-	 * @param array $info An array that will be stored under the token name
+	 * @param array  $info An array that will be stored under the token name
 	 * @return boolean
 	 */
 	public function update( $key, $info ) {
