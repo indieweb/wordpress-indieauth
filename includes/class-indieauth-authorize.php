@@ -190,11 +190,11 @@ class IndieAuth_Authorize {
 		return null;
 	}
 
-			/**
-			 * Extracts the token from the authorization header or the current request.
-			 *
-			 * @return string|null Token on success, null on failure.
-			 */
+	/**
+	 * Extracts the token from the authorization header or the current request.
+	 *
+	 * @return string|null Token on success, null on failure.
+	 */
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
 		if ( $header ) {
@@ -209,24 +209,26 @@ class IndieAuth_Authorize {
 		}
 		return null;
 	}
-			/**
-			 * Extracts the token from the given authorization header.
-			 *
-			 * @param string $header Authorization header.
-			 *
-			 * @return string|null Token on success, null on failure.
-			 */
+
+	/**
+	 * Extracts the token from the given authorization header.
+	 *
+	 * @param string $header Authorization header.
+	 *
+	 * @return string|null Token on success, null on failure.
+	 */
 	public function get_token_from_bearer_header( $header ) {
 		if ( is_string( $header ) && preg_match( '/Bearer ([\x20-\x7E]+)/', trim( $header ), $matches ) ) {
 			return $matches[1];
 		}
 		return null;
 	}
-			/**
-			 * Extracts the token from the current request.
-			 *
-			 * @return string|null Token on success, null on failure.
-			 */
+
+	/**
+	 * Extracts the token from the current request.
+	 *
+	 * @return string|null Token on success, null on failure.
+	 */
 	public function get_token_from_request() {
 		if ( empty( $_REQUEST['access_token'] ) ) {
 			return null;
