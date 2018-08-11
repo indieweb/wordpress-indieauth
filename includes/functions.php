@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @param array $links  Link headers as a string
+ * @param array  $links  Link headers as a string
  * @param string $url URL to use to make absolute
  * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
  */
@@ -36,9 +36,8 @@ function parse_link_rels( $links, $url ) {
  * Checks for specific rel properties in a URL. It does
  * a check for the headers first and returns that, if available
  *
- * @param string $me URL
+ * @param string       $me URL
  * @param string|array $endpoints Specific endpoints to search for
- *
  *
  * @return bool|array|string False on failure, array containing one or both or the headers on success or string if single property
  */
@@ -122,7 +121,7 @@ function find_rels( $me, $endpoints = null ) {
 }
 
 /**
- * @param array $contents HTML to parse for rel links
+ * @param array  $contents HTML to parse for rel links
  * @param string $url URL to use to make absolute
  * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
  */
@@ -171,7 +170,7 @@ function get_user_by_identifier( $identifier ) {
 	}
 	// Check if this is a author post URL
 	$user = url_to_author( $identifier );
-	if ( $user instanceOf WP_User ) {
+	if ( $user instanceof WP_User ) {
 		return $user;
 	}
 
@@ -190,7 +189,6 @@ function get_user_by_identifier( $identifier ) {
 
 /**
  * Examine a url and try to determine the author ID it represents.
- *
  *
  * @param string $url Permalink to check.
  *

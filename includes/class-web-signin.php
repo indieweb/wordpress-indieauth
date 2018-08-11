@@ -19,7 +19,6 @@ class Web_Signin {
 	 *
 	 * @param string $me URL parameter
 	 * @param string $redirect_uri where to redirect
-	 *
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
 		$authorization_endpoint = find_rels( $me, 'authorization_endpoint' );
@@ -77,7 +76,6 @@ class Web_Signin {
 
 		$response = json_decode( $response, true );
 		// check if response was json or not
-
 		if ( ! is_array( $response ) ) {
 				return new WP_OAuth_Response( 'server_error', __( 'The authorization endpoint did not return a JSON response', 'indieauth' ), 500 );
 		}
@@ -148,7 +146,6 @@ class Web_Signin {
 
 	/**
 	 * Authenticate user to WordPress using URL and Password
-	 *
 	 */
 	public function authenticate_url_password( $user, $url, $password ) {
 		if ( $user instanceof WP_User ) {
@@ -243,7 +240,7 @@ class Web_Signin {
 			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
 			$redirect_to = rawurldecode( $redirect_to );
 
-			if ( array_key_exists( 'websignin_identifier', $_POST ) ) {
+			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore
 				$me = esc_url_raw( $_POST['websignin_identifier'] );
 				// Check for valid URLs
 				if ( ! wp_http_validate_url( $me ) ) {
@@ -252,12 +249,12 @@ class Web_Signin {
 
 				$return = $this->websignin_redirect( $me, wp_login_url( $redirect_to ) );
 				if ( is_wp_error( $return ) ) {
-					echo '<div id="login_error">' . $return->get_error_message() . "</div>\n";
+					echo '<div id="login_error">' . esc_html( $return->get_error_message() ) . "</div>\n";
 					return $return;
 				}
 				if ( is_oauth_error( $return ) ) {
 					$return = $return->to_wp_error();
-					echo '<div id="login_error">' . $return->get_error_message() . "</div>\n";
+					echo '<div id="login_error">' . esc_html( $return->get_error_message() ) . "</div>\n";
 					return $return;
 				}
 			}

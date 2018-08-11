@@ -46,8 +46,8 @@ class IndieAuth_Authorize {
 		header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
 	}
 	public static function html_header() {
-		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) );
-		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) );
+		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) ); // phpcs:ignore
+		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) ); //phpcs:ignore
 	}
 
 
@@ -191,10 +191,10 @@ class IndieAuth_Authorize {
 	}
 
 			/**
-	 * Extracts the token from the authorization header or the current request.
-	 *
-	 * @return string|null Token on success, null on failure.
-	 */
+			 * Extracts the token from the authorization header or the current request.
+			 *
+			 * @return string|null Token on success, null on failure.
+			 */
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
 		if ( $header ) {
@@ -210,12 +210,12 @@ class IndieAuth_Authorize {
 		return null;
 	}
 			/**
-	 * Extracts the token from the given authorization header.
-	 *
-	 * @param string $header Authorization header.
-	 *
-	 * @return string|null Token on success, null on failure.
-	 */
+			 * Extracts the token from the given authorization header.
+			 *
+			 * @param string $header Authorization header.
+			 *
+			 * @return string|null Token on success, null on failure.
+			 */
 	public function get_token_from_bearer_header( $header ) {
 		if ( is_string( $header ) && preg_match( '/Bearer ([\x20-\x7E]+)/', trim( $header ), $matches ) ) {
 			return $matches[1];
@@ -223,10 +223,10 @@ class IndieAuth_Authorize {
 		return null;
 	}
 			/**
-	 * Extracts the token from the current request.
-	 *
-	 * @return string|null Token on success, null on failure.
-	 */
+			 * Extracts the token from the current request.
+			 *
+			 * @return string|null Token on success, null on failure.
+			 */
 	public function get_token_from_request() {
 		if ( empty( $_REQUEST['access_token'] ) ) {
 			return null;

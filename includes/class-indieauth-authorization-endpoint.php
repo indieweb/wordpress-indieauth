@@ -70,6 +70,7 @@ class IndieAuth_Authorization_Endpoint {
 		$required = array( 'redirect_uri', 'client_id', 'state', 'me' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
+				// translators: Name of missing parameter
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
@@ -110,6 +111,7 @@ class IndieAuth_Authorization_Endpoint {
 		$required = array( 'redirect_uri', 'client_id', 'code' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
+				// translators: Name of missing parameter
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
@@ -149,6 +151,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
 		}
+
 		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->authorize();
 		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
@@ -158,15 +161,17 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	public function authorize() {
-		$current_user  = wp_get_current_user();
+		$current_user = wp_get_current_user();
+		// phpcs:disable
 		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
-		$action        = 'indieauth';
-		$url           = add_query_params_to_url(
+		// phpcs:enable
+		$action = 'indieauth';
+		$url    = add_query_params_to_url(
 			compact(
 				'client_id',
 				'redirect_uri',
@@ -187,24 +192,26 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	public function confirmed() {
-		$current_user  = wp_get_current_user();
+		$current_user = wp_get_current_user();
+		// phpcs:disable
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? wp_unslash( $_POST['scope'] ) : null;
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
-		$token         = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
-		$token         = array_filter( $token );
-		$code          = IndieAuth_Authorization_Endpoint::set_code( $current_user->ID, $token );
-		$url           = add_query_params_to_url(
+		/// phpcs:enable
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
+		$token = array_filter( $token );
+		$code  = self::set_code( $current_user->ID, $token );
+		$url   = add_query_params_to_url(
 			array(
 				'code'  => $code,
 				'state' => $state,
 			),
 			$redirect_uri
 		);
-		wp_redirect( $url );
+		wp_redirect( $url ); // phpcs:ignore
 	}
 }
 
