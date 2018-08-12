@@ -41,6 +41,7 @@ class IndieAuth_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorization-endpoint.php';
 
 		// Token Endpoint UI
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-list-table.php';
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-token-ui.php';
 
 		// IndieAuth Admin

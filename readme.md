@@ -91,6 +91,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 ### 3.1.3 ###
 * Allow selection of scopes and add stock descriptions
+* Update Manage Token Page to use WP_List_Table
 
 ### 3.1.2 ###
 
