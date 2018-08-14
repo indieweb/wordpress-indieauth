@@ -50,7 +50,11 @@ class IndieAuth_Token_UI {
 		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
 		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
 		$codes->check_expires();
-		load_template( plugin_dir_path( __DIR__ ) . 'templates/indieauth-token-ui.php' );
+		$ListTable = new Token_List_Table();
+		echo '<div class="wrap"><h2>' . __( 'Manage IndieAuth Tokens', 'indieauth' ) . '</h2>'; 
+		$ListTable->prepare_items(); 
+		$ListTable->display(); 
+		echo '</div>'; 
 	}
 
 	/**
@@ -64,22 +68,6 @@ class IndieAuth_Token_UI {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
 
-	public static function token_form_table() {
-		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
-		$tokens = $t->get_all();
-		if ( ! is_array( $tokens ) ) {
-			return;
-		}
-		echo '<div>';
-		foreach ( $tokens as $key => $value ) {
-			// phpcs:ignore
-			echo '<input type="radio" name="token" value="' . $key . '" />';
-			// translators: Issued for client id url at date
-			echo esc_html( sprintf( __( 'Issued for %1$1s at %2$2s', 'indieauth' ), $value['client_id'], date_i18n( DATE_W3C, $value['issued_at'] ) ) );
-			echo PHP_EOL . '<br />';
-		}
-		echo '</div>';
-	}
 } // End Class
 
 new IndieAuth_Token_UI();

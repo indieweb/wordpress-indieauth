@@ -59,6 +59,30 @@ class IndieAuth_Authorization_Endpoint {
 		);
 	}
 
+	// Get Scope Descriptions
+	public function scopes( $scope = 'all' ) {
+		$scopes = array(
+			// Micropub Scopes
+			'post'     => __( 'Legacy Scope (Deprecated)', 'indieauth' ),
+			'create'   => __( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
+			'update'   => __( 'Allows the application to update posts', 'indieauth' ),
+			'delete'   => __( 'Allows the application to delete posts', 'indieauth' ),
+			'undelete' => __( 'Allows the application to undelete posts', 'indieauth' ),
+			'media'    => __( 'Allows the application to upload to the media endpoint', 'indieauth' ),
+			// Microsub Scopes
+			'read'     => __( 'Allows the application read access to channels', 'indieauth' ),
+			'follow'   => __( 'Allows the application to manage a follow list', 'indieauth' ),
+			'mute'     => __( 'Allows the application to mute and unmute users', 'indieauth' ),
+			'block'    => __( 'Allows the application to block and unlock users', 'indieauth' ),
+			'channels' => __( 'Allows the application to manage channels', 'indieauth' ),
+			'save'     => __( 'Allows the application to save content for later retrieval', 'indieauth' ),
+		);
+		if ( 'all' === $scope ) {
+			return $scopes;
+		}
+		return isset( $scopes[ $scope ] ) ? $scopes[ $scope ] : __( 'No Description Available', 'indieauth' );
+	}
+
 	public function request( $request ) {
 		$params = $request->get_params();
 		if ( ! isset( $params['response_type'] ) ) {
@@ -166,6 +190,7 @@ class IndieAuth_Authorization_Endpoint {
 		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
+		$scopes        = explode( ' ', $scope );
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
@@ -175,7 +200,6 @@ class IndieAuth_Authorization_Endpoint {
 			compact(
 				'client_id',
 				'redirect_uri',
-				'scope',
 				'state',
 				'me',
 				'response_type',
@@ -196,7 +220,7 @@ class IndieAuth_Authorization_Endpoint {
 		// phpcs:disable
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
-		$scope         = isset( $_POST['scope'] ) ? wp_unslash( $_POST['scope'] ) : null;
+		$scope         = isset( $_POST['scope'] ) ? implode( ' ', $_POST['scope'] ) : null;
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;

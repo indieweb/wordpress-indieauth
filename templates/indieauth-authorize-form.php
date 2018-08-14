@@ -29,8 +29,8 @@ login_header(
 		<?php _e( 'The app is requesting the following <a href="https://indieweb.org/scope">scopes</a>', 'indieauth' ); ?>
 		<ul>
 		<?php
-		foreach ( explode( ' ', $scope ) as $s ) {
-			printf( '<li>%1$s</li>', $s );
+		foreach ( $scopes as $s ) {
+			printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), self::scopes( $s ) );
 		}
 		?>
 		</ul>
@@ -42,7 +42,6 @@ login_header(
 	?>
 		<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
 		<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
-		<input type="hidden" name="scope" value="<?php echo $scope; ?>" />
 		<input type="hidden" name="state" value="<?php echo $state; ?>" />
 		<input type="hidden" name="me" value="<?php echo $me; ?>" />
 		<input type="hidden" name="response_type" value="<?php echo $response_type; ?>" />

@@ -2,8 +2,8 @@
 **Contributors:** [indieweb](https://profiles.wordpress.org/indieweb), [pfefferle](https://profiles.wordpress.org/pfefferle), [dshanske](https://profiles.wordpress.org/dshanske)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
-**Tested up to:** 4.9.7  
-**Stable tag:** 3.1.2  
+**Tested up to:** 4.9.8  
+**Stable tag:** 3.1.3  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -88,6 +88,10 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.1.3 ###
+* Allow selection of scopes and add stock descriptions
+* Update Manage Token Page to use WP_List_Table
 
 ### 3.1.2 ###
 
