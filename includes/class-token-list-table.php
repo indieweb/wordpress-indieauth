@@ -7,9 +7,10 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class Token_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
-			'client_id' => __( 'Client ID', 'indieauth' ),
-			'scope'     => __( 'Scope', 'indieauth' ),
-			'issued_at' => __( 'Issue Date', 'indieauth' ),
+			'client_id'     => __( 'Client ID', 'indieauth' ),
+			'scope'         => __( 'Scope', 'indieauth' ),
+			'issued_at'     => __( 'Issue Date', 'indieauth' ),
+			'last_accessed' => __( 'Last Accessed', 'indieauth' ),
 		);
 	}
 
@@ -49,8 +50,21 @@ class Token_List_Table extends WP_List_Table {
 		}
 	}
 
+	public function column_last_accessed( $item ) {
+		if ( ! isset( $item['last_accessed'] ) ) {
+			return __( 'Never', 'indieauth' );
+		}
+		$time      = (int) $item['last_accessed'];
+		$time_diff = time() - $time;
+		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
+			// translators: Human time difference ago
+			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
+		}
+		return date_i18n( get_option( 'date_format' ), $time );
+	}
+
 	public function column_issued_at( $item ) {
-		return date_i18n( DATE_W3C, $item['issued_at'] );
+		return date_i18n( get_option( 'date_format' ), $item['issued_at'] );
 	}
 
 	public function column_client_id( $item ) {

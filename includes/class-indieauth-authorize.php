@@ -110,22 +110,16 @@ class IndieAuth_Authorize {
 	}
 
 	public function verify_access_token( $token ) {
-		$params = $this->verify_local_access_token( $token );
-
-		if ( is_oauth_error( $params ) ) {
-			$this->error = $params->to_wp_error();
-			return $params;
-		}
-
-		return $params;
-	}
-
-	public function verify_local_access_token( $token ) {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
 		if ( ! $return ) {
 			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
+		if ( is_oauth_error( $params ) ) {
+			$this->error = $params->to_wp_error();
+		}
+		$return['last_accessed'] = current_time( 'timestamp', 1 );
+		$tokens->update( $token, $return );
 		return $return;
 	}
 
