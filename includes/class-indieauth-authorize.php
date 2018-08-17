@@ -69,45 +69,27 @@ class IndieAuth_Authorize {
 	}
 
 	public function determine_current_user( $user_id ) {
-		// Do not try to find a user if one has already been found
-		if ( ! empty( $user_id ) ) {
-			return $user_id;
-		}
-		// If the Indieauth endpoint is being requested do not use this authentication method
-		if ( strpos( $_SERVER['REQUEST_URI'], '/indieauth/1.0' ) ) {
-			return $user_id;
-		}
-		// If this is not a REST request or a Micropub request then do not continue
-		if ( ! strpos( $_SERVER['REQUEST_URI'], rest_get_url_prefix() ) && ! isset( $_REQUEST['micropub'] ) ) {
-			return $user_id;
-		}
 		$token = $this->get_provided_token();
+		// If there is not a token that means this is not an attempt to log in using IndieAuth
 		if ( ! $token ) {
-			if ( defined( 'INDIEAUTH_TOKEN_ERROR' ) && INDIEAUTH_TOKEN_ERROR ) {
-				$this->error = new WP_Error(
-					'missing_bearer_token',
-					__( 'Missing OAuth Bearer Token', 'indieauth' ),
-					array(
-						'status' => '401',
-						'server' => $_SERVER,
-					)
-				);
-			}
 			return $user_id;
 		}
+		// If there is a token and it is invalid then reject all logins
 
 		$params = $this->verify_access_token( $token );
 		if ( ! $params ) {
-			return $user_id;
+			return 0;
 		}
 		if ( is_oauth_error( $params ) ) {
 			$this->error = $params->to_wp_error();
-			return $user_id;
+			return 0;
 		}
 		if ( is_array( $params ) ) {
+			$this->response = $params;
+			$this->scopes   = explode( ' ', $params['scope'] );
 			// If the user ID is passed in the token use it
 			if ( isset( $params['user'] ) ) {
-				return $params['user'];
+				return (int) $params['user'];
 			} elseif ( isset( $params['me'] ) ) {
 				$user = get_user_by_identifier( $me );
 				if ( $user instanceof WP_User ) {
@@ -123,7 +105,7 @@ class IndieAuth_Authorize {
 				'response' => $me,
 			)
 		);
-		return $user_id;
+		return 0;
 
 	}
 
@@ -134,9 +116,6 @@ class IndieAuth_Authorize {
 			$this->error = $params->to_wp_error();
 			return $params;
 		}
-
-		$this->scopes   = explode( ' ', $params['scope'] );
-		$this->response = $params;
 
 		return $params;
 	}
