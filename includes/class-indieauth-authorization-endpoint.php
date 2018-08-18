@@ -80,7 +80,8 @@ class IndieAuth_Authorization_Endpoint {
 		if ( 'all' === $scope ) {
 			return $scopes;
 		}
-		return isset( $scopes[ $scope ] ) ? $scopes[ $scope ] : __( 'No Description Available', 'indieauth' );
+		$description = isset( $scopes[ $scope ] ) ? $scopes[ $scope ] : __( 'No Description Available', 'indieauth' );
+		return apply_filters( 'indieauth_scope_description', $description, $scope );
 	}
 
 	public function request( $request ) {

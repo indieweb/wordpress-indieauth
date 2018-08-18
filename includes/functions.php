@@ -342,3 +342,60 @@ function build_url( $parsed_url ) {
 
 	return "$scheme$user$pass$host$port$path$query$fragment";
 }
+
+/**
+ * Get Scope
+ *
+ * @return array $scopes Array of Scopes or Null if Not Added at all
+*/
+function indieauth_get_scopes() {
+	return apply_filters( 'indieauth_scopes', null );
+}
+
+/**
+ * Check Scope
+ *
+ * @return boolean
+ */
+function indieauth_check_scope( $scope ) {
+	$scopes = indieauth_get_scopes();
+	if ( is_null ( $scopes ) ) {
+		return null;
+	}
+	return in_array( $scope, $scopes, true );
+}
+
+/**
+ * Get Auth Response
+ *
+ * @return array $response Array with Response Token from IndieAuth endpoint
+ */
+function indieauth_get_response() {
+	return apply_filters( 'indieauth_response', null );
+}
+
+/**
+ * Get Client ID
+ *
+ * @return string Client ID.
+ */
+function indieauth_get_client_id() {
+	$response = indieauth_get_response();
+	if ( is_null( $response ) || ! isset( $response['client_id'] ) ) {
+		return null;
+	}
+	return $response['client_id'];
+}
+
+/**
+ * Get Me
+ *
+ * @return string|null The Me property for the current session
+ */
+function indieauth_get_me() {
+	$response = indieauth_get_response();
+	if ( is_null( $response ) || ! isset( $response['me'] ) ) {
+		return null;
+	}
+	return $response['me'];
+}
