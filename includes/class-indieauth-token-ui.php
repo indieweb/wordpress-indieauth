@@ -50,11 +50,11 @@ class IndieAuth_Token_UI {
 		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
 		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
 		$codes->check_expires();
-		$ListTable = new Token_List_Table();
-		echo '<div class="wrap"><h2>' . __( 'Manage IndieAuth Tokens', 'indieauth' ) . '</h2>'; 
-		$ListTable->prepare_items(); 
-		$ListTable->display(); 
-		echo '</div>'; 
+		$token_table = new Token_List_Table();
+		echo '<div class="wrap"><h2>' . esc_html__( 'Manage IndieAuth Tokens', 'indieauth' ) . '</h2>';
+		$token_table->prepare_items();
+		$token_table->display();
+		echo '</div>';
 	}
 
 	/**
