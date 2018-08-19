@@ -59,14 +59,32 @@ No. You can use your author profile URL to login if you do not have a domain nam
 
 That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
 
-By adding Indieauth support, you can log into sites simply by providing your URL.
+By adding Indieauth support, you can log into sites simply by providing your URL. We recommend your site uses SSL to ensure your credentials are not sent
+in cleartext.
 
 = What is a token endpoint? =
 
 Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site.
 The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
 
-You can revoke local tokens under User->Manage Tokens.
+You can manage and revoke tokens under User->Manage Tokens. You will only see tokens for the currently logged in user.
+
+= How do I incorporate this into my plugin? = 
+
+The WordPress function, `get_current_user_id` works to retrieve the current user ID if logged in via IndieAuth. The plugin offers the following functions
+to assist you in using IndieAuth for your service. We suggest you check on activation for the IndieAuth plugin by asking `if ( class_exists( 'IndieAuth_Plugin') )`
+
+* `indieauth_get_scopes()` - Retrieves an array of scopes for the auth request.
+* `indieauth_check_scope( $scope )` - Checks if the provided scope is in the current available scopes
+* `indieauth_get_response()` - Returns the entire IndieAuth token response
+* `indieauth_get_client_id()` - Returns the client ID
+* `indieauth_get_me()` - Return the me property for the current session. 
+
+If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by
+whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the 
+scope is for.
+
+The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
 
 = I keep getting the response that my request is Unauthorized =
 
