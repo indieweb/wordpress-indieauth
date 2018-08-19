@@ -26,7 +26,12 @@ class WP_OAuth_Response extends WP_REST_Response {
 	public function to_wp_error() {
 		$data   = $this->get_data();
 		$status = $this->get_status();
-		return new WP_Error( $data['error'], $data['error_description'], array( 'status' => $status, 'data' = $data ) );
+		return new WP_Error(
+			$data['error'], $data['error_description'], array(
+				'status' => $status,
+				'data'   => $data,
+			)
+		);
 	}
 
 	public function to_log() {
