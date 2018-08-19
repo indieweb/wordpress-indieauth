@@ -2,7 +2,7 @@
 
 class WP_OAuth_Response extends WP_REST_Response {
 
-	public function __construct( $error, $error_description, $code = 200 ) {
+	public function __construct( $error, $error_description, $code = 200, $debug = null ) {
 		$this->set_status( $code );
 		$this->set_data(
 			array(
@@ -10,6 +10,12 @@ class WP_OAuth_Response extends WP_REST_Response {
 				'error_description' => $error_description,
 			)
 		);
+		if ( is_array( $debug ) ) {
+			$this->set_debug( $debug );
+		}
+		if ( WP_DEBUG ) {
+			error_log( $this->to_log() ); // phpcs:ignore
+		}
 	}
 
 	public function set_debug( $array ) {
@@ -20,8 +26,15 @@ class WP_OAuth_Response extends WP_REST_Response {
 	public function to_wp_error() {
 		$data   = $this->get_data();
 		$status = $this->get_status();
-		return new WP_Error( $data['error'], $data['error_description'], array( 'status' => $status ) );
+		return new WP_Error( $data['error'], $data['error_description'], array( 'status' => $status, 'data' = $data ) );
 	}
+
+	public function to_log() {
+		$data   = $this->get_data();
+		$status = $this->get_status();
+		return sprintf( 'IndieAuth Error: %1$s %2$s - %3$s %4$s', $status, $data['error'], $data['error_description'], wp_json_encode( $data ) );
+	}
+
 }
 
 function get_oauth_error( $obj ) {
