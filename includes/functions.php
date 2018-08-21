@@ -359,7 +359,7 @@ function indieauth_get_scopes() {
  */
 function indieauth_check_scope( $scope ) {
 	$scopes = indieauth_get_scopes();
-	if ( is_null ( $scopes ) ) {
+	if ( is_null( $scopes ) ) {
 		return null;
 	}
 	return in_array( $scope, $scopes, true );

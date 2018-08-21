@@ -6,8 +6,8 @@
 class IndieAuth_Authorize {
 
 	public $error    = null;
-	public $scopes   = null;
-	public $response = null;
+	public $scopes   = array();
+	public $response = array();
 
 	public function __construct() {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
@@ -65,7 +65,13 @@ class IndieAuth_Authorize {
 		if ( ! empty( $error ) ) {
 			return $error;
 		}
-		return $this->error;
+		if ( is_wp_error( $this->error ) ) {
+			return $this->error;
+		}
+		if ( is_oauth_error( $this->error ) ) {
+			return $this->error->to_wp_error();
+		}
+		return null;
 	}
 
 	public function determine_current_user( $user_id ) {
@@ -81,7 +87,7 @@ class IndieAuth_Authorize {
 			return 0;
 		}
 		if ( is_oauth_error( $params ) ) {
-			$this->error = $params->to_wp_error();
+			$this->error = $params;
 			return 0;
 		}
 		if ( is_array( $params ) ) {
@@ -98,10 +104,11 @@ class IndieAuth_Authorize {
 			}
 		}
 
-		$this->error = new WP_Error(
-			'indieauth.user_not_found', __( 'User Not Found on this Site', 'indieauth' ),
+		$this->error = new WP_OAuth_Response(
+			'unauthorized',
+			__( 'User Not Found on this Site', 'indieauth' ),
+			401,
 			array(
-				'status'   => '401',
 				'response' => $me,
 			)
 		);
@@ -113,10 +120,14 @@ class IndieAuth_Authorize {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
 		if ( ! $return ) {
-			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
+			return new WP_OAuth_Response(
+				'invalid_token',
+				__( 'Invalid access token', 'indieauth' ),
+				401
+			);
 		}
-		if ( is_oauth_error( $params ) ) {
-			$this->error = $params->to_wp_error();
+		if ( is_oauth_error( $return ) ) {
+			return $return;
 		}
 		$return['last_accessed'] = current_time( 'timestamp', 1 );
 		$tokens->update( $token, $return );
@@ -127,7 +138,11 @@ class IndieAuth_Authorize {
 		$tokens = new Token_User( '_indieauth_code_' );
 		$return = $tokens->get( $post_args['code'] );
 		if ( ! $return ) {
-			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+			return new WP_OAuth_Response(
+				'invalid_code',
+				__( 'Invalid authorization code', 'indieauth' ),
+				401
+			);
 		}
 		// Once the code is verified destroy it
 		$tokens->destroy( $post_args['code'] );
