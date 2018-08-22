@@ -20,6 +20,9 @@ class IndieAuth_Plugin {
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
 
+		// Client Discovery
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-client-discovery.php';
+
 		// Token Management
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-generic.php';
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-user.php';
