@@ -158,15 +158,17 @@ class Token_User extends Token_Generic {
 	/**
 	 * Updates an existing token
 	 *
-	 * @param string $key token. Must not be hashed
+	 * @param string $key token.
 	 * @param array  $info An array that will be stored under the token name
 	 * @return boolean
 	 */
-	public function update( $key, $info ) {
+	public function update( $key, $info, $hash = false ) {
 		if ( ! $this->user_id ) {
 			return false;
 		}
-		$key = $this->hash( $key );
+		if ( ! $hash ) {
+			$key = $this->hash( $key );
+		}
 		$key = $this->prefix . $key;
 		$old = get_user_meta( $this->user_id, $key );
 

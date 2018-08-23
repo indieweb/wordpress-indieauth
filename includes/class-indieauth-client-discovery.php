@@ -1,11 +1,17 @@
 <?php
 
 class IndieAuth_Client_Discovery {
-	public $html     = array();
-	public $manifest = array();
+	public $html      = array();
+	public $manifest  = array();
+	public $client_id = '';
 
 	public function __construct( $client_id ) {
-		$this->html = self::parse( $client_id );
+		$this->client_id = $client_id;
+		$this->html      = self::parse( $client_id );
+		if ( is_wp_error( $this->html ) ) {
+			error_log( wp_json_encode( $this->html ) );
+			return;
+		}
 		if ( isset( $this->html['manifest'] ) ) {
 			$this->manifest = self::get_manifest( $this->html['manifest'] );
 		}
@@ -49,6 +55,44 @@ class IndieAuth_Client_Discovery {
 		return json_decode( wp_remote_retrieve_body( $response ) );
 	}
 
+	private function ifset( $array, $key, $default = false ) {
+		if ( is_array( $array ) ) {
+			return isset( $array[ $key ] ) ? $array[ $key ] : $default;
+		}
+			return $default;
+	}
+
+	public function get_name() {
+		if ( is_wp_error( $this->html ) ) {
+			return '';
+		}
+		return $this->ifset( $this->manifest, 'name' ) ?: $this->ifset( $this->html, 'application-name' ) ?: $this->ifset( $this->html, 'og:title' ) ?: null;
+	}
+
+	public function get_icon() {
+		if ( is_wp_error( $this->html ) ) {
+			return '';
+		}
+		$icons = array();
+		if ( is_array( $this->manifest ) && ! empty( $this->manifest ) && ! isset( $this->manifest['icons'] ) ) {
+			$icons = $this->manifest['icons'];
+		} elseif ( ! empty( $this->html ) ) {
+			if ( isset( $this->html['icon'] ) ) {
+				$icons = $this->html['icon'];
+			} elseif ( isset( $this->html['mask-icon'] ) ) {
+				$icons = $this->html['mask-icon'];
+			} elseif ( isset( $this->html['apple-touch-icon'] ) ) {
+				$icons = $this->html['apple-touch-icon'];
+			}
+		}
+		if ( ! wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
+			return $icons['url'];
+		} else {
+			// Return the first icon
+			return $icons[0]['url'];
+		}
+	}
+
 	/**
 	 * @param array  $contents HTML to parse for rel links
 	 * @param string $url URL to use to make absolute
@@ -69,13 +113,14 @@ class IndieAuth_Client_Discovery {
 			// Try to extract icons just in case there isn't a manifest
 			switch ( $rel ) {
 				case 'icon':
+				case 'mask-icon':
 				case 'shortcut icon':
 				case 'apple-touch-icon-precomposed':
 				case 'apple-touch-icon':
 					$temp['url']   = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
 					$temp['sizes'] = $hyperlink->getAttribute( 'sizes' );
 					$temp['type']  = $hyperlink->getAttribute( 'temp' );
-					$temp = array_filter( $temp );
+					$temp          = array_filter( $temp );
 					break;
 				default:
 					$temp = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
