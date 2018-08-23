@@ -8,15 +8,19 @@ login_header(
 ?>
 <form method="post" action="<?php echo $url; ?>">
 	<div class="login-info">
-		<?php echo get_avatar( $current_user->ID, '78' ); ?>
+		<?php if ( ! empty( $client_icon ) ) { ?>
+			<img src="<?php echo $client_icon; ?>" height="78" width="78" />
+		<?php } ?>
 		<?php
 			printf(
 				'<p>' . __( 'The app <strong>%1$s</strong> would like to access your site, <strong>%2$s</strong> using the credentials of <strong>%3$s</strong> (%4$s).', 'indieauth' ) . '</p>',
-				$client_id,
+				empty( $client_name ) ? $client_id : $client_name,
 				get_bloginfo( 'url' ),
 				$current_user->display_name,
 				$current_user->user_nicename
 			);
+			echo get_avatar( $current_user->ID, '78' );
+
 
 		if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
 		?>

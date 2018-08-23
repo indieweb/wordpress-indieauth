@@ -189,6 +189,9 @@ class IndieAuth_Authorization_Endpoint {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
 		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
+		$info = new IndieAuth_Client_Discovery( $client_id );
+		$client_name = $info->get_name();
+		$client_icon = $info->get_icon();
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
 		$scopes        = explode( ' ', $scope );

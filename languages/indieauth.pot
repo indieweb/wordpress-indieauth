@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.1.4\n"
+"Project-Id-Version: IndieAuth 3.1.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-08-17 17:57:55+00:00\n"
+"POT-Creation-Date: 2018-08-23 04:17:30+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -159,27 +159,27 @@ msgstr ""
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:92
+#: includes/class-indieauth-authorization-endpoint.php:93
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:98
-#: includes/class-indieauth-authorization-endpoint.php:139
+#: includes/class-indieauth-authorization-endpoint.php:99
+#: includes/class-indieauth-authorization-endpoint.php:140
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:146
+#: includes/class-indieauth-authorization-endpoint.php:147
 #: includes/class-indieauth-authorize.php:130
 #: includes/class-indieauth-token-endpoint.php:163
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:151
+#: includes/class-indieauth-authorization-endpoint.php:152
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:170
+#: includes/class-indieauth-authorization-endpoint.php:171
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -230,32 +230,48 @@ msgid "Manage Tokens"
 msgstr ""
 
 #: includes/class-token-list-table.php:10
-msgid "Client ID"
+msgid "Client Name"
 msgstr ""
 
 #: includes/class-token-list-table.php:11
-msgid "Scope"
+msgid "Client Icon"
 msgstr ""
 
 #: includes/class-token-list-table.php:12
-msgid "Issue Date"
+msgid "Client ID"
 msgstr ""
 
 #: includes/class-token-list-table.php:13
+msgid "Scope"
+msgstr ""
+
+#: includes/class-token-list-table.php:14
+msgid "Issue Date"
+msgstr ""
+
+#: includes/class-token-list-table.php:15
 msgid "Last Accessed"
-msgstr ""
-
-#: includes/class-token-list-table.php:55
-msgid "Never"
-msgstr ""
-
-#: includes/class-token-list-table.php:61
-#. translators: Human time difference ago
-msgid "%s ago"
 msgstr ""
 
 #: includes/class-token-list-table.php:72
 msgid "Revoke"
+msgstr ""
+
+#: includes/class-token-list-table.php:73
+msgid "Retrieve Information"
+msgstr ""
+
+#: includes/class-token-list-table.php:76
+msgid "Not Provided"
+msgstr ""
+
+#: includes/class-token-list-table.php:91
+msgid "Never"
+msgstr ""
+
+#: includes/class-token-list-table.php:97
+#. translators: Human time difference ago
+msgid "%s ago"
 msgstr ""
 
 #: includes/class-web-signin.php:28
@@ -335,14 +351,14 @@ msgid ""
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:22
-#: templates/indieauth-authorize-form.php:24
+#: templates/indieauth-authorize-form.php:28
 msgid ""
 "<strong>Warning</strong>: The redirect URL this app is using does not match "
 "the domain of the client ID."
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:37
-#: templates/indieauth-authorize-form.php:49
+#: templates/indieauth-authorize-form.php:53
 msgid "Cancel"
 msgstr ""
 
@@ -351,23 +367,23 @@ msgid "You will be redirected to <code>%1$s</code> after authenticating."
 msgstr ""
 
 #: templates/indieauth-authorize-form.php:4
-#: templates/indieauth-authorize-form.php:48
+#: templates/indieauth-authorize-form.php:52
 msgid "Authorize"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:14
+#: templates/indieauth-authorize-form.php:16
 msgid ""
 "The app <strong>%1$s</strong> would like to access your site, "
 "<strong>%2$s</strong> using the credentials of <strong>%3$s</strong> (%4$s)."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:29
+#: templates/indieauth-authorize-form.php:33
 msgid ""
 "The app is requesting the following <a "
 "href=\"https://indieweb.org/scope\">scopes</a>"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:52
+#: templates/indieauth-authorize-form.php:56
 msgid ""
 "You will be redirected to <code>%1$s</code> after authorizing this "
 "application."

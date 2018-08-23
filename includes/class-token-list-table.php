@@ -7,6 +7,8 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class Token_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
+			'client_name'   => __( 'Client Name', 'indieauth' ),
+			'client_icon'   => __( 'Client Icon', 'indieauth' ),
 			'client_id'     => __( 'Client ID', 'indieauth' ),
 			'scope'         => __( 'Scope', 'indieauth' ),
 			'issued_at'     => __( 'Issue Date', 'indieauth' ),
@@ -38,8 +40,8 @@ class Token_List_Table extends WP_List_Table {
 
 	public function process_action() {
 		$tokens = isset( $_GET['tokens'] ) ? $_GET['tokens'] : array(); // phpcs:ignore
+		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
 		if ( 'revoke' === $this->current_action() ) {
-			$t = new Token_User( '_indieauth_token_', get_current_user_id() );
 			if ( is_string( $tokens ) ) {
 				$t->destroy( $tokens );
 			} elseif ( is_array( $tokens ) ) {
@@ -48,6 +50,40 @@ class Token_List_Table extends WP_List_Table {
 				}
 			}
 		}
+		if ( 'retrieve' === $this->current_action() ) {
+			if ( is_string( $tokens ) ) {
+				$token = $t->get( $tokens, false );
+				$info  = new IndieAuth_Client_Discovery( $token['client_id'] );
+				$name  = $info->get_name();
+				if ( isset( $name ) ) {
+					$token['client_name'] = $name;
+				}
+				$icon = $info->get_icon();
+				if ( isset( $icon ) ) {
+					$token['client_icon'] = $icon;
+				}
+				$t->update( $tokens, $token, true );
+			}
+		}
+	}
+
+	public function column_client_name( $item ) {
+		$actions = array(
+			'revoke'   => sprintf( '<a href="?page=%1$s&action=%2$s&tokens=%3$s">%4$s</a>', 'indieauth_user_token', 'revoke', $item['token'], __( 'Revoke', 'indieauth' ) ),
+			'retrieve' => sprintf( '<a href="?page=%1$s&action=%2$s&tokens=%3$s">%4$s</a>', 'indieauth_user_token', 'retrieve', $item['token'], __( 'Retrieve Information', 'indieauth' ) ),
+		);
+		if ( ! isset( $item['client_name'] ) ) {
+			$item['client_name'] = __( 'Not Provided', 'indieauth' );
+		}
+		return sprintf( '%1$s  %2$s', $item['client_name'], $this->row_actions( $actions ) );
+
+	}
+
+	public function column_client_icon( $item ) {
+		if ( ! isset( $item['client_icon'] ) ) {
+			return 'None';
+		}
+		return sprintf( '<img src="%1$s" height="48" width="48" />', $item['client_icon'] );
 	}
 
 	public function column_last_accessed( $item ) {
@@ -68,9 +104,6 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function column_client_id( $item ) {
-		$actions = array(
-			'revoke' => sprintf( '<a href="?page=%1$s&action=%2$s&tokens=%3$s">%4$s</a>', 'indieauth_user_token', 'revoke', $item['token'], __( 'Revoke', 'indieauth' ) ),
-		);
-		return sprintf( '%1$s  %2$s', wp_parse_url( $item['client_id'], PHP_URL_HOST ), $this->row_actions( $actions ) );
+		return wp_parse_url( $item['client_id'], PHP_URL_HOST );
 	}
 }
