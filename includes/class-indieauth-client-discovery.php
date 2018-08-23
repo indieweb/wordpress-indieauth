@@ -1,23 +1,27 @@
 <?php
 
 class IndieAuth_Client_Discovery {
-	public $html      = array();
-	public $manifest  = array();
-	public $client_id = '';
+	protected $html     = array();
+	protected $manifest = array();
+	public $client_id   = '';
+	public $client_name = '';
+	public $client_icon = '';
 
 	public function __construct( $client_id ) {
 		$this->client_id = $client_id;
 		$this->html      = self::parse( $client_id );
 		if ( is_wp_error( $this->html ) ) {
-			error_log( wp_json_encode( $this->html ) );
+			error_log( __( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . wp_json_encode( $this->html ) ); // phpcs:ignore
 			return;
 		}
 		if ( isset( $this->html['manifest'] ) ) {
 			$this->manifest = self::get_manifest( $this->html['manifest'] );
 		}
+		$this->client_icon = $this->determine_icon();
+		$this->client_name = $this->ifset( $this->manifest, 'name' ) ?: $this->ifset( $this->html, 'application-name' ) ?: $this->ifset( $this->html, 'og:title' ) ?: $this->ifset( $this->html, 'title' ) ?: '';
 	}
 
-	public function fetch( $url ) {
+	private function fetch( $url ) {
 		$wp_version = get_bloginfo( 'version' );
 		$user_agent = apply_filters( 'http_headers_useragent', 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );
 		$args       = array(
@@ -29,7 +33,7 @@ class IndieAuth_Client_Discovery {
 		return wp_safe_remote_get( $url, $args );
 	}
 
-	public function parse( $url ) {
+	private function parse( $url ) {
 		$response = self::fetch( $url );
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -47,7 +51,7 @@ class IndieAuth_Client_Discovery {
 		return array_merge( $return, self::extract_client_data_from_html( wp_remote_retrieve_body( $response ), $url ) );
 	}
 
-	public function get_manifest( $url ) {
+	private function get_manifest( $url ) {
 		$response = self::fetch( $url );
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -63,13 +67,11 @@ class IndieAuth_Client_Discovery {
 	}
 
 	public function get_name() {
-		if ( is_wp_error( $this->html ) ) {
-			return '';
-		}
-		return $this->ifset( $this->manifest, 'name' ) ?: $this->ifset( $this->html, 'application-name' ) ?: $this->ifset( $this->html, 'og:title' ) ?: null;
+		return $this->client_name;
 	}
 
-	public function get_icon() {
+	// Separate function for possible improved size picking later
+	private function determine_icon() {
 		if ( is_wp_error( $this->html ) ) {
 			return '';
 		}
@@ -91,6 +93,10 @@ class IndieAuth_Client_Discovery {
 			// Return the first icon
 			return $icons[0]['url'];
 		}
+	}
+
+	public function get_icon() {
+		return $this->client_icon;
 	}
 
 	/**
@@ -144,6 +150,8 @@ class IndieAuth_Client_Discovery {
 				$return[ $property ] = $meta->getAttribute( 'content' );
 			}
 		}
+		$return['title'] = $xpath->query( '//title' )->item( 0 )->textContent;
+
 		return $return;
 	}
 
