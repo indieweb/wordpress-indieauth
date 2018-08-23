@@ -4,8 +4,10 @@
 	display: block;
 	margin: 0 auto;
 	border-radius: 6px;
+	
 }
 .login-info p {
+	clear: both;
 	margin-top: 1em;
 }
 
