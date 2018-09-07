@@ -10,7 +10,9 @@ class IndieAuth_Authorize {
 	public $response = array();
 
 	public function __construct() {
-		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 30 );
+		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority
+		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
+		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 
