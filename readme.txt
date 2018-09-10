@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.8
-Stable tag: 3.1.5
+Stable tag: 3.1.6
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -89,7 +89,16 @@ The scope description can be customized with the filter `indieauth_scope_descrip
 = I keep getting the response that my request is Unauthorized =
 
 Many server configurations will not pass bearer tokens. The plugin attempts to work with this as best possible, but there may be cases we have not encounter.
-Please temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors, and enable
+
+If you feel comfortable with command line entries, you can request a token under Users->Manage Tokens and use curl or similar to test logins. Replace example.com with your site and TOKEN with
+your bearer token.
+
+`curl -i -H 'Authorization: Bearer TOKEN' 'https://example.com/wp-json/indieauth/1.0/test'
+`curl -i -H 'Authorization: Bearer test' 'https://tiny.n9n.us/wp-json/indieauth/1.0/test?access_token=TOKEN'`
+
+This will quickly test your ability to authenticate to the server. Additional diagnostic tools may be available in future.
+
+If this does not work, you can temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors, and enable
 `define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed
 allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this
 is off by default.
@@ -106,6 +115,10 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.1.6 =
+* Add ability to generate a token on the backend
+* Added a test endpoint that tests whether the authentication provider for the REST API is working and tries to return useful errors
 
 = 3.1.5 =
 * Add Client Information Discovery to search for names and icon for clients

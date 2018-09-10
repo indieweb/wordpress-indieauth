@@ -15,12 +15,56 @@ class IndieAuth_Authorize {
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 
 		add_action( 'send_headers', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
+
+	}
+
+	// Test Route for Authorization
+	public static function register_routes() {
+		register_rest_route(
+			'indieauth/1.0', '/test', array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'test' ),
+					'permission_callback' => array( $this, 'permissions_test' ),
+				),
+			)
+		);
+
+	}
+
+	public static function permissions_test( $request ) {
+		$access_token = $request->get_param( 'access_token' );
+		$header       = $request->get_header( 'authorization' );
+		if ( ! $access_token && ! $header ) {
+			return new WP_Error( 'forbidden', __( 'Could Not Find Token', 'indieauth' ), array( 'status' => 403 ) );
+		}
+		if ( 0 === get_current_user_id() ) {
+			if ( empty( $this->response ) ) {
+				return new WP_Error(
+					'forbidden', __( 'No User is Currently Set', 'indieauth' ), array(
+						'status'  => 403,
+						'request' => $request,
+					)
+				);
+			} else {
+				return new WP_Error( 'forbidden', __( 'A Successful Auth Response was Given yet No User is Currently Set', 'indieauth' ), array( 'status' => 403 ) );
+			}
+		}
+		return true;
+	}
+
+	public static function test( $request ) {
+		if ( 0 === get_current_user_id() ) {
+			return new WP_Error( 'forbidden', __( 'You have passed a permissions test but somehow the system is still not showing you as logged in', 'indieauth' ) );
+		}
+		return $this->response;
 	}
 
 	public static function register_index( WP_REST_Response $response ) {
