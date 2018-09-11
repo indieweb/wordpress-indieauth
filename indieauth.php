@@ -51,7 +51,7 @@ class IndieAuth_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-admin.php';
 
 		if ( WP_DEBUG ) {
-			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-debug.php';
 		}
 	}
 

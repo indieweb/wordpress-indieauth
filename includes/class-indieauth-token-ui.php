@@ -13,7 +13,7 @@ class IndieAuth_Token_UI {
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
-		add_action( 'admin_action_indieauth_newtoken', array( $this, 'newtoken' ) );
+		add_action( 'admin_action_indieauth_newtoken', array( $this, 'new_token' ) );
 	}
 
 	/**
@@ -41,7 +41,7 @@ class IndieAuth_Token_UI {
 	public function options_callback() {
 	}
 
-	public function newtoken() {
+	public function new_token() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
 				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_newtoken' )
 		) {
