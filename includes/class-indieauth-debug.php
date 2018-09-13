@@ -6,7 +6,7 @@ class IndieAuth_Debug {
 	public function __construct() {
 		add_filter( 'http_request_args', array( $this, 'indieauth_allow_localhost' ), 10, 2 );
 		add_filter( 'rest_post_dispatch', array( $this, 'log_rest_api_errors' ), 10, 3 );
-				add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
@@ -70,46 +70,45 @@ class IndieAuth_Debug {
 		return $result;
 	}
 
-		// Test Route for Authorization
+	// Test Route for Authorization
 	public static function register_routes() {
-			register_rest_route(
-				'indieauth/1.0', '/test', array(
-					array(
-						'methods'             => WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'test' ),
-						'permission_callback' => array( $this, 'permissions_test' ),
-					),
-				)
-			);
-
+		register_rest_route(
+			'indieauth/1.0', '/test', array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'test' ),
+					'permission_callback' => array( $this, 'permissions_test' ),
+				),
+			)
+		);
 	}
 
 	public static function permissions_test( $request ) {
-			$access_token = $request->get_param( 'access_token' );
-			$header       = $request->get_header( 'authorization' );
+		$access_token = $request->get_param( 'access_token' );
+		$header       = $request->get_header( 'authorization' );
 		if ( ! $access_token && ! $header ) {
-				return new WP_Error( 'forbidden', __( 'Could Not Find Token', 'indieauth' ), array( 'status' => 403 ) );
+			return new WP_Error( 'forbidden', __( 'Could Not Find Token', 'indieauth' ), array( 'status' => 403 ) );
 		}
 		if ( 0 === get_current_user_id() ) {
 			if ( empty( $this->response ) ) {
-					return new WP_Error(
-						'forbidden', __( 'No User is Currently Set', 'indieauth' ), array(
-							'status'  => 403,
-							'request' => $request,
-						)
-					);
+				return new WP_Error(
+					'forbidden', __( 'No User is Currently Set', 'indieauth' ), array(
+						'status'  => 403,
+						'request' => $request,
+					)
+				);
 			} else {
-					return new WP_Error( 'forbidden', __( 'A Successful Auth Response was Given yet No User is Currently Set', 'indieauth' ), array( 'status' => 403 ) );
+				return new WP_Error( 'forbidden', __( 'A Successful Auth Response was Given yet No User is Currently Set', 'indieauth' ), array( 'status' => 403 ) );
 			}
 		}
-			return true;
+		return true;
 	}
 
 	public static function test( $request ) {
 		if ( 0 === get_current_user_id() ) {
-				return new WP_Error( 'forbidden', __( 'You have passed a permissions test but somehow the system is still not showing you as logged in', 'indieauth' ) );
+			return new WP_Error( 'forbidden', __( 'You have passed a permissions test but somehow the system is still not showing you as logged in', 'indieauth' ) );
 		}
-			return indieauth_get_response();
+		return indieauth_get_response();
 	}
 
 
