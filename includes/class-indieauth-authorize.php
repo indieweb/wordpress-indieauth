@@ -21,6 +21,7 @@ class IndieAuth_Authorize {
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
+
 	}
 
 	public static function register_index( WP_REST_Response $response ) {

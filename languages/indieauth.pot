@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.1.5\n"
+"Project-Id-Version: IndieAuth 3.1.6\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-08-23 04:17:30+00:00\n"
+"POT-Creation-Date: 2018-09-10 05:49:51+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -170,7 +170,7 @@ msgid "Missing Parameter: %1$s"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:147
-#: includes/class-indieauth-authorize.php:130
+#: includes/class-indieauth-authorize.php:189
 #: includes/class-indieauth-token-endpoint.php:163
 msgid "Invalid authorization code"
 msgstr ""
@@ -185,13 +185,35 @@ msgid ""
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:102
+#: includes/class-indieauth-authorize.php:46
+msgid "Could Not Find Token"
+msgstr ""
+
+#: includes/class-indieauth-authorize.php:51
+msgid "No User is Currently Set"
+msgstr ""
+
+#: includes/class-indieauth-authorize.php:57
+msgid "A Successful Auth Response was Given yet No User is Currently Set"
+msgstr ""
+
+#: includes/class-indieauth-authorize.php:65
+msgid ""
+"You have passed a permissions test but somehow the system is still not "
+"showing you as logged in"
+msgstr ""
+
+#: includes/class-indieauth-authorize.php:155
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:116
+#: includes/class-indieauth-authorize.php:171
 #: includes/class-indieauth-token-endpoint.php:83
 msgid "Invalid access token"
+msgstr ""
+
+#: includes/class-indieauth-client-discovery.php:14
+msgid "Failed to Retrieve IndieAuth Client Details "
 msgstr ""
 
 #: includes/class-indieauth-token-endpoint.php:79
@@ -220,13 +242,43 @@ msgstr ""
 msgid "There was an error issuing the access token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:32
-#: includes/class-indieauth-token-ui.php:54
+#: includes/class-indieauth-token-ui.php:33
+#: includes/class-indieauth-token-ui.php:98
 msgid "Manage IndieAuth Tokens"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:32
+#: includes/class-indieauth-token-ui.php:33
 msgid "Manage Tokens"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:48
+msgid "Invalid Nonce"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:51
+msgid "Add IndieAuth Token"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:53
+msgid "A Name Must be Set for Your Token"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:59
+msgid ""
+"A token has been generated and appears below. This token will not be stored "
+"anywhere. Please copy and store it."
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:104
+msgid "Add Token"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:106
+msgid "Name for Token"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:109
+msgid "Add New Token"
 msgstr ""
 
 #: includes/class-token-list-table.php:10

@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: Login to your site using IndieAuth.com
- * Version: 3.1.5
+ * Version: 3.1.6
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -51,7 +51,7 @@ class IndieAuth_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-admin.php';
 
 		if ( WP_DEBUG ) {
-			require_once plugin_dir_path( __FILE__ ) . 'includes/debug.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-debug.php';
 		}
 	}
 
