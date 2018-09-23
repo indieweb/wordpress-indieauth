@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Tested up to:** 4.9.8  
-**Stable tag:** 3.1.6  
+**Stable tag:** 3.1.7  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -88,7 +88,9 @@ The scope description can be customized with the filter `indieauth_scope_descrip
 
 ### I keep getting the response that my request is Unauthorized ###
 
-Many server configurations will not pass bearer tokens. The plugin attempts to work with this as best possible, but there may be cases we have not encounter.
+Many server configurations will not pass bearer tokens. The plugin attempts to work with this as best possible, but there may be cases we have not encountered. The first step is to try running the diagnostic script linked to in the settings page. It will tell you whether tokens can be passed.
+
+Temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors in your logs.
 
 If you feel comfortable with command line entries, you can request a token under Users->Manage Tokens and use curl or similar to test logins. Replace example.com with your site and TOKEN with
 your bearer token.
@@ -98,10 +100,22 @@ your bearer token.
 
 This will quickly test your ability to authenticate to the server. Additional diagnostic tools may be available in future.
 
-If this does not work, you can temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors, and enable
-`define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed
-allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this
-is off by default.
+If this does not work, you can add `define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed
+allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this is off by default.
+
+If your Micropub client includes an `Authorization` HTTP request header but you still get an HTTP 401 response with body `missing access token`, your server may be stripping the `Authorization` header. If you're on Apache, [try adding this line to your `.htaccess` file](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299202820):
+
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+    If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
+
+        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+	If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
+
+### I get an error that parameter redirect_uri is missing but I see it in the URL ###
+
+Some hosting providers filter this out using mod_security. For one user, they needed [Rule 340162](https://wiki.atomicorp.com/wiki/index.php/WAF_340162) whitelisted as it detects the use of a URL as an argument. 
 
 ## Upgrade Notice ##
 
@@ -115,6 +129,9 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.1.7 ###
+* Add authdiag.php script written by @Zegnat
 
 ### 3.1.6 ###
 * Add ability to generate a token on the backend
