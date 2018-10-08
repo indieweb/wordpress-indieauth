@@ -32,7 +32,9 @@ class IndieAuth_Token_Endpoint {
 	 */
 	public function register_routes() {
 		register_rest_route(
-			'indieauth/1.0', '/token', array(
+			'indieauth/1.0',
+			'/token',
+			array(
 				array(
 					'methods'  => WP_REST_Server::CREATABLE,
 					'callback' => array( $this, 'post' ),
@@ -58,7 +60,9 @@ class IndieAuth_Token_Endpoint {
 			)
 		);
 		register_rest_route(
-			'indieauth/1.0', '/token', array(
+			'indieauth/1.0',
+			'/token',
+			array(
 				array(
 					'methods'  => WP_REST_Server::READABLE,
 					'callback' => array( $this, 'get' ),
@@ -162,6 +166,13 @@ class IndieAuth_Token_Endpoint {
 		if ( ! $return ) {
 			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
 		}
+		if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
+			$return['me'] = home_url( '/' );
+		} else {
+			// Return the user profile URL and scope
+			$return['me'] = get_author_posts_url( $return['user'] );
+		}
+
 		$tokens->destroy( $post_args['code'] );
 		return $return;
 	}
