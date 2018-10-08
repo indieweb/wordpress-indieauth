@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.1.6\n"
+"Project-Id-Version: IndieAuth 3.1.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2018-09-23 17:00:59+00:00\n"
+"POT-Creation-Date: 2018-10-08 04:26:08+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -107,90 +107,90 @@ msgstr ""
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:66
+#: includes/class-indieauth-authorization-endpoint.php:68
 msgid "Legacy Scope (Deprecated)"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:67
+#: includes/class-indieauth-authorization-endpoint.php:69
 msgid "Allows the application to create posts and upload to the Media Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:68
+#: includes/class-indieauth-authorization-endpoint.php:70
 msgid "Allows the application to update posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:69
+#: includes/class-indieauth-authorization-endpoint.php:71
 msgid "Allows the application to delete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:70
+#: includes/class-indieauth-authorization-endpoint.php:72
 msgid "Allows the application to undelete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:71
+#: includes/class-indieauth-authorization-endpoint.php:73
 msgid "Allows the application to upload to the media endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:73
+#: includes/class-indieauth-authorization-endpoint.php:75
 msgid "Allows the application read access to channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:74
+#: includes/class-indieauth-authorization-endpoint.php:76
 msgid "Allows the application to manage a follow list"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:75
+#: includes/class-indieauth-authorization-endpoint.php:77
 msgid "Allows the application to mute and unmute users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:76
+#: includes/class-indieauth-authorization-endpoint.php:78
 msgid "Allows the application to block and unlock users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:77
+#: includes/class-indieauth-authorization-endpoint.php:79
 msgid "Allows the application to manage channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:78
+#: includes/class-indieauth-authorization-endpoint.php:80
 msgid "Allows the application to save content for later retrieval"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:83
+#: includes/class-indieauth-authorization-endpoint.php:85
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:93
+#: includes/class-indieauth-authorization-endpoint.php:95
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:99
-#: includes/class-indieauth-authorization-endpoint.php:140
+#: includes/class-indieauth-authorization-endpoint.php:101
+#: includes/class-indieauth-authorization-endpoint.php:142
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:147
-#: includes/class-indieauth-authorize.php:146
-#: includes/class-indieauth-token-endpoint.php:163
+#: includes/class-indieauth-authorization-endpoint.php:149
+#: includes/class-indieauth-authorize.php:141
+#: includes/class-indieauth-token-endpoint.php:167
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:152
+#: includes/class-indieauth-authorization-endpoint.php:154
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:171
+#: includes/class-indieauth-authorization-endpoint.php:173
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:112
+#: includes/class-indieauth-authorize.php:107
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:128
-#: includes/class-indieauth-token-endpoint.php:83
+#: includes/class-indieauth-authorize.php:123
+#: includes/class-indieauth-token-endpoint.php:87
 msgid "Invalid access token"
 msgstr ""
 
@@ -216,29 +216,29 @@ msgid ""
 "showing you as logged in"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:79
+#: includes/class-indieauth-token-endpoint.php:83
 msgid "Bearer Token Not Supplied"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:111
+#: includes/class-indieauth-token-endpoint.php:115
 msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:118
+#: includes/class-indieauth-token-endpoint.php:122
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:125
+#: includes/class-indieauth-token-endpoint.php:129
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:154
+#: includes/class-indieauth-token-endpoint.php:158
 msgid ""
 "This authorization code was issued with no scope, so it cannot be used to "
 "obtain an access token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:156
+#: includes/class-indieauth-token-endpoint.php:160
 msgid "There was an error issuing the access token"
 msgstr ""
 

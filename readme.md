@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Tested up to:** 4.9.8  
-**Stable tag:** 3.1.7  
+**Stable tag:** 3.1.8  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -129,6 +129,10 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.1.8 ###
+* When local verification is performed the code was not updating the profile URL and passing through the URL from the original request. This code was in
+the remote verification portion of the token endpoint and is now mirrored in the verify local code.
 
 ### 3.1.7 ###
 * Add authdiag.php script written by @Zegnat
