@@ -156,7 +156,7 @@ class IndieAuth_Authorization_Endpoint {
 		unset( $token['expiration'] );
 
 		if ( array() === array_diff_assoc( $params, $token ) ) {
-			$this->delete_code( $code );
+			$this->delete_code( $code, $token['user'] );
 
 			if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
 				$return = array( 'me' => home_url( '/' ) );
