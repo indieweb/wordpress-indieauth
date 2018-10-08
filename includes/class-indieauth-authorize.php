@@ -96,14 +96,9 @@ class IndieAuth_Authorize {
 		if ( is_array( $params ) ) {
 			$this->response = $params;
 			$this->scopes   = explode( ' ', $params['scope'] );
-			// If the user ID is passed in the token use it
+			// The User ID must be passed in the request
 			if ( isset( $params['user'] ) ) {
 				return (int) $params['user'];
-			} elseif ( isset( $params['me'] ) ) {
-				$user = get_user_by_identifier( $me );
-				if ( $user instanceof WP_User ) {
-					return $user->ID;
-				}
 			}
 		}
 

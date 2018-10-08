@@ -19,7 +19,9 @@ class IndieAuth_Authorization_Endpoint {
 	 */
 	public function register_routes() {
 		register_rest_route(
-			'indieauth/1.0', '/auth', array(
+			'indieauth/1.0',
+			'/auth',
+			array(
 				array(
 					'methods'  => WP_REST_Server::READABLE,
 					'callback' => array( $this, 'request' ),
@@ -154,9 +156,9 @@ class IndieAuth_Authorization_Endpoint {
 		unset( $token['expiration'] );
 
 		if ( array() === array_diff_assoc( $params, $token ) ) {
-			$this->delete_code( $code );
+			$this->delete_code( $code, $token['user'] );
 
-			if ( class_exists( 'Indieweb_Plugin' ) && ( get_option( 'iw_single_author' ) || ! is_multi_author() ) ) {
+			if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
 				$return = array( 'me' => home_url( '/' ) );
 			} else {
 				// Return the user profile URL and scope

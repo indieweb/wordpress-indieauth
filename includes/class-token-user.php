@@ -82,7 +82,9 @@ class Token_User extends Token_Generic {
 
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
-				$tokens[ str_replace( $this->prefix, '', $key ) ] = maybe_unserialize( array_pop( $value ) );
+				$value         = maybe_unserialize( array_pop( $value ) );
+				$value['user'] = $this->user_id;
+				$tokens[ str_replace( $this->prefix, '', $key ) ] = $value;
 			}
 		}
 		return $tokens;
