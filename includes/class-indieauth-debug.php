@@ -71,7 +71,7 @@ class IndieAuth_Debug {
 	}
 
 	// Test Route for Authorization
-	public static function register_routes() {
+	public function register_routes() {
 		register_rest_route(
 			'indieauth/1.0', '/test', array(
 				array(
@@ -83,7 +83,7 @@ class IndieAuth_Debug {
 		);
 	}
 
-	public static function permissions_test( $request ) {
+	public function permissions_test( $request ) {
 		$access_token = $request->get_param( 'access_token' );
 		$header       = $request->get_header( 'authorization' );
 		if ( ! $access_token && ! $header ) {
@@ -104,7 +104,7 @@ class IndieAuth_Debug {
 		return true;
 	}
 
-	public static function test( $request ) {
+	public function test( $request ) {
 		if ( 0 === get_current_user_id() ) {
 			return new WP_Error( 'forbidden', __( 'You have passed a permissions test but somehow the system is still not showing you as logged in', 'indieauth' ) );
 		}

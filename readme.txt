@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Tested up to: 4.9.8
-Stable tag: 3.1.8
+Stable tag: 3.1.9
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -69,7 +69,7 @@ The plugin supports you using an external token endpoint if you want, but by hav
 
 You can manage and revoke tokens under User->Manage Tokens. You will only see tokens for the currently logged in user.
 
-= How do I incorporate this into my plugin? = 
+= How do I incorporate this into my plugin? =
 
 The WordPress function, `get_current_user_id` works to retrieve the current user ID if logged in via IndieAuth. The plugin offers the following functions
 to assist you in using IndieAuth for your service. We suggest you check on activation for the IndieAuth plugin by asking `if ( class_exists( 'IndieAuth_Plugin') )`
@@ -78,10 +78,10 @@ to assist you in using IndieAuth for your service. We suggest you check on activ
 * `indieauth_check_scope( $scope )` - Checks if the provided scope is in the current available scopes
 * `indieauth_get_response()` - Returns the entire IndieAuth token response
 * `indieauth_get_client_id()` - Returns the client ID
-* `indieauth_get_me()` - Return the me property for the current session. 
+* `indieauth_get_me()` - Return the me property for the current session.
 
 If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by
-whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the 
+whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the
 scope is for.
 
 The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
@@ -115,7 +115,7 @@ If your Micropub client includes an `Authorization` HTTP request header but you 
 
 = I get an error that parameter redirect_uri is missing but I see it in the URL =
 
-Some hosting providers filter this out using mod_security. For one user, they needed [Rule 340162](https://wiki.atomicorp.com/wiki/index.php/WAF_340162) whitelisted as it detects the use of a URL as an argument. 
+Some hosting providers filter this out using mod_security. For one user, they needed [Rule 340162](https://wiki.atomicorp.com/wiki/index.php/WAF_340162) whitelisted as it detects the use of a URL as an argument.
 
 == Upgrade Notice ==
 
@@ -129,6 +129,9 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.1.9 =
+* Fixed PHP warnings
 
 = 3.1.8 =
 * When local verification is performed the code was not updating the profile URL and passing through the URL from the original request. This code was in
