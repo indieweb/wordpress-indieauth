@@ -91,7 +91,7 @@ class IndieAuth_Client_Discovery {
 			return $icons['url'];
 		} else {
 			// Return the first icon
-			return $icons[0]['url'];
+			return $icons['url'][0];
 		}
 	}
 
