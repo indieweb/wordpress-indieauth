@@ -80,7 +80,7 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function column_client_icon( $item ) {
-		if ( ! isset( $item['client_icon'] ) ) {
+		if ( empty( $item['client_icon'] ) ) {
 			return 'None';
 		}
 		return sprintf( '<img src="%1$s" height="48" width="48" />', $item['client_icon'] );
