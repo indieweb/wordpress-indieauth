@@ -227,6 +227,11 @@ class IndieAuth_Authorization_Endpoint {
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? implode( ' ', $_POST['scope'] ) : null;
+		$search = array_search( 'post', $scope, true );
+		if ( is_numeric( $search ) ) {
+			unset( $scope[ $search ] );
+			$scope = array_unique( array_merge( $scope, array( 'create', 'update' ) ) );
+		}
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
