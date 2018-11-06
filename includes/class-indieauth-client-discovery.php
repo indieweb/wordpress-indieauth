@@ -87,11 +87,15 @@ class IndieAuth_Client_Discovery {
 				$icons = $this->html['apple-touch-icon'];
 			}
 		}
-		if ( ! wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
+		if ( is_array( $icons ) && ! wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
 			return $icons['url'];
 		} else {
 			// Return the first icon
-			return $icons[0]['url'];
+			if ( isset( $icons[0]['url'] ) ) {
+				return $icons[0]['url'];
+			} else {
+				return '';
+			}
 		}
 	}
 
@@ -130,6 +134,9 @@ class IndieAuth_Client_Discovery {
 					break;
 				default:
 					$temp = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
+			}
+			if ( 'shortcut icon' === $rel ) {
+				$rel = 'icon';
 			}
 			if ( isset( $return[ $rel ] ) ) {
 				if ( is_array( $return[ $rel ] ) ) {
