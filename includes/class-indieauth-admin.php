@@ -15,7 +15,9 @@ class IndieAuth_Admin {
 
 	public function settings() {
 		register_setting(
-			'indieauth', 'indieauth_show_login_form', array(
+			'indieauth',
+			'indieauth_show_login_form',
+			array(
 				'type'         => 'boolean',
 				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
 				'show_in_rest' => true,

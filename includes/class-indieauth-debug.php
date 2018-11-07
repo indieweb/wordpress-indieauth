@@ -73,7 +73,9 @@ class IndieAuth_Debug {
 	// Test Route for Authorization
 	public function register_routes() {
 		register_rest_route(
-			'indieauth/1.0', '/test', array(
+			'indieauth/1.0',
+			'/test',
+			array(
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'test' ),
@@ -92,7 +94,9 @@ class IndieAuth_Debug {
 		if ( 0 === get_current_user_id() ) {
 			if ( empty( $this->response ) ) {
 				return new WP_Error(
-					'forbidden', __( 'No User is Currently Set', 'indieauth' ), array(
+					'forbidden',
+					__( 'No User is Currently Set', 'indieauth' ),
+					array(
 						'status'  => 403,
 						'request' => $request,
 					)
