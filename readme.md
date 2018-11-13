@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Tested up to:** 4.9.8  
-**Stable tag:** 3.1.10  
+**Stable tag:** 3.1.11  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -129,6 +129,10 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.1.11 ###
+* Fix issue with silent conversion when not array
+* Add client name and icon automatically on setting token
 
 ### 3.1.10 ###
 * Fixed PHP notice with icon determination
