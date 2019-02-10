@@ -45,12 +45,16 @@ class IndieAuth_Authorize {
 	}
 
 	public static function http_header() {
-		header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', rest_url( '/indieauth/1.0/auth' ), false ) );
-		header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
+		if ( is_author() || is_front_page() ) {
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', rest_url( '/indieauth/1.0/auth' ), false ) );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
+		}
 	}
 	public static function html_header() {
-		printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) ); // phpcs:ignore
-		printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) ); //phpcs:ignore
+		if ( is_author() || is_front_page() ) {
+			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) ); // phpcs:ignore
+			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) ); //phpcs:ignore
+		}
 	}
 
 
