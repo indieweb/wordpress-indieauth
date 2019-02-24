@@ -155,9 +155,13 @@ class IndieAuth_Token_Endpoint {
 			$token = array_filter( $token );
 
 			$token['access_token'] = $this->set_token( $token );
+			$user                  = get_user_by_identifier( $response['me'] );
+			if ( $user ) {
+				$token['profile'] = indieauth_get_user( $user->ID );
+			}
 			if ( $token ) {
 				// Return only the standard keys in the response
-				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me' ) ) );
+				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me', 'profile' ) ) );
 			}
 		} else {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
@@ -176,6 +180,10 @@ class IndieAuth_Token_Endpoint {
 		} else {
 			// Return the user profile URL and scope
 			$return['me'] = get_author_posts_url( $return['user'] );
+		}
+		$user = get_user_by_identifier( $return['me'] );
+		if ( $user ) {
+			$return['profile'] = indieauth_get_user( $user );
 		}
 
 		$tokens->destroy( $post_args['code'] );
