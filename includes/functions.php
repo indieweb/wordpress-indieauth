@@ -410,3 +410,29 @@ function indieauth_get_me() {
 	}
 	return $response['me'];
 }
+
+/* Returns jf2 formatted user data
+ *
+ */
+function indieauth_get_user( $user ) {
+	if ( is_numeric( $user ) ) {
+		$user = get_user_by( 'ID', $user );
+	}
+	if ( ! $user instanceof WP_User ) {
+		return array();
+	}
+	$return = array(
+		'type'  => 'card',
+		'name'  => $user->display_name,
+		'url'   => empty( $user->user_url ) ? get_author_posts_url( $user->ID ) : $user->user_url,
+		'note'  => get_user_meta( $user->ID, 'description', true ),
+		'photo' => get_avatar_url(
+			$user->ID,
+			array(
+				'size'    => 125,
+				'default' => '404',
+			)
+		),
+	);
+	return array_filter( $return );
+}

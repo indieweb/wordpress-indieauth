@@ -2,8 +2,8 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
-Tested up to: 5.0.3
-Stable tag: 3.1.12
+Tested up to: 5.1
+Stable tag: 3.2
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -130,8 +130,9 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
-= 3.1.12 = 
+= 3.2 = 
 * Only add headers to front page and author archive pages
+* Return basic profile data in returns so the client can display the name and avatar of the user
 
 = 3.1.11 =
 * Fix issue with silent conversion when not array
