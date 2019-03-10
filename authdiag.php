@@ -101,19 +101,19 @@ if ( is_string( $url ) ) {
 		>
 	  <button type="submit">Run Test</button>
 	</form>
-<?php if ( $json !== null ) { ?>
+<?php if ( null !== $json ) { ?>
 	<h2>Summary Results</h2>
-	<?php if ( in_array( 'HTTP_AUTHORIZATION', $json['server'] ) ) { ?>
+	<?php if ( in_array( 'HTTP_AUTHORIZATION', $json['server'], true ) ) { ?>
 	<p><code>$_SERVER['HTTP_AUTHORIZATION']</code> is <b class="green">available</b> on this server! Everything should be fine as most tools depend on reading that variable.</p>
 <?php } else { ?>
 	<p><code>$_SERVER['HTTP_AUTHORIZATION']</code> is <b class="red">unavailable</b> on this server. You may need to <a href="https://wordpress.org/plugins/micropub/#faq-header">change some configurations</a> to get tools working.</p>
 <?php } ?>
-	<?php if ( in_array( 'REDIRECT_HTTP_AUTHORIZATION', $json['server'] ) ) { ?>
+	<?php if ( in_array( 'REDIRECT_HTTP_AUTHORIZATION', $json['server'], true ) ) { ?>
 	<p><code>$_SERVER['REDIRECT_HTTP_AUTHORIZATION']</code> is <b class="green">available</b> on this server! This can be used as a fallback for <code>$_SERVER['HTTP_AUTHORIZATION']</code>.</p>
 <?php } else { ?>
 	<p><code>$_SERVER['REDIRECT_HTTP_AUTHORIZATION']</code> is <b class="red">unavailable</b> on this server. Some tools may use this as fallback for <code>$_SERVER['HTTP_AUTHORIZATION']</code>.</p>
 <?php } ?>
-	<?php if ( $json['getallheaders'] === null ) { ?>
+	<?php if ( null === $json['getallheaders'] ) { ?>
 	<p>Tools may use <code>getallheaders()</code>, but this server does <b class="red">not support</b> that function.</p>
 <?php } elseif ( is_array( $json['getallheaders'] ) && count( $json['getallheaders'] ) > 0 ) { ?>
 	<p>Tools may use <code>getallheaders()</code>, the authorization header is <b class="green">available</b> there!</p>
@@ -122,7 +122,7 @@ if ( is_string( $url ) ) {
 <?php } else { ?>
 	<p>Tools may use <code>getallheaders()</code>. This server supports the function, but was unable to use it for this test.</p>
 <?php } ?>
-	<?php if ( $json['apache_request_headers'] === null ) { ?>
+	<?php if ( null === $json['apache_request_headers'] ) { ?>
 	<p>Tools may use <code>apache_request_headers()</code>, but this server does <b class="red">not support</b> that function.</p>
 <?php } elseif ( is_array( $json['apache_request_headers'] ) && count( $json['apache_request_headers'] ) > 0 ) { ?>
 	<p>Tools may use <code>apache_request_headers()</code>, the authorization header is <b class="green">available</b> there!</p>
