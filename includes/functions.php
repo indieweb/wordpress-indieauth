@@ -411,6 +411,10 @@ function indieauth_get_me() {
 	return $response['me'];
 }
 
+function indieauth_hash( $data ) {
+	return hash( 'sha256', $data, true );
+}
+
 /* Returns jf2 formatted user data
  *
  */

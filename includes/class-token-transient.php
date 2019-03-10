@@ -69,8 +69,8 @@ class Token_Transient extends Token_Generic {
 		$this->destroy( $key );
 	}
 
-	protected function hash( $string, $scheme = 'nonce' ) {
-		return parent::hash( $string, $scheme );
+	protected function hash( $string ) {
+		return parent::hash( $string );
 	}
 
 	/**

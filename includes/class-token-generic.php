@@ -77,8 +77,8 @@ abstract class Token_Generic {
 	 * @param string $scheme Hashing sceheme
 	 * @return string A hash of the string encoded to base64.
 	 */
-	protected function hash( $string, $scheme = 'secure_auth' ) {
-		return base64_encode( wp_hash( $string, $scheme ) );
+	protected function hash( $string ) {
+		return base64_encode( indieauth_hash( $string ) );
 	}
 
 	/**
