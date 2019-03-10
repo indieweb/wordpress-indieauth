@@ -23,11 +23,15 @@ if (is_string($auth)) {
 }
 
 $json = null;
+$flags = null;
+if (version_compare(PHP_VERSION, '7.3.0', '<')) {
+    $flags = FILTER_FLAG_SCHEME_REQUIRED | FILTER_FLAG_HOST_REQUIRED;
+}
 $url = filter_input(
     INPUT_POST,
     'url',
     FILTER_VALIDATE_URL,
-    FILTER_FLAG_SCHEME_REQUIRED | FILTER_FLAG_HOST_REQUIRED
+    $flags
 );
 if (is_string($url)) {
     $auth = 'authtest_' . strval(time());
