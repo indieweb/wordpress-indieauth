@@ -49,6 +49,11 @@ login_header(
 		<input type="hidden" name="state" value="<?php echo $state; ?>" />
 		<input type="hidden" name="me" value="<?php echo $me; ?>" />
 		<input type="hidden" name="response_type" value="<?php echo $response_type; ?>" />
+
+		<?php if ( ! is_null( $code_challenge ) ) { ?>
+			<input type="hidden" name="code_challenge" value="<?php echo $code_challenge; ?>" />
+			<input type="hidden" name="code_challenge_method" value="<?php echo $code_challenge_method; ?>" />
+		<?php } ?>
 		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php _e( 'Authorize', 'indieauth' ); ?></button>
 		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
 	</p>

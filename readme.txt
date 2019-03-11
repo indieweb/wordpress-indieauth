@@ -2,8 +2,9 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
+Requires PHP: 5.4
 Tested up to: 5.1
-Stable tag: 3.2
+Stable tag: 3.3
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -129,6 +130,10 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.3 =
+* Switch to SHA256 hashing from built in salted hash used by WordPress passwords
+* Add PKCE Support
 
 = 3.2 = 
 * Only add headers to front page and author archive pages
