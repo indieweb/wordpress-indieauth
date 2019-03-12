@@ -2,9 +2,9 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.2\n"
+"Project-Id-Version: IndieAuth 3.3.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2019-03-11 05:27:16+00:00\n"
+"POT-Creation-Date: 2019-03-12 04:45:44+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -155,37 +155,44 @@ msgstr ""
 msgid "Allows the application to save content for later retrieval"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:85
+#: includes/class-indieauth-authorization-endpoint.php:82
+msgid ""
+"Returns a complete profile to the application. Without this only a display "
+"name, avatar, and url will be returned."
+msgstr ""
+
+#: includes/class-indieauth-authorization-endpoint.php:87
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:95
+#: includes/class-indieauth-authorization-endpoint.php:97
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:101
-#: includes/class-indieauth-authorization-endpoint.php:146
+#: includes/class-indieauth-authorization-endpoint.php:103
+#: includes/class-indieauth-authorization-endpoint.php:148
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:153
+#: includes/class-indieauth-authorization-endpoint.php:155
 #: includes/class-indieauth-authorize.php:145
-#: includes/class-indieauth-token-endpoint.php:176
+#: includes/class-indieauth-token-endpoint.php:179
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:158
+#: includes/class-indieauth-authorization-endpoint.php:160
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:166
-#: includes/class-indieauth-authorization-endpoint.php:170
-#: includes/class-indieauth-authorization-endpoint.php:174
+#: includes/class-indieauth-authorization-endpoint.php:168
+#: includes/class-indieauth-authorization-endpoint.php:172
+#: includes/class-indieauth-token-endpoint.php:184
+#: includes/class-indieauth-token-endpoint.php:188
 msgid "Failed PKCE Validation"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:195
+#: includes/class-indieauth-authorization-endpoint.php:193
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -196,7 +203,7 @@ msgid "User Not Found on this Site"
 msgstr ""
 
 #: includes/class-indieauth-authorize.php:127
-#: includes/class-indieauth-token-endpoint.php:87
+#: includes/class-indieauth-token-endpoint.php:88
 msgid "Invalid access token"
 msgstr ""
 
@@ -222,29 +229,29 @@ msgid ""
 "showing you as logged in"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:83
+#: includes/class-indieauth-token-endpoint.php:84
 msgid "Bearer Token Not Supplied"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:115
+#: includes/class-indieauth-token-endpoint.php:116
 msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:122
+#: includes/class-indieauth-token-endpoint.php:123
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:129
+#: includes/class-indieauth-token-endpoint.php:130
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:167
+#: includes/class-indieauth-token-endpoint.php:170
 msgid ""
 "This authorization code was issued with no scope, so it cannot be used to "
 "obtain an access token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:169
+#: includes/class-indieauth-token-endpoint.php:172
 msgid "There was an error issuing the access token"
 msgstr ""
 

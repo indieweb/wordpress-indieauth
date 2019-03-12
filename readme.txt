@@ -4,7 +4,7 @@ Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Requires PHP: 5.4
 Tested up to: 5.1
-Stable tag: 3.3
+Stable tag: 3.3.1
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -28,29 +28,40 @@ You can also install this plugin to enable web sign-in for your site using your 
 
 = What is IndieAuth? =
 
-[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage to sign in to other places. It is built on top of OAuth 2.0,
-which is used by many websites.
-
-= What is IndieAuth.com? =
-
-[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use.
+[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage or author post URL( usually /author/authorname ) to sign in to other places. 
+It is built on top of OAuth 2.0, which is used by many websites.
 
 = Why IndieAuth? =
 
-IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises
-much of the process so completely separate implementations and services can be used for each part.
+IndieAuth is an extension to OAuth. If you are a developer, you have probably used OAuth to get access to APIs. As a user, if you have given an application access to your
+account on a service, you probably used OAuth. One advantage of IndieAuth is how easily it allows everyone's website to be their own OAuth Server without needing applications
+to register with each site.
 
-IndieAuth was developed as part of the [Indie Web movement](http://indieweb.org/why) to take back control of your online identity.
+= How is IndieAuth different from OAuth? =
+
+IndieAuth was built on top of OAuth 2.0 and differs in that users and clients are represented by URLs.  Clients can verify the identity of
+a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources.
+
+You can read the [specification](https://indieauth.spec.indieweb.org/) for implementation details.
 
 = How is Web Sign In different from OpenID? =
 
 The goals of OpenID and Web Sign In are similar. Both encourage you to sign in to a website using your own domain name.
-However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol.
+However, OpenID has failed to gain wide adoption. Web sign-in prompts a user to enter a URL to sign on. Upon submission,
+it tries to discover the URL's authorization endpoint, and authenticate to that. If none is found, it falls back on other options.
 
-= How is IndieAuth different from OAuth? =
+This plugin only supports searching an external site for an authorization endpoint, allowing you to log into one site with the credentials of another site. This
+functionality may be split off in future into its own plugin.
 
-IndieAuth was built on top of the OAuth 2.0 Framework and differs in that users and clients are represented by URLs.  Clients can verify the identity of
-a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources.
+= What is IndieAuth.com? =
+
+[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do
+not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin.
+
+= How does the application know my name and avatar? =
+
+As of version 3.2, the endpoints return the display name, avatar, and URL from your user profile.
+
 
 = Does this require users to have their own domain name? =
 
@@ -60,8 +71,12 @@ No. You can use your author profile URL to login if you do not have a domain nam
 
 That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
 
-By adding Indieauth support, you can log into sites simply by providing your URL. We recommend your site uses SSL to ensure your credentials are not sent
-in cleartext.
+By adding Indieauth support, you can log into sites simply by providing your URL. 
+
+= How secure is this? =
+
+We recommend your site uses SSL to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE),
+if the client supports it. 
 
 = What is a token endpoint? =
 
@@ -80,12 +95,19 @@ to assist you in using IndieAuth for your service. We suggest you check on activ
 * `indieauth_get_response()` - Returns the entire IndieAuth token response
 * `indieauth_get_client_id()` - Returns the client ID
 * `indieauth_get_me()` - Return the me property for the current session.
+* `new IndieAuth_Client_Discovery( $client_id )` - Class that allows you to discover information about a client
+** `$client->get_name()` - Once the class is instantiated, retrieve the name
+** `$client->get_icon()` - Once the class is instantiated, retrieve an icon
 
 If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by
 whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the
 scope is for.
 
 The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
+
+= What if I just want to use the REST API without OAuth exchange? =
+
+The plugin allows you to generate a token under User->Manage Tokens with access. You can provide this to an application manually.
 
 = I keep getting the response that my request is Unauthorized =
 
@@ -130,6 +152,11 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.3.1 =
+
+* Add definition of profile scope
+* Improve documentation in README
 
 = 3.3 =
 * Switch to SHA256 hashing from built in salted hash used by WordPress passwords
