@@ -102,13 +102,17 @@ class IndieAuth_Authorization_Endpoint {
 			}
 		}
 		$url  = wp_login_url( $params['redirect_uri'], true );
-		$args = array(
-			'action'        => 'indieauth',
-			'_wpnonce'      => wp_create_nonce( 'wp_rest' ),
-			'response_type' => $params['response_type'],
-			'client_id'     => $params['client_id'],
-			'me'            => $params['me'],
-			'state'         => $params['state'],
+		$args = array_filter(
+			array(
+				'action'                => 'indieauth',
+				'_wpnonce'              => wp_create_nonce( 'wp_rest' ),
+				'response_type'         => $params['response_type'],
+				'client_id'             => $params['client_id'],
+				'me'                    => $params['me'],
+				'state'                 => $params['state'],
+				'code_challenge'        => isset( $params['code_challenge'] ) ? $params['code_challenge'] : null,
+				'code_challenge_method' => isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null,
+			)
 		);
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : 'create update';
@@ -154,6 +158,20 @@ class IndieAuth_Authorization_Endpoint {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'The authorization code expired', 'indieauth' ), 400 );
 		}
 		unset( $token['expiration'] );
+		// If there is a code challenge
+		if ( isset( $token['code_challenge'] ) ) {
+			$code_verifier = $request->get_param( 'code_verifier' );
+			if ( ! $code_verifier ) {
+				$this->delete_code( $code, $token['user'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			if ( ! pkce_verifier( $token['code_challenge'], $code_verifier, $token['code_challenge_method'] ) ) {
+				$this->delete_code( $code, $token['user'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			unset( $token['code_challenge'] );
+			unset( $token['code_challenge_method'] );
+		}
 
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code, $token['user'] );
@@ -200,9 +218,12 @@ class IndieAuth_Authorization_Endpoint {
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
+		$code_challenge = isset( $_GET['code_challenge'] ) ? wp_unslash( $_GET['code_challenge'] ) : null;
+		$code_challenge_method = isset( $_GET['code_challenge_method'] ) ? wp_unslash( $_GET['code_challenge_method'] ) : null;
+
 		// phpcs:enable
 		$action = 'indieauth';
-		$url    = add_query_params_to_url(
+		$args   = array_filter(
 			compact(
 				'client_id',
 				'redirect_uri',
@@ -210,9 +231,9 @@ class IndieAuth_Authorization_Endpoint {
 				'me',
 				'response_type',
 				'action'
-			),
-			wp_login_url()
+			)
 		);
+		$url    = add_query_params_to_url( $args, wp_login_url() );
 		if ( 'code' === $_GET['response_type'] ) {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php';
 		} elseif ( 'id' === $_GET['response_type'] ) {
@@ -227,6 +248,8 @@ class IndieAuth_Authorization_Endpoint {
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
+		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;
+		$code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? wp_unslash( $_POST['code_challenge_method'] ) : null;
 		$search = array_search( 'post', $scope, true );
 		if ( is_numeric( $search ) ) {
 			unset( $scope[ $search ] );
@@ -238,7 +261,7 @@ class IndieAuth_Authorization_Endpoint {
 		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
 		/// phpcs:enable
-		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me' );
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method' );
 		$token = array_filter( $token );
 		$code  = self::set_code( $current_user->ID, $token );
 		$url   = add_query_params_to_url(

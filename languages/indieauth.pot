@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2019-02-24 17:00:09+00:00\n"
+"POT-Creation-Date: 2019-03-11 05:27:16+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -164,22 +164,28 @@ msgid "Unsupported Response Type"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:101
-#: includes/class-indieauth-authorization-endpoint.php:142
+#: includes/class-indieauth-authorization-endpoint.php:146
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:149
+#: includes/class-indieauth-authorization-endpoint.php:153
 #: includes/class-indieauth-authorize.php:145
 #: includes/class-indieauth-token-endpoint.php:176
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:154
+#: includes/class-indieauth-authorization-endpoint.php:158
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:173
+#: includes/class-indieauth-authorization-endpoint.php:166
+#: includes/class-indieauth-authorization-endpoint.php:170
+#: includes/class-indieauth-authorization-endpoint.php:174
+msgid "Failed PKCE Validation"
+msgstr ""
+
+#: includes/class-indieauth-authorization-endpoint.php:195
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -410,7 +416,7 @@ msgid ""
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:37
-#: templates/indieauth-authorize-form.php:53
+#: templates/indieauth-authorize-form.php:58
 msgid "Cancel"
 msgstr ""
 
@@ -419,7 +425,7 @@ msgid "You will be redirected to <code>%1$s</code> after authenticating."
 msgstr ""
 
 #: templates/indieauth-authorize-form.php:4
-#: templates/indieauth-authorize-form.php:52
+#: templates/indieauth-authorize-form.php:57
 msgid "Authorize"
 msgstr ""
 
@@ -435,7 +441,7 @@ msgid ""
 "href=\"https://indieweb.org/scope\">scopes</a>"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:56
+#: templates/indieauth-authorize-form.php:61
 msgid ""
 "You will be redirected to <code>%1$s</code> after authorizing this "
 "application."
