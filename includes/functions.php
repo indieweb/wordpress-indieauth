@@ -415,6 +415,18 @@ function indieauth_hash( $data ) {
 	return hash( 'sha256', $data, true );
 }
 
+function pkce_verifier( $code_challenge, $code_verifier, $method ) {
+	if ( 'S256' === $method ) {
+		$code_verifier = base64_urlencode( indieauth_hash( $code_verifier ) );
+	}
+	return ( 0 === strcmp( $code_challenge, $code_verifier ) );
+}
+
+function base64_urlencode( $string ) {
+	return rtrim( strtr( base64_encode( $string ), '+/', '-_' ), '=' );
+}
+
+
 /* Returns jf2 formatted user data
  *
  */

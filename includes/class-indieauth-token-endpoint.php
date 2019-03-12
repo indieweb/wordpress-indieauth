@@ -39,22 +39,23 @@ class IndieAuth_Token_Endpoint {
 					'methods'  => WP_REST_Server::CREATABLE,
 					'callback' => array( $this, 'post' ),
 					'args'     => array(
-						'grant_type'   => array(),
-						'code'         => array(),
-						'client_id'    => array(
+						'grant_type'    => array(),
+						'code'          => array(),
+						'code_verifier' => array(),
+						'client_id'     => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'redirect_uri' => array(
+						'redirect_uri'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'me'           => array(
+						'me'            => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'action'       => array(),
-						'token'        => array(),
+						'action'        => array(),
+						'token'         => array(),
 					),
 				),
 			)
@@ -128,13 +129,15 @@ class IndieAuth_Token_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$response = $this->verify_local_authorization_code(
+		$args     = array_filter(
 			array(
-				'code'         => $params['code'],
-				'redirect_uri' => $params['redirect_uri'],
-				'client_id'    => $params['client_id'],
+				'code'          => $params['code'],
+				'redirect_uri'  => $params['redirect_uri'],
+				'client_id'     => $params['client_id'],
+				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
+		$response = $this->verify_local_authorization_code( $args );
 		$error    = get_oauth_error( $response );
 		if ( $error ) {
 			return $error;
@@ -174,6 +177,18 @@ class IndieAuth_Token_Endpoint {
 		$return = $tokens->get( $post_args['code'] );
 		if ( ! $return ) {
 			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		if ( isset( $return['code_challenge'] ) ) {
+			if ( ! isset( $post_args['code_verifier'] ) ) {
+				$tokens->destroy( $post_args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			if ( ! pkce_verifier( $return['code_challenge'], $post_args['code_verifier'], $return['code_challenge_method'] ) ) {
+				$tokens->destroy( $post_args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			unset( $return['code_challenge'] );
+			unset( $return['code_challenge_method'] );
 		}
 		if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
 			$return['me'] = home_url( '/' );

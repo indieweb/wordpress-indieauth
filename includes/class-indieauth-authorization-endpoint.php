@@ -165,11 +165,7 @@ class IndieAuth_Authorization_Endpoint {
 				$this->delete_code( $code, $token['user'] );
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
 			}
-			if ( 'plain' === $token['code_challenge_method'] && $code_verifier !== $token['code_challenge'] ) {
-				$this->delete_code( $code, $token['user'] );
-				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
-			}
-			if ( 'SHA256' === $token['code_challenge_method'] && base64_encode( indieauth_hash( $code_verifier ) ) !== $token['code_challenge'] ) {
+			if ( ! pkce_verifier( $token['code_challenge'], $code_verifier, $token['code_challenge_method'] ) ) {
 				$this->delete_code( $code, $token['user'] );
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
 			}
