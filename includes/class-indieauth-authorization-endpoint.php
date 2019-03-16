@@ -78,6 +78,8 @@ class IndieAuth_Authorization_Endpoint {
 			'block'    => __( 'Allows the application to block and unlock users', 'indieauth' ),
 			'channels' => __( 'Allows the application to manage channels', 'indieauth' ),
 			'save'     => __( 'Allows the application to save content for later retrieval', 'indieauth' ),
+			// Profile
+			'profile'  => __( 'Returns a complete profile to the application. Without this only a display name, avatar, and url will be returned', 'indieauth' ),
 		);
 		if ( 'all' === $scope ) {
 			return $scopes;
