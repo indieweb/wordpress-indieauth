@@ -3,7 +3,7 @@
 
 	<h2 class="title"><?php _e( 'Test your System', 'indieauth' ); ?></h2>
 	<p><?php _e( 'If you are experiencing unauthorized as an error, click below to run a test script.', 'indieauth' ); ?></p>
-	<p><a href="<?php echo plugin_dir_url( __DIR__ ) . 'authdiag.php'; ?>"><?php _e( 'Diagnostic Script', 'indieauth' ); ?></a></p>
+	<p><a href="<?php echo add_query_arg( 'action', 'authdiag', wp_login_url() ); ?>"><?php _e( 'Diagnostic Script', 'indieauth' ); ?></a></p>
 
 	<form method="post" action="options.php">
 		<?php settings_fields( 'indieauth' ); ?>
