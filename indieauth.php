@@ -60,7 +60,7 @@ class IndieAuth_Plugin {
 	public function admin_notices() {
 		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
 			echo '<div class="notice notice-warning">';
-			_e( 'In order to ensure Indieauth tokens will work please perform this check:', 'indieauth' );
+			_e( 'In order to ensure IndieAuth tokens will work please perform this check:', 'indieauth' );
 			printf( ' <a href="%1s">%2$s</a>', add_query_arg( 'action', 'authdiag', wp_login_url() ), __( 'Check Script', 'indieauth' ) );
 			echo '</div>';
 		}
