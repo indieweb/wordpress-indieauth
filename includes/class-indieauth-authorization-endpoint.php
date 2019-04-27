@@ -211,12 +211,11 @@ class IndieAuth_Authorization_Endpoint {
 
 	public function login_form_authdiag() {
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( isset( $_SERVER['HTTP_AUTHORIZATION'] ) || $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				if ( $_SERVER['HTTP_AUTHORIZATION'] ) {
-					esc_html_e( 'Authorization Header Found. You are good to go.', 'indieauth' );
-				} elseif ( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-					esc_html_e( 'Alternate Header Found. You are good to go.', 'indieauth' );
-				}
+			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+				esc_html_e( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' );
+				update_option( 'indieauth_header_check', 1 );
+			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
+				esc_html_e( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' );
 				update_option( 'indieauth_header_check', 1 );
 			} else {
 				include plugin_dir_path( __DIR__ ) . 'templates/authdiagfail.php';

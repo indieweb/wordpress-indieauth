@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 3.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2019-04-25 00:08:04+00:00\n"
+"POT-Creation-Date: 2019-04-27 23:57:01+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -198,12 +198,12 @@ msgid ""
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:216
-msgid "Authorization Header Found. You are good to go."
+#: includes/class-indieauth-authorization-endpoint.php:215
+msgid "Authorization Header Found. You should be able to use all clients."
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:218
-msgid "Alternate Header Found. You are good to go."
+msgid "Alternate Header Found. You should be able to use all clients."
 msgstr ""
 
 #: includes/class-indieauth-authorize.php:111
