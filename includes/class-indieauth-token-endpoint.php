@@ -164,7 +164,23 @@ class IndieAuth_Token_Endpoint {
 			}
 			if ( $token ) {
 				// Return only the standard keys in the response
-				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me', 'profile' ) ) );
+				return new WP_REST_Response(
+					wp_array_slice_assoc(
+						$token,
+						array(
+							'access_token',
+							'token_type',
+							'scope',
+							'me',
+							'profile',
+						)
+					),
+					200, // Status Code
+					array(
+						'Cache-Control' => 'no-store',
+						'Pragma'        => 'no-cache',
+					)
+				);
 			}
 		} else {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
