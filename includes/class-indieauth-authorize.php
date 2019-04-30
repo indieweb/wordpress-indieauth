@@ -162,22 +162,24 @@ class IndieAuth_Authorize {
 	 * @return string|null Authorization header if set, null otherwise
 	 */
 	public function get_authorization_header() {
+		$auth = null;
 		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
-			return wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
-		}
-
-		// When Apache speaks via FastCGI with PHP, then the authorization header is often available as REDIRECT_HTTP_AUTHORIZATION.
-		if ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-			return wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
-		}
-		$headers = getallheaders();
-		// Check for the authorization header case-insensitively
-		foreach ( $headers as $key => $value ) {
-			if ( strtolower( $key ) === 'authorization' ) {
-				return $value;
+			$auth = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+			// When Apache speaks via FastCGI with PHP, then the authorization header is often available as REDIRECT_HTTP_AUTHORIZATION.
+			$auth = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		} else {
+			$headers = getallheaders();
+			// Check for the authorization header case-insensitively
+			foreach ( $headers as $key => $value ) {
+				if ( strtolower( $key ) === 'authorization' ) {
+					$auth = wp_unslash( $value );
+					break;
+				}
 			}
 		}
-		return null;
+
+		return $auth;
 	}
 
 	/**
