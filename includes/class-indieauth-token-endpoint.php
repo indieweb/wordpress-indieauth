@@ -78,8 +78,12 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public function get( $request ) {
-		$params       = $request->get_params();
-		$access_token = $this->get_token_from_bearer_header( $request->get_header( 'Authorization' ) );
+		$params = $request->get_params();
+		$header = $request->get_header( 'Authorization' );
+		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+			$header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		}
+		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
 			return new WP_OAuth_Response( 'parameter_absent', __( 'Bearer Token Not Supplied', 'indieauth' ), 400 );
 		}
