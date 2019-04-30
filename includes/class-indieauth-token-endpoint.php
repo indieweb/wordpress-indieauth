@@ -85,7 +85,15 @@ class IndieAuth_Token_Endpoint {
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
-			return new WP_OAuth_Response( 'parameter_absent', __( 'Bearer Token Not Supplied', 'indieauth' ), 400 );
+			return new WP_OAuth_Response(
+				'parameter_absent',
+				__(
+					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin 
+				IndieAuth Settings Page',
+					'indieauth'
+				),
+				400
+			);
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 3.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2019-04-30 03:02:24+00:00\n"
+"POT-Creation-Date: 2019-04-30 03:08:12+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -177,7 +177,7 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:157
 #: includes/class-indieauth-authorize.php:145
-#: includes/class-indieauth-token-endpoint.php:199
+#: includes/class-indieauth-token-endpoint.php:207
 msgid "Invalid authorization code"
 msgstr ""
 
@@ -187,8 +187,8 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:170
 #: includes/class-indieauth-authorization-endpoint.php:174
-#: includes/class-indieauth-token-endpoint.php:204
-#: includes/class-indieauth-token-endpoint.php:208
+#: includes/class-indieauth-token-endpoint.php:212
+#: includes/class-indieauth-token-endpoint.php:216
 msgid "Failed PKCE Validation"
 msgstr ""
 
@@ -211,7 +211,7 @@ msgid "User Not Found on this Site"
 msgstr ""
 
 #: includes/class-indieauth-authorize.php:127
-#: includes/class-indieauth-token-endpoint.php:92
+#: includes/class-indieauth-token-endpoint.php:100
 msgid "Invalid access token"
 msgstr ""
 
@@ -237,29 +237,32 @@ msgid ""
 "showing you as logged in"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:88
-msgid "Bearer Token Not Supplied"
+#: includes/class-indieauth-token-endpoint.php:90
+msgid ""
+"Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run "
+"diagnostic script in WordPress Admin \n"
+"\t\t\t\tIndieAuth Settings Page"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:120
+#: includes/class-indieauth-token-endpoint.php:128
 msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:127
+#: includes/class-indieauth-token-endpoint.php:135
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:134
+#: includes/class-indieauth-token-endpoint.php:142
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:190
+#: includes/class-indieauth-token-endpoint.php:198
 msgid ""
 "This authorization code was issued with no scope, so it cannot be used to "
 "obtain an access token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:192
+#: includes/class-indieauth-token-endpoint.php:200
 msgid "There was an error issuing the access token"
 msgstr ""
 
