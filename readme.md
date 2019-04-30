@@ -159,6 +159,8 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 ### 3.3.2 ###
 * Add new diagnositic script that will nag you until you run it at least once
+* Add cache control headers on return from endpoint
+* Verifying the token at the token endpoint did not use REDIRECT_HTTP_AUTHORIZATION now added
 
 ### 3.3.1 ###
 

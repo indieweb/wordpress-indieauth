@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IndieAuth 3.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
-"POT-Creation-Date: 2019-04-27 23:57:01+00:00\n"
+"POT-Creation-Date: 2019-04-30 03:02:24+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -177,7 +177,7 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:157
 #: includes/class-indieauth-authorize.php:145
-#: includes/class-indieauth-token-endpoint.php:179
+#: includes/class-indieauth-token-endpoint.php:199
 msgid "Invalid authorization code"
 msgstr ""
 
@@ -187,8 +187,8 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:170
 #: includes/class-indieauth-authorization-endpoint.php:174
-#: includes/class-indieauth-token-endpoint.php:184
-#: includes/class-indieauth-token-endpoint.php:188
+#: includes/class-indieauth-token-endpoint.php:204
+#: includes/class-indieauth-token-endpoint.php:208
 msgid "Failed PKCE Validation"
 msgstr ""
 
@@ -211,7 +211,7 @@ msgid "User Not Found on this Site"
 msgstr ""
 
 #: includes/class-indieauth-authorize.php:127
-#: includes/class-indieauth-token-endpoint.php:88
+#: includes/class-indieauth-token-endpoint.php:92
 msgid "Invalid access token"
 msgstr ""
 
@@ -219,47 +219,47 @@ msgstr ""
 msgid "Failed to Retrieve IndieAuth Client Details "
 msgstr ""
 
-#: includes/class-indieauth-debug.php:92
+#: includes/class-indieauth-debug.php:97
 msgid "Could Not Find Token"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:98
+#: includes/class-indieauth-debug.php:103
 msgid "No User is Currently Set"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:105
+#: includes/class-indieauth-debug.php:110
 msgid "A Successful Auth Response was Given yet No User is Currently Set"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:113
+#: includes/class-indieauth-debug.php:118
 msgid ""
 "You have passed a permissions test but somehow the system is still not "
 "showing you as logged in"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:84
+#: includes/class-indieauth-token-endpoint.php:88
 msgid "Bearer Token Not Supplied"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:116
+#: includes/class-indieauth-token-endpoint.php:120
 msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:123
+#: includes/class-indieauth-token-endpoint.php:127
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:130
+#: includes/class-indieauth-token-endpoint.php:134
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:170
+#: includes/class-indieauth-token-endpoint.php:190
 msgid ""
 "This authorization code was issued with no scope, so it cannot be used to "
 "obtain an access token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:172
+#: includes/class-indieauth-token-endpoint.php:192
 msgid "There was an error issuing the access token"
 msgstr ""
 
