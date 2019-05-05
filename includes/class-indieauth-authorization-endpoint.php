@@ -11,7 +11,6 @@ class IndieAuth_Authorization_Endpoint {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
-		add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
 
 		$this->tokens = new Token_User( '_indieauth_code_' );
 	}
@@ -206,27 +205,6 @@ class IndieAuth_Authorization_Endpoint {
 		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->confirmed();
 		}
-		exit;
-	}
-
-	public function login_form_authdiag() {
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
-				esc_html_e( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' );
-				update_option( 'indieauth_header_check', 1 );
-			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				esc_html_e( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' );
-				update_option( 'indieauth_header_check', 1 );
-			} else {
-				include plugin_dir_path( __DIR__ ) . 'templates/authdiagfail.php';
-			}
-			exit;
-		}
-		$args = array(
-			'action' => 'authdiag',
-		);
-		$url  = add_query_params_to_url( $args, wp_login_url() );
-		include plugin_dir_path( __DIR__ ) . 'templates/authdiagtest.php';
 		exit;
 	}
 

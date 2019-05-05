@@ -1,10 +1,18 @@
 <div class="wrap">
 	<h1><?php esc_html_e( 'IndieAuth Settings', 'indieauth' ); ?></h1>
 
+<?php 
+$message = get_query_var( 'authdiag_message' );
+if ( $message ) {
+?>
+<div>
+<?php echo $message; ?>
+</div>
+<?php } else {  ?>
 	<h2 class="title"><?php _e( 'Test your System', 'indieauth' ); ?></h2>
 	<p><?php _e( 'If you are experiencing unauthorized as an error, click below to run a test script.', 'indieauth' ); ?></p>
 	<p><a href="<?php echo add_query_arg( 'action', 'authdiag', wp_login_url() ); ?>"><?php _e( 'Diagnostic Script', 'indieauth' ); ?></a></p>
-
+<?php } ?>
 	<form method="post" action="options.php">
 		<?php settings_fields( 'indieauth' ); ?>
 
