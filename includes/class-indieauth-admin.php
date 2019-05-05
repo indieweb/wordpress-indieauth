@@ -17,10 +17,10 @@ class IndieAuth_Admin {
 		$return = '';
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
-				$return = '<p class="notice notice-success">' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p>';
+				$return = '<div class="notice notice-success"><p>' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 				update_option( 'indieauth_header_check', 1 );
 			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				$return = '<p class="notice-success">' . esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p>';
+				$return = '<div class="notice-success"><p>' . esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 				update_option( 'indieauth_header_check', 1 );
 			}
 			if ( empty( $return ) ) {
