@@ -14,12 +14,19 @@ class Token_List_Table extends WP_List_Table {
 			'scope'         => __( 'Scope', 'indieauth' ),
 			'issued_at'     => __( 'Issue Date', 'indieauth' ),
 			'last_accessed' => __( 'Last Accessed', 'indieauth' ),
+			'expiration'       => __( 'Expires', 'indieauth' )
 		);
 	}
 
 	public function get_bulk_actions() {
 			  return array(
-				  'revoke' => __( 'Revoke', 'indieauth' ),
+				  'revoke'   => __( 'Revoke', 'indieauth' ),
+				  'revokey'  => __( 'Revoke Tokens Last Accessed 1 Year Ago', 'indieauth' ),
+				  'revokem'  => __( 'Revoke Tokens Last Accessed 1 Month Ago', 'indieauth' ),
+				  'revokew'  => __( 'Revoke Tokens Last Accessed 1 Week Ago', 'indieauth' ),
+				  'revoked'  => __( 'Revoke Tokens Last Accessed 1 Day Ago', 'indieauth' ),
+				  'revokeh'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago', 'indieauth' ),
+				  'maintain' => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
 			  );
 	}
 
@@ -53,28 +60,81 @@ class Token_List_Table extends WP_List_Table {
 	public function process_action() {
 		$tokens = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
 		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
-		if ( 'revoke' === $this->current_action() ) {
-			if ( is_string( $tokens ) ) {
-				$t->destroy( $tokens );
-			} elseif ( is_array( $tokens ) ) {
-				foreach ( $tokens as $token ) {
-					$t->destroy( $token );
+		switch ( $this->current_action() ) {
+			case 'revoke':
+				if ( is_string( $tokens ) ) {
+					$t->destroy( $tokens );
+				} elseif ( is_array( $tokens ) ) {
+					foreach ( $tokens as $token ) {
+						$t->destroy( $token );
+					}
 				}
-			}
+				break;
+			case 'maintain':
+				//$t->check_expires();
+				$users = new Token_User( '_indieauth_code_', get_current_user_id() );
+				$users->destroy_all();
+				break;
+			case 'revokey':
+				$this->destroy_older_than( $t, 'year' );
+				break;
+			case 'revokem':
+				$this->destroy_older_than( $t, 'month' );
+				break;
+			case 'revokew':
+				$this->destroy_older_than( $t, 'week' );
+				break;
+			case 'revoked':
+				$this->destroy_older_than( $t, 'day' );
+				break;
+			case 'revokeh':
+				$this->destroy_older_than( $t, 'hour' );
+				break;
+			case 'retrieve':
+				if ( is_string( $tokens ) ) {
+					$token = $t->get( $tokens, false );
+					$info  = new IndieAuth_Client_Discovery( $token['client_id'] );
+					$name  = $info->get_name();
+					if ( isset( $name ) ) {
+						$token['client_name'] = $name;
+					}
+					$icon = $info->get_icon();
+					if ( isset( $icon ) ) {
+						$token['client_icon'] = $icon;
+					}
+					$t->update( $tokens, $token, true );
+				}
+				break;
 		}
-		if ( 'retrieve' === $this->current_action() ) {
-			if ( is_string( $tokens ) ) {
-				$token = $t->get( $tokens, false );
-				$info  = new IndieAuth_Client_Discovery( $token['client_id'] );
-				$name  = $info->get_name();
-				if ( isset( $name ) ) {
-					$token['client_name'] = $name;
+	}
+
+	public function destroy_older_than( $t, $older_than = 'day' ) {
+		switch ( strtolower( $older_than ) ) {
+			case 'year':
+				$diff = YEAR_IN_SECONDS;
+				break;
+			case 'month':
+				$diff = MONTH_IN_SECONDS;
+				break;
+			case 'week':
+				$diff = WEEK_IN_SECONDS;
+				break;
+			case 'day':
+				$diff = DAY_IN_SECONDS;
+				break;
+			default:
+				$diff = HOUR_IN_SECONDS;
+		}
+		$tokens = $t->get_all();
+		foreach ( $tokens as $key => $token ) {
+			if ( ! isset( $token['last_accessed'] ) ) {
+				$t->destroy( $token );
+			} else {
+				$time      = (int) $token['last_accessed'];
+				$time_diff = time() - $time;
+				if ( $time_diff > 0 && $time_diff > $diff ) {
+					$t->destroy( $key );
 				}
-				$icon = $info->get_icon();
-				if ( isset( $icon ) ) {
-					$token['client_icon'] = $icon;
-				}
-				$t->update( $tokens, $token, true );
 			}
 		}
 	}
@@ -110,6 +170,21 @@ class Token_List_Table extends WP_List_Table {
 		}
 		return date_i18n( get_option( 'date_format' ), $time );
 	}
+
+
+	public function column_expiration( $item ) {
+		if ( ! isset( $item['expiration'] ) ) {
+			return __( 'Never', 'indieauth' );
+		}
+		$time      = (int) $item['expiration'];
+		$time_diff = time() - $time;
+		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
+			// translators: Human time difference ago
+			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
+		}
+		return date_i18n( get_option( 'date_format' ), $time );
+	}
+
 
 	public function column_issued_at( $item ) {
 		return date_i18n( get_option( 'date_format' ), $item['issued_at'] );
