@@ -54,7 +54,12 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		require ABSPATH . 'wp-admin/admin-header.php';
-		$token = self::generate_local_token( $_REQUEST['client_name'] );
+		$scopes = trim( implode( ' ', $_REQUEST['scopes'] ) );
+		if ( empty( $scopes ) ) {
+			$scopes = 'create update';
+		}
+
+		$token = self::generate_local_token( $_REQUEST['client_name'], $scopes );
 		?>
 	<p><?php esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
 	<h3><?php echo $token; // phpcs:ignore 
@@ -65,13 +70,13 @@ class IndieAuth_Token_UI {
 		exit;
 	}
 
-	private function generate_local_token( $name ) {
+	private function generate_local_token( $name, $scopes ) {
 		$user_id = get_current_user_id();
 		$tokens  = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( $user_id );
 		$token = array(
 			'token_type'  => 'Bearer',
-			'scope'       => 'create update',
+			'scope'       => $scopes,
 			'me'          => get_the_author_meta( 'user_url', $user_id ) ? get_the_author_meta( 'user_url', $user_id ) : get_author_posts_url( $user_id ),
 			'issued_by'   => rest_url( 'indieauth/1.0/token' ),
 			'user'        => $user_id,
@@ -107,11 +112,23 @@ class IndieAuth_Token_UI {
 		<h3><?php esc_html_e( 'Add Token', 'indieauth' ); ?></h3>
 		<form method="post" action="admin.php">
 		<label for="client_name"><?php esc_html_e( 'Name for Token', 'indieauth' ); ?></label><input type="text" class="widefat" id="client_name" name="client_name" />
+		<?php wp_nonce_field( 'indieauth_newtoken', 'indieauth_nonce' ); ?>
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
+			<h4><?php _e( 'Scopes', 'indieauth' ); ?></h4>
+			<?php echo $this->scopes(); ?>
 			<p><button class="button-primary"><?php esc_html_e( 'Add New Token', 'indieauth' ); ?></button></p>
 		</form>
 		</div>
 		<?php
+	}
+
+	public function scopes() {
+		$scopes = IndieAuth_Authorization_Endpoint::scopes();
+		echo '<ul>';
+		foreach( $scopes as $scope => $description ) {
+			printf( '<li><input type="checkbox" name="scopes[]" value="%1$s" /><strong>%1$s</strong> - %2$s</li>', $scope, $description );
+		}
+		echo '</ul>';
 	}
 
 	/**
