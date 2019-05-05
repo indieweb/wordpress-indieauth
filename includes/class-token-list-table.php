@@ -14,7 +14,7 @@ class Token_List_Table extends WP_List_Table {
 			'scope'         => __( 'Scope', 'indieauth' ),
 			'issued_at'     => __( 'Issue Date', 'indieauth' ),
 			'last_accessed' => __( 'Last Accessed', 'indieauth' ),
-			'expiration'       => __( 'Expires', 'indieauth' )
+			'expiration'    => __( 'Expires', 'indieauth' ),
 		);
 	}
 
