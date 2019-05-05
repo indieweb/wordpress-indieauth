@@ -96,15 +96,17 @@ class IndieAuth_Token_UI {
 		$codes->check_expires();
 		$token_table = new Token_List_Table();
 		echo '<div class="wrap"><h2>' . esc_html__( 'Manage IndieAuth Tokens', 'indieauth' ) . '</h2>';
+		echo '<form method="get">';
+		echo '<input type="hidden" name="page" value="indieauth_user_token" />';
 		$token_table->prepare_items();
 		$token_table->display();
+		echo '</form>';
 		?>
 		</div>
 		<div> 
 		<h3><?php esc_html_e( 'Add Token', 'indieauth' ); ?></h3>
 		<form method="post" action="admin.php">
 		<label for="client_name"><?php esc_html_e( 'Name for Token', 'indieauth' ); ?></label><input type="text" class="widefat" id="client_name" name="client_name" />
-			<?php wp_nonce_field( 'indieauth_newtoken', 'indieauth_nonce' ); ?>
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
 			<p><button class="button-primary"><?php esc_html_e( 'Add New Token', 'indieauth' ); ?></button></p>
 		</form>

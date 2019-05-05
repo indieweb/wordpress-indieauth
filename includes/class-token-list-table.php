@@ -7,6 +7,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class Token_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
+			'cb'            => '<input type="checkbox" />',
 			'client_name'   => __( 'Client Name', 'indieauth' ),
 			'client_icon'   => __( 'Client Icon', 'indieauth' ),
 			'client_id'     => __( 'Client ID', 'indieauth' ),
@@ -14,6 +15,12 @@ class Token_List_Table extends WP_List_Table {
 			'issued_at'     => __( 'Issue Date', 'indieauth' ),
 			'last_accessed' => __( 'Last Accessed', 'indieauth' ),
 		);
+	}
+
+	public function get_bulk_actions() {
+			  return array(
+				  'revoke' => __( 'Revoke', 'indieauth' ),
+			  );
 	}
 
 	public function get_sortable_columns() {
@@ -32,14 +39,19 @@ class Token_List_Table extends WP_List_Table {
 			$value['token'] = $key;
 			$this->items[]  = $value;
 		}
+
 	}
 
 	public function column_default( $item, $column_name ) {
 		return $item[ $column_name ];
 	}
 
+	public function column_cb( $item ) {
+		return sprintf( '<input type="checkbox" name="tokens[]" value="%s" />', $item['token'] );
+	}
+
 	public function process_action() {
-		$tokens = isset( $_GET['tokens'] ) ? $_GET['tokens'] : array(); // phpcs:ignore
+		$tokens = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
 		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
 		if ( 'revoke' === $this->current_action() ) {
 			if ( is_string( $tokens ) ) {
