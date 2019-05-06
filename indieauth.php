@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 3.3.1
+ * Version: 3.3.2
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -52,6 +52,17 @@ class IndieAuth_Plugin {
 
 		if ( WP_DEBUG ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-debug.php';
+		}
+
+		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+	}
+
+	public function admin_notices() {
+		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
+			echo '<p class="notice notice-warning">';
+			_e( 'In order to ensure IndieAuth tokens will work please perform this check:', 'indieauth' );
+			printf( ' <a href="%1s">%2$s</a>', add_query_arg( 'action', 'authdiag', wp_login_url() ), __( 'Check Script', 'indieauth' ) );
+			echo '</p>';
 		}
 	}
 

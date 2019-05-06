@@ -9,9 +9,41 @@ class IndieAuth_Admin {
 		// initialize admin settings
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'init', array( $this, 'settings' ) );
-
+		add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 	}
+
+	public function login_form_authdiag() {
+		$return = '';
+		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+				$return = '<div class="notice notice-success"><p>' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				update_option( 'indieauth_header_check', 1 );
+			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
+				$return = '<div class="notice-success"><p>' . esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				update_option( 'indieauth_header_check', 1 );
+			}
+			if ( empty( $return ) ) {
+				ob_start();
+				include plugin_dir_path( __DIR__ ) . 'templates/authdiagfail.php';
+				$return = ob_get_contents();
+				ob_end_clean();
+			}
+			if ( 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
+				header( 'Content-Type: application/json' );
+				$return = wp_json_encode( array( 'message' => $return ) );
+			}
+			echo $return;
+			exit;
+		}
+		$args = array(
+			'action' => 'authdiag',
+		);
+		$url  = add_query_params_to_url( $args, wp_login_url() );
+		include plugin_dir_path( __DIR__ ) . 'templates/authdiagtest.php';
+		exit;
+	}
+
 
 	public function settings() {
 		register_setting(
@@ -74,6 +106,28 @@ class IndieAuth_Admin {
 	 * Load settings page
 	 */
 	public function settings_page() {
+		$response = wp_remote_post(
+			add_query_params_to_url(
+				array(
+					'action' => 'authdiag',
+				),
+				wp_login_url()
+			),
+			array(
+				'method'  => 'POST',
+				'headers' => array(
+					'Authorization' => 'Bearer abc123',
+					'Accept'        => 'application/json',
+				),
+			)
+		);
+		if ( ! is_wp_error( $response ) ) {
+			$json = json_decode( wp_remote_retrieve_body( $response ) );
+			set_query_var( 'authdiag_message', $json->message );
+		} else {
+			set_query_var( 'authdiag_message', 'Fail' );
+		}
+
 		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
 	}
 
@@ -85,7 +139,7 @@ class IndieAuth_Admin {
 				'title'   => __( 'Overview', 'indieauth' ),
 				'content' =>
 					'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
-					'<p>' . __( 'IndieAuth was build on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
+					'<p>' . __( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
 			)
 		);
 

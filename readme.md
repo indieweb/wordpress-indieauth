@@ -4,7 +4,7 @@
 **Requires at least:** 4.7  
 **Requires PHP:** 5.4  
 **Tested up to:** 5.1  
-**Stable tag:** 3.3.1  
+**Stable tag:** 3.3.2  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -142,6 +142,10 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 ## Upgrade Notice ##
 
+### 3.3.2 ###
+
+Due to issues people have experienced with their hosting provider stripping Authorization headers. The plugin will now nag you to run the test for this.
+
 ### 3.0.0 ###
 
 In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 3.0.0 separates
@@ -152,6 +156,11 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.3.2 ###
+* Add new diagnositic script that will nag you until you run it at least once
+* Add cache control headers on return from endpoint
+* Verifying the token at the token endpoint did not use REDIRECT_HTTP_AUTHORIZATION now added
 
 ### 3.3.1 ###
 

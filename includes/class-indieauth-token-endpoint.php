@@ -78,10 +78,22 @@ class IndieAuth_Token_Endpoint {
 	}
 
 	public function get( $request ) {
-		$params       = $request->get_params();
-		$access_token = $this->get_token_from_bearer_header( $request->get_header( 'Authorization' ) );
+		$params = $request->get_params();
+		$header = $request->get_header( 'Authorization' );
+		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+			$header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		}
+		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
-			return new WP_OAuth_Response( 'parameter_absent', __( 'Bearer Token Not Supplied', 'indieauth' ), 400 );
+			return new WP_OAuth_Response(
+				'parameter_absent',
+				__(
+					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin 
+				IndieAuth Settings Page',
+					'indieauth'
+				),
+				400
+			);
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
@@ -164,7 +176,23 @@ class IndieAuth_Token_Endpoint {
 			}
 			if ( $token ) {
 				// Return only the standard keys in the response
-				return( wp_array_slice_assoc( $token, array( 'access_token', 'token_type', 'scope', 'me', 'profile' ) ) );
+				return new WP_REST_Response(
+					wp_array_slice_assoc(
+						$token,
+						array(
+							'access_token',
+							'token_type',
+							'scope',
+							'me',
+							'profile',
+						)
+					),
+					200, // Status Code
+					array(
+						'Cache-Control' => 'no-store',
+						'Pragma'        => 'no-cache',
+					)
+				);
 			}
 		} else {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
