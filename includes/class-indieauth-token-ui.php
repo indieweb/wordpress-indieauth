@@ -125,7 +125,7 @@ class IndieAuth_Token_UI {
 	public function scopes() {
 		$scopes = IndieAuth_Authorization_Endpoint::scopes();
 		echo '<ul>';
-		foreach( $scopes as $scope => $description ) {
+		foreach ( $scopes as $scope => $description ) {
 			printf( '<li><input type="checkbox" name="scopes[]" value="%1$s" /><strong>%1$s</strong> - %2$s</li>', $scope, $description );
 		}
 		echo '</ul>';
