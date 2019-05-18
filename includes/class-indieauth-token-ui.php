@@ -54,12 +54,13 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		require ABSPATH . 'wp-admin/admin-header.php';
-		$scopes = trim( implode( ' ', $_REQUEST['scopes'] ) );
+		$client_name = sanitize_text_field( $_REQUEST['client_name'] );
+		$scopes      = trim( implode( ' ', $_REQUEST['scopes'] ) );
 		if ( empty( $scopes ) ) {
 			$scopes = 'create update';
 		}
-
-		$token = self::generate_local_token( $_REQUEST['client_name'], $scopes );
+		$scopes = sanitize_text_field( $scopes );
+		$token  = self::generate_local_token( $client_name, $scopes );
 		?>
 	<p><?php esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
 	<h3><?php echo $token; // phpcs:ignore 
@@ -114,8 +115,8 @@ class IndieAuth_Token_UI {
 		<label for="client_name"><?php esc_html_e( 'Name for Token', 'indieauth' ); ?></label><input type="text" class="widefat" id="client_name" name="client_name" />
 		<?php wp_nonce_field( 'indieauth_newtoken', 'indieauth_nonce' ); ?>
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
-			<h4><?php _e( 'Scopes', 'indieauth' ); ?></h4>
-			<?php echo $this->scopes(); ?>
+			<h4><?php esc_html_e( 'Scopes', 'indieauth' ); ?></h4>
+			<?php echo esc_html( $this->scopes() ); ?>
 			<p><button class="button-primary"><?php esc_html_e( 'Add New Token', 'indieauth' ); ?></button></p>
 		</form>
 		</div>
@@ -126,7 +127,7 @@ class IndieAuth_Token_UI {
 		$scopes = IndieAuth_Authorization_Endpoint::scopes();
 		echo '<ul>';
 		foreach ( $scopes as $scope => $description ) {
-			printf( '<li><input type="checkbox" name="scopes[]" value="%1$s" /><strong>%1$s</strong> - %2$s</li>', $scope, $description );
+			printf( '<li><input type="checkbox" name="scopes[]" value="%1$s" /><strong>%1$s</strong> - %2$s</li>', esc_attr( $scope ), esc_html( $description ) );
 		}
 		echo '</ul>';
 	}

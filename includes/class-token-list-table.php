@@ -21,12 +21,12 @@ class Token_List_Table extends WP_List_Table {
 	public function get_bulk_actions() {
 			  return array(
 				  'revoke'   => __( 'Revoke', 'indieauth' ),
-				  'revokey'  => __( 'Revoke Tokens Last Accessed 1 Year Ago', 'indieauth' ),
-				  'revokem'  => __( 'Revoke Tokens Last Accessed 1 Month Ago', 'indieauth' ),
-				  'revokew'  => __( 'Revoke Tokens Last Accessed 1 Week Ago', 'indieauth' ),
-				  'revoked'  => __( 'Revoke Tokens Last Accessed 1 Day Ago', 'indieauth' ),
-				  'revokeh'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago', 'indieauth' ),
-				  'maintain' => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
+				  'revoke_year'  => __( 'Revoke Tokens Last Accessed 1 Year Ago or Never', 'indieauth' ),
+				  'revoke_month'  => __( 'Revoke Tokens Last Accessed 1 Month Ago or Never', 'indieauth' ),
+				  'revoke_week'  => __( 'Revoke Tokens Last Accessed 1 Week Ago or Never', 'indieauth' ),
+				  'revoke_day'  => __( 'Revoke Tokens Last Accessed 1 Day Ago or Never', 'indieauth' ),
+				  'revoke_hour'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago or Never', 'indieauth' ),
+				  'cleanup' => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
 			  );
 	}
 
@@ -54,7 +54,7 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function column_cb( $item ) {
-		return sprintf( '<input type="checkbox" name="tokens[]" value="%s" />', $item['token'] );
+		return sprintf( '<input type="checkbox" name="tokens[]" value="%s" />', esc_attr( $item['token'] ) );
 	}
 
 	public function process_action() {
@@ -70,24 +70,24 @@ class Token_List_Table extends WP_List_Table {
 					}
 				}
 				break;
-			case 'maintain':
-				//$t->check_expires();
+			case 'cleanup':
+				$t->check_expires();
 				$users = new Token_User( '_indieauth_code_', get_current_user_id() );
 				$users->destroy_all();
 				break;
-			case 'revokey':
+			case 'revoke_year':
 				$this->destroy_older_than( $t, 'year' );
 				break;
-			case 'revokem':
+			case 'revoke_month':
 				$this->destroy_older_than( $t, 'month' );
 				break;
-			case 'revokew':
+			case 'revoke_week':
 				$this->destroy_older_than( $t, 'week' );
 				break;
-			case 'revoked':
+			case 'revoke_day':
 				$this->destroy_older_than( $t, 'day' );
 				break;
-			case 'revokeh':
+			case 'revoke_hour':
 				$this->destroy_older_than( $t, 'hour' );
 				break;
 			case 'retrieve':
@@ -128,7 +128,7 @@ class Token_List_Table extends WP_List_Table {
 		$tokens = $t->get_all();
 		foreach ( $tokens as $key => $token ) {
 			if ( ! isset( $token['last_accessed'] ) ) {
-				$t->destroy( $token );
+				$t->destroy( $key );
 			} else {
 				$time      = (int) $token['last_accessed'];
 				$time_diff = time() - $time;
