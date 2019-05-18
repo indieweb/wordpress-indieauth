@@ -44,7 +44,7 @@ abstract class Token_Generic {
 	 * @return int Timestamp when this will expire.
 	 */
 	public function expires( $expiration ) {
-		return $this->time() + $expiration;
+		return time() + $expiration;
 	}
 
 	/**
@@ -66,7 +66,7 @@ abstract class Token_Generic {
 		if ( ! is_numeric( $expiration ) ) {
 			return false;
 		}
-		return ( $expiration <= $this->time() );
+		return ( $expiration <= time() );
 	}
 
 

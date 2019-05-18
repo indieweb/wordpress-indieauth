@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Requires PHP:** 5.4  
-**Tested up to:** 5.1  
+**Tested up to:** 5.2  
 **Stable tag:** 3.3.2  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
@@ -158,9 +158,13 @@ endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, yo
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
 ### 3.3.2 ###
-* Add new diagnositic script that will nag you until you run it at least once
+* Add new diagnostic script that will nag you until you run it at least once
 * Add cache control headers on return from endpoint
 * Verifying the token at the token endpoint did not use REDIRECT_HTTP_AUTHORIZATION now added
+* Add header check to settings page
+* Add option to generate tokens on the backend with any scope
+* Add option to bulk expire tokens
+* Add cleanup option 
 
 ### 3.3.1 ###
 

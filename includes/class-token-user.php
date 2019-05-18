@@ -69,6 +69,24 @@ class Token_User extends Token_Generic {
 	}
 
 	/**
+	 * Destroys all tokens
+	 *
+	 * @return boolean Return if successfully destroyed or not
+	 */
+	public function destroy_all() {
+		if ( ! $this->user_id ) {
+			return false;
+		}
+		$meta = get_user_meta( $this->user_id, '' );
+		foreach ( array_keys( $meta ) as $key ) {
+			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
+				delete_user_meta( $this->user_id, $key );
+			}
+		}
+	}
+
+
+	/**
 	 * Retrieves all tokens for a user
 	 *
 	 * @return array|boolean Token or false if not found

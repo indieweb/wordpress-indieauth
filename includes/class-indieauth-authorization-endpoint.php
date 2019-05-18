@@ -63,7 +63,7 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	// Get Scope Descriptions
-	public function scopes( $scope = 'all' ) {
+	public static function scopes( $scope = 'all' ) {
 		$scopes = array(
 			// Micropub Scopes
 			'post'     => __( 'Legacy Scope (Deprecated)', 'indieauth' ),
