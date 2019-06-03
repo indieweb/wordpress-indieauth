@@ -268,7 +268,7 @@ msgid "There was an error issuing the access token"
 msgstr ""
 
 #: includes/class-indieauth-token-ui.php:33
-#: includes/class-indieauth-token-ui.php:98
+#: includes/class-indieauth-token-ui.php:103
 msgid "Manage IndieAuth Tokens"
 msgstr ""
 
@@ -288,65 +288,100 @@ msgstr ""
 msgid "A Name Must be Set for Your Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:59
+#: includes/class-indieauth-token-ui.php:64
 msgid ""
 "A token has been generated and appears below. This token will not be stored "
 "anywhere. Please copy and store it."
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:104
+#: includes/class-indieauth-token-ui.php:112
 msgid "Add Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:106
+#: includes/class-indieauth-token-ui.php:114
 msgid "Name for Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:109
+#: includes/class-indieauth-token-ui.php:117
+msgid "Scopes"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:119
 msgid "Add New Token"
 msgstr ""
 
-#: includes/class-token-list-table.php:10
+#: includes/class-token-list-table.php:11
 msgid "Client Name"
 msgstr ""
 
-#: includes/class-token-list-table.php:11
+#: includes/class-token-list-table.php:12
 msgid "Client Icon"
 msgstr ""
 
-#: includes/class-token-list-table.php:12
+#: includes/class-token-list-table.php:13
 msgid "Client ID"
 msgstr ""
 
-#: includes/class-token-list-table.php:13
+#: includes/class-token-list-table.php:14
 msgid "Scope"
 msgstr ""
 
-#: includes/class-token-list-table.php:14
+#: includes/class-token-list-table.php:15
 msgid "Issue Date"
 msgstr ""
 
-#: includes/class-token-list-table.php:15
+#: includes/class-token-list-table.php:16
 msgid "Last Accessed"
 msgstr ""
 
-#: includes/class-token-list-table.php:72
+#: includes/class-token-list-table.php:17
+msgid "Expires"
+msgstr ""
+
+#: includes/class-token-list-table.php:23
+#: includes/class-token-list-table.php:144
 msgid "Revoke"
 msgstr ""
 
-#: includes/class-token-list-table.php:73
+#: includes/class-token-list-table.php:24
+msgid "Revoke Tokens Last Accessed 1 Year Ago"
+msgstr ""
+
+#: includes/class-token-list-table.php:25
+msgid "Revoke Tokens Last Accessed 1 Month Ago"
+msgstr ""
+
+#: includes/class-token-list-table.php:26
+msgid "Revoke Tokens Last Accessed 1 Week Ago"
+msgstr ""
+
+#: includes/class-token-list-table.php:27
+msgid "Revoke Tokens Last Accessed 1 Day Ago"
+msgstr ""
+
+#: includes/class-token-list-table.php:28
+msgid "Revoke Tokens Last Accessed 1 Hour Ago"
+msgstr ""
+
+#: includes/class-token-list-table.php:29
+msgid "Clean Up Expired Tokens and Authorization Codes"
+msgstr ""
+
+#: includes/class-token-list-table.php:145
 msgid "Retrieve Information"
 msgstr ""
 
-#: includes/class-token-list-table.php:76
+#: includes/class-token-list-table.php:148
 msgid "Not Provided"
 msgstr ""
 
-#: includes/class-token-list-table.php:91
+#: includes/class-token-list-table.php:163
+#: includes/class-token-list-table.php:177
 msgid "Never"
 msgstr ""
 
-#: includes/class-token-list-table.php:97
+#: includes/class-token-list-table.php:169
+#: includes/class-token-list-table.php:183
 #. translators: Human time difference ago
 msgid "%s ago"
 msgstr ""
