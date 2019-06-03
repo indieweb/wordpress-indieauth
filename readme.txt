@@ -83,8 +83,8 @@ The WordPress function, `get_current_user_id` works to retrieve the current user
 * `indieauth_get_client_id()` - Returns the client ID
 * `indieauth_get_me()` - Return the me property for the current session.
 * `new IndieAuth_Client_Discovery( $client_id )` - Class that allows you to discover information about a client
-** `$client->get_name()` - Once the class is instantiated, retrieve the name
-** `$client->get_icon()` - Once the class is instantiated, retrieve an icon
+    * `$client->get_name()` - Once the class is instantiated, retrieve the name
+    * `$client->get_icon()` - Once the class is instantiated, retrieve an icon
 
 If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the scope is for.
 
@@ -102,8 +102,8 @@ Temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress
 
 If you feel comfortable with command line entries, you can request a token under Users->Manage Tokens and use curl or similar to test logins. Replace example.com with your site and TOKEN with your bearer token.
 
-`curl -i -H 'Authorization: Bearer TOKEN' 'https://example.com/wp-json/indieauth/1.0/test'
-`curl -i -H 'Authorization: Bearer test' 'https://tiny.n9n.us/wp-json/indieauth/1.0/test?access_token=TOKEN'`
+    curl -i -H 'Authorization: Bearer TOKEN' 'https://example.com/wp-json/indieauth/1.0/test
+    curl -i -H 'Authorization: Bearer test' 'https://tiny.n9n.us/wp-json/indieauth/1.0/test?access_token=TOKEN'
 
 This will quickly test your ability to authenticate to the server. Additional diagnostic tools may be available in future.
 
@@ -113,11 +113,11 @@ If your Micropub client includes an `Authorization` HTTP request header but you 
 
     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-    If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
+If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
 
-        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-	If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
+If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
 
 = I get an error that parameter redirect_uri is missing but I see it in the URL =
 
