@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.7  
 **Requires PHP:** 5.4  
-**Tested up to:** 5.2  
+**Tested up to:** 5.2.1  
 **Stable tag:** 3.3.2  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
@@ -13,8 +13,7 @@ IndieAuth is a way to allow users to use their own domain to sign into other web
 
 ## Description ##
 
-The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API,
-as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url.
+The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url.
 
 You can also install this plugin to enable web sign-in for your site using your domain.
 
@@ -28,40 +27,31 @@ You can also install this plugin to enable web sign-in for your site using your 
 
 ### What is IndieAuth? ###
 
-[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage or author post URL( usually /author/authorname ) to sign in to other places. 
-It is built on top of OAuth 2.0, which is used by many websites.
+[IndieAuth](https://indieauth.net) is a way for doing Web sign-in, where you use your own homepage or author post URL( usually /author/authorname ) to sign in to other places. It is built on top of OAuth 2.0, which is used by many websites.
 
 ### Why IndieAuth? ###
 
-IndieAuth is an extension to OAuth. If you are a developer, you have probably used OAuth to get access to APIs. As a user, if you have given an application access to your
-account on a service, you probably used OAuth. One advantage of IndieAuth is how easily it allows everyone's website to be their own OAuth Server without needing applications
-to register with each site.
+IndieAuth is an extension to OAuth. If you are a developer, you have probably used OAuth to get access to APIs. As a user, if you have given an application access to your account on a service, you probably used OAuth. One advantage of IndieAuth is how easily it allows everyone's website to be their own OAuth Server without needing applications to register with each site.
 
 ### How is IndieAuth different from OAuth? ###
 
-IndieAuth was built on top of OAuth 2.0 and differs in that users and clients are represented by URLs.  Clients can verify the identity of
-a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources.
+IndieAuth was built on top of OAuth 2.0 and differs in that users and clients are represented by URLs.  Clients can verify the identity of a user and obtain an OAuth 2.0 Bearer token that can be used to access user resources.
 
 You can read the [specification](https://indieauth.spec.indieweb.org/) for implementation details.
 
 ### How is Web Sign In different from OpenID? ###
 
-The goals of OpenID and Web Sign In are similar. Both encourage you to sign in to a website using your own domain name.
-However, OpenID has failed to gain wide adoption. Web sign-in prompts a user to enter a URL to sign on. Upon submission,
-it tries to discover the URL's authorization endpoint, and authenticate to that. If none is found, it falls back on other options.
+The goals of OpenID and Web Sign In are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption. Web sign-in prompts a user to enter a URL to sign on. Upon submission, it tries to discover the URL's authorization endpoint, and authenticate to that. If none is found, it falls back on other options.
 
-This plugin only supports searching an external site for an authorization endpoint, allowing you to log into one site with the credentials of another site. This
-functionality may be split off in future into its own plugin.
+This plugin only supports searching an external site for an authorization endpoint, allowing you to log into one site with the credentials of another site. This functionality may be split off in future into its own plugin.
 
 ### What is IndieAuth.com? ###
 
-[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do
-not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin.
+[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin.
 
 ### How does the application know my name and avatar? ###
 
 As of version 3.2, the endpoints return the display name, avatar, and URL from your user profile.
-
 
 ### Does this require users to have their own domain name? ###
 
@@ -71,24 +61,21 @@ No. You can use your author profile URL to login if you do not have a domain nam
 
 That, as mentioned, depends on the server. By default, the built-in IndieAuth server uses the WordPress login.
 
-By adding Indieauth support, you can log into sites simply by providing your URL. 
+By adding Indieauth support, you can log into sites simply by providing your URL.
 
 ### How secure is this? ###
 
-We recommend your site uses SSL to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE),
-if the client supports it. 
+We recommend your site uses SSL to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE), if the client supports it.
 
 ### What is a token endpoint? ###
 
-Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site.
-The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
+Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site. The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
 
 You can manage and revoke tokens under User->Manage Tokens. You will only see tokens for the currently logged in user.
 
 ### How do I incorporate this into my plugin? ###
 
-The WordPress function, `get_current_user_id` works to retrieve the current user ID if logged in via IndieAuth. The plugin offers the following functions
-to assist you in using IndieAuth for your service. We suggest you check on activation for the IndieAuth plugin by asking `if ( class_exists( 'IndieAuth_Plugin') )`
+The WordPress function, `get_current_user_id` works to retrieve the current user ID if logged in via IndieAuth. The plugin offers the following functions to assist you in using IndieAuth for your service. We suggest you check on activation for the IndieAuth plugin by asking `if ( class_exists( 'IndieAuth_Plugin') )`
 
 * `indieauth_get_scopes()` - Retrieves an array of scopes for the auth request.
 * `indieauth_check_scope( $scope )` - Checks if the provided scope is in the current available scopes
@@ -96,12 +83,10 @@ to assist you in using IndieAuth for your service. We suggest you check on activ
 * `indieauth_get_client_id()` - Returns the client ID
 * `indieauth_get_me()` - Return the me property for the current session.
 * `new IndieAuth_Client_Discovery( $client_id )` - Class that allows you to discover information about a client
-** `$client->get_name()` - Once the class is instantiated, retrieve the name
-** `$client->get_icon()` - Once the class is instantiated, retrieve an icon
+    * `$client->get_name()` - Once the class is instantiated, retrieve the name
+    * `$client->get_icon()` - Once the class is instantiated, retrieve an icon
 
-If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by
-whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the
-scope is for.
+If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the scope is for.
 
 The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
 
@@ -115,26 +100,24 @@ Many server configurations will not pass bearer tokens. The plugin attempts to w
 
 Temporarily enable [WP_DEBUG](https://codex.wordpress.org/Debugging_in_WordPress) which will surface some errors in your logs.
 
-If you feel comfortable with command line entries, you can request a token under Users->Manage Tokens and use curl or similar to test logins. Replace example.com with your site and TOKEN with
-your bearer token.
+If you feel comfortable with command line entries, you can request a token under Users->Manage Tokens and use curl or similar to test logins. Replace example.com with your site and TOKEN with your bearer token.
 
-`curl -i -H 'Authorization: Bearer TOKEN' 'https://example.com/wp-json/indieauth/1.0/test'
-`curl -i -H 'Authorization: Bearer test' 'https://tiny.n9n.us/wp-json/indieauth/1.0/test?access_token=TOKEN'`
+    curl -i -H 'Authorization: Bearer TOKEN' 'https://example.com/wp-json/indieauth/1.0/test
+    curl -i -H 'Authorization: Bearer test' 'https://tiny.n9n.us/wp-json/indieauth/1.0/test?access_token=TOKEN'
 
 This will quickly test your ability to authenticate to the server. Additional diagnostic tools may be available in future.
 
-If this does not work, you can add `define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed
-allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this is off by default.
+If this does not work, you can add `define( 'INDIEAUTH_TOKEN_ERROR', true );` to your wp-config.php file. The `INDIEAUTH_TOKEN_ERROR` flag will return an error if there is not a token passed allowing you to troubleshoot this issue, however it will require authentication for all REST API functions even those that do not require them, therefore this is off by default.
 
 If your Micropub client includes an `Authorization` HTTP request header but you still get an HTTP 401 response with body `missing access token`, your server may be stripping the `Authorization` header. If you're on Apache, [try adding this line to your `.htaccess` file](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299202820):
 
     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-    If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
+If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
 
-        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-	If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
+If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
 
 ### I get an error that parameter redirect_uri is missing but I see it in the URL ###
 
@@ -148,10 +131,7 @@ Due to issues people have experienced with their hosting provider stripping Auth
 
 ### 3.0.0 ###
 
-In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 3.0.0 separates
-the endpoint code from the web sign-in code and removes the ability to use a third-party IndieAuth endpoint with your site. If you use the sign-in
-feature, it will look for the IndieAuth endpoint for the URL you provide. If you use Micropub for WordPress, enabling the plugin will use the built-in
-endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
+In version 2.0, we added an IndieAuth endpoint to this plugin, which previously only supported IndieAuth for web sign-in. Version 3.0.0 separates the endpoint code from the web sign-in code and removes the ability to use a third-party IndieAuth endpoint with your site. If you use the sign-in feature, it will look for the IndieAuth endpoint for the URL you provide. If you use Micropub for WordPress, enabling the plugin will use the built-in endpoint for WordPress. If you wish to use Indieauth.com or another endpoint, you can disable this plugin and Micropub will use Indieauth.com by default.
 
 ## Changelog ##
 
@@ -192,8 +172,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Fixed PHP warnings
 
 ### 3.1.8 ###
-* When local verification is performed the code was not updating the profile URL and passing through the URL from the original request. This code was in
-the remote verification portion of the token endpoint and is now mirrored in the verify local code.
+* When local verification is performed the code was not updating the profile URL and passing through the URL from the original request. This code was in the remote verification portion of the token endpoint and is now mirrored in the verify local code.
 
 ### 3.1.7 ###
 * Add authdiag.php script written by @Zegnat
