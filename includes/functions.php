@@ -145,6 +145,22 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 }
 
 /**
+ * Uses the code from is_multi_author to determine the identity of the single author
+ * @return false|int User ID of the single author if exists
+ */
+if ( ! function_exists( 'get_single_author' ) ) {
+	function get_single_author() {
+		global $wpdb;
+		if ( false === ( $single_author = get_transient( 'single_author' ) ) ) {
+			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" );
+			$single_author = 1 === count( $rows ) ? (int) $rows[0] : false;
+			set_transient( 'single_author', $single_author );
+		}
+		return $single_author;
+	}
+}
+
+/**
  * Get the user associated with the specified Identifier-URI.
  *
  * @param string $identifier identifier to match
@@ -155,24 +171,24 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		if ( empty( $identifier ) ) {
 			return null;
 		}
-		// Ensure has trailing slash
-		$identifier = trailingslashit( $identifier );
+
+		$identifier = normalize_url( $identifier );
 		if ( ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) ) && ( wp_parse_url( home_url(), PHP_URL_HOST ) === wp_parse_url( $identifier, PHP_URL_HOST ) ) ) {
 			$identifier = set_url_scheme( $identifier, 'https' );
 		}
 		// Try to save the expense of a search query if the URL is the site URL
 		if ( home_url( '/' ) === $identifier ) {
 			// Use the Indieweb settings to set the default author
-			if ( class_exists( 'Indieweb_Plugin' ) && ( get_option( 'iw_single_author' ) || ! is_multi_author() ) ) {
+			if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
 				return get_user_by( 'id', get_option( 'iw_default_author' ) );
 			}
-			$users = get_users( array( 'who' => 'authors' ) );
+			$users = get_users();
 			if ( 1 === count( $users ) ) {
 				return $users[0];
 			}
 			return null;
-
 		}
+
 		// Check if this is a author post URL
 		$user = url_to_author( $identifier );
 		if ( $user instanceof WP_User ) {
@@ -351,6 +367,34 @@ if ( ! function_exists( 'build_url' ) ) {
 		$fragment = ! empty( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
 
 		return "$scheme$user$pass$host$port$path$query$fragment";
+	}
+}
+
+if ( ! function_exists( 'normalize_url' ) ) {
+	// Adds slash if no path is in the URL, and convert hostname to lowercase
+	function normalize_url( $url, $force_ssl = false ) {
+		$parts = wp_parse_url( $url );
+		if ( array_key_exists( 'path', $parts ) && '' === $parts['path'] ) {
+			return false;
+		}
+		// wp_parse_url returns just "path" for naked domains
+		if ( count( $parts ) === 1 && array_key_exists( 'path', $parts ) ) {
+			$parts['host'] = $parts['path'];
+			unset( $parts['path'] );
+		}
+		if ( ! array_key_exists( 'scheme', $parts ) ) {
+			$parts['scheme'] = $force_ssl ? 'https' : 'http';
+		} elseif ( $force_ssl ) {
+			$parts['scheme'] = 'https';
+		}
+		if ( ! array_key_exists( 'path', $parts ) ) {
+			$parts['path'] = '/';
+		}
+		// Invalid scheme
+		if ( ! in_array( $parts['scheme'], array( 'http', 'https' ), true ) ) {
+			return false;
+		}
+		return build_url( $parts );
 	}
 }
 

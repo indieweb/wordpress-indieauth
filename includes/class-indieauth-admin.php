@@ -11,7 +11,55 @@ class IndieAuth_Admin {
 		add_action( 'init', array( $this, 'settings' ) );
 		add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_filter( 'wp_pre_insert_user_data', array( $this, 'unique_user_url' ), 10, 3 );
+		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
+		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
 	}
+
+	public function user_url_column( $val, $column_id, $user_id ) {
+		if ( 'user_url' === $column_id ) {
+			$user = get_user_by( 'id', $user_id );
+			if ( ! wp_http_validate_url( $user->user_url ) ) {
+				return $val;
+			}
+			$url = esc_url( $user->user_url );
+			return sprintf( '<a href="%1s">%2$s</a>', $url, wp_parse_url( $url, PHP_URL_HOST ) );
+		}
+		return $val;
+	}
+
+	public function add_user_url_column( $column ) {
+		$column['user_url'] = __( 'Website', 'indieauth' );
+		return $column;
+	}
+
+	/**
+	 * Ensure all user URL fields are unique
+	 *
+	 */
+	public function unique_user_url( $data, $update, $id ) {
+		if ( empty( $data['user_url'] ) ) {
+			return $data;
+		}
+		$data['user_url'] = normalize_url( $data['user_url'] );
+		$users            = get_users(
+			array(
+				'search'         => '*' . wp_parse_url( $data['user_url'], PHP_URL_HOST ) . '*',
+				'search_columns' => array( 'user_url' ),
+				'fields'         => array( 'ID', 'user_url' ),
+			)
+		);
+		$url              = normalize_url( $data['user_url'], true );
+		foreach ( $users as $user ) {
+			error_log( $url );
+			error_log( $user->user_url );
+			if ( ( normalize_url( $user->user_url, true ) === $url ) && $user->ID !== $id ) {
+				$data['user_url'] = '';
+			}
+		}
+		return $data;
+	}
+
 
 	public function login_form_authdiag() {
 		$return = '';
