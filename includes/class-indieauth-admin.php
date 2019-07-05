@@ -20,10 +20,10 @@ class IndieAuth_Admin {
 		if ( 'user_url' === $column_id ) {
 			$user = get_user_by( 'id', $user_id );
 			if ( ! wp_http_validate_url( $user->user_url ) ) {
-				return $val;
+				return __( 'None', 'indieauth' );
 			}
 			$url = esc_url( $user->user_url );
-			return sprintf( '<a href="%1s">%2$s</a>', $url, wp_parse_url( $url, PHP_URL_HOST ) );
+			return sprintf( '<a href="%1s">%1$s</a>', $url );
 		}
 		return $val;
 	}
