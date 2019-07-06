@@ -182,11 +182,17 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 			if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
 				return get_user_by( 'id', get_option( 'iw_default_author' ) );
 			}
-			$users = get_users();
-			if ( 1 === count( $users ) ) {
-				return $users[0];
+			$author = get_single_author();
+			//  If there is only a single author then they will get the root url
+			if ( $author ) {
+				return get_user_by( 'id', $author );
+			} else {
+				$users = get_users( array( 'fields' => 'ID' ) );
+				if ( 1 === count( $users ) ) {
+					return get_user_by( 'id', $users[0] );
+				}
+				return null;
 			}
-			return null;
 		}
 
 		// Check if this is a author post URL
@@ -206,6 +212,22 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 			return $users[0];
 		}
 		return null;
+	}
+}
+
+
+/**
+ * Tries to make some decisions about what URL to return for a user
+ */
+if ( ! function_exists( 'get_url_from_user' ) ) {
+	function get_url_from_user( $user_id ) {
+		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
+			if ( get_option( 'iw_default_author' ) === $user_id ) {
+				return home_url( '/' );
+			}
+		}
+		$user = get_user_by( 'ID', $user_id );
+		return get_author_posts_url( $user_id );
 	}
 }
 
