@@ -48,7 +48,7 @@ class IndieAuth_Admin {
 
 		if ( ! self::test_auth() ) {
 			$result['status']                      = 'critical';
-			$result['label']                       = __( 'Authorization Test Failed' );
+			$result['label']                       = __( 'Authorization Test Failed', 'indieauth' );
 							$result['description'] = sprintf(
 								'<p>%s</p>',
 								__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
@@ -123,7 +123,7 @@ class IndieAuth_Admin {
 				header( 'Content-Type: application/json' );
 				$return = wp_json_encode( array( 'message' => $return ) );
 			}
-			echo $return;
+			echo $return; // phpcs:ignore
 			exit;
 		}
 		$args = array(

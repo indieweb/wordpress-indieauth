@@ -3,8 +3,8 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.7
 Requires PHP: 5.4
-Tested up to: 5.2.1
-Stable tag: 3.3.2
+Tested up to: 5.2.2
+Stable tag: 3.3.3
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -125,6 +125,10 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 == Upgrade Notice ==
 
+= 3.3.3 =
+
+Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts
+
 = 3.3.2 =
 
 Due to issues people have experienced with their hosting provider stripping Authorization headers. The plugin will now nag you to run the test for this.
@@ -136,6 +140,13 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.3.3 =
+* Enforce unique URLs for user accounts
+* Add user url to user table
+* Redo association for URL to user account. At this time, only the root path and the author archive URLs are allowed as a return. Hoping to add more options in future 
+* Add Site Health Check
+* Improvwe text and links for authorization failure
 
 = 3.3.2 =
 * Add new diagnostic script that will nag you until you run it at least once

@@ -65,8 +65,8 @@ class IndieAuth_Plugin {
 		}
 		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
 			echo '<p class="notice notice-warning">';
-			_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
-			printf( ' <a href="%1s">%2$s</a>', $path, __( 'Visit Settings Page', 'indieauth' ) );
+			esc_html_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
+			printf( ' <a href="%1s">%2$s</a>', esc_url( $path ), esc_html__( 'Visit Settings Page', 'indieauth' ) );
 			echo '</p>';
 		}
 	}

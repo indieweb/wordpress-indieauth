@@ -2,7 +2,8 @@
 <div class="notice notice-error">
 <h3><?php _e( 'Authorization has Failed', 'indieauth' ); ?></h3>
 
-<p> <?php _e( 'The authorization header was not returned on this test, which means that your server may be stripping the Authorization header. If you are on Apache, try adding this line to your .htaccess file:', 'indieauth' ); ?></p>
+<p> <?php _e( 'The authorization header was not returned on this test, which means that your server may be stripping the Authorization header. This is needed for IndieAuth to work correctly.', 'indieauth' ); ?>
+<p> <?php _e( 'If you are on Apache, try adding this line to your .htaccess file:', 'indieauth' ); ?></p>
 <p><code>SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1'</code></p>
 
 <p><?php _e( 'If that doesnt work, try this:', 'indieauth' ); ?></p>
