@@ -14,6 +14,49 @@ class IndieAuth_Admin {
 		add_filter( 'wp_pre_insert_user_data', array( $this, 'unique_user_url' ), 10, 3 );
 		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
+		add_filter( 'site_status_tests', array( $this, 'add_indieauth_test' ) );
+	}
+
+	public function add_indieauth_test( $tests ) {
+		$tests['direct']['indieauth_plugin'] = array(
+			'label' => __( 'IndieAuth Test', 'indieauth' ),
+			'test'  => array( $this, 'site_health_test' ),
+		);
+		return $tests;
+	}
+
+	public function site_health_test() {
+		if ( class_exists( 'Indieweb_Plugin' ) ) {
+			$path = 'admin.php?page=indieauth';
+		} else {
+			$path = 'options-general.php?page=indieauth';
+		}
+		$result = array(
+			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
+			'status'      => 'good',
+			'badge'       => array(
+				'label' => __( 'IndieAuth', 'indieauth' ),
+				'color' => 'green',
+			),
+			'description' => sprintf(
+				'<p>%s</p>',
+				__( 'Your hosting provider allows authorization headers to pass so IndieAuth should work', 'indieauth' )
+			),
+			'actions'     => '',
+			'test'        => 'indieauth_headers',
+		);
+
+		if ( ! self::test_auth() ) {
+			$result['status']                      = 'critical';
+			$result['label']                       = __( 'Authorization Test Failed' );
+							$result['description'] = sprintf(
+								'<p>%s</p>',
+								__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
+							);
+			$result['actions']                     = sprintf( '<a href="%1$s" >%2$s</a>', $path, __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
+		}
+
+		return $result;
 	}
 
 	public function user_url_column( $val, $column_id, $user_id ) {
@@ -33,10 +76,10 @@ class IndieAuth_Admin {
 		return $column;
 	}
 
-	/**
-	 * Ensure all user URL fields are unique
-	 *
-	 */
+			/**
+			 * Ensure all user URL fields are unique
+			 *
+			 */
 	public function unique_user_url( $data, $update, $id ) {
 		if ( empty( $data['user_url'] ) ) {
 			return $data;
@@ -49,7 +92,7 @@ class IndieAuth_Admin {
 				'fields'         => array( 'ID', 'user_url' ),
 			)
 		);
-		$url              = normalize_url( $data['user_url'], true );
+			$url          = normalize_url( $data['user_url'], true );
 		foreach ( $users as $user ) {
 			error_log( $url );
 			error_log( $user->user_url );
@@ -57,9 +100,8 @@ class IndieAuth_Admin {
 				$data['user_url'] = '';
 			}
 		}
-		return $data;
+			return $data;
 	}
-
 
 	public function login_form_authdiag() {
 		$return = '';
@@ -92,7 +134,6 @@ class IndieAuth_Admin {
 		exit;
 	}
 
-
 	public function settings() {
 		register_setting(
 			'indieauth',
@@ -110,9 +151,9 @@ class IndieAuth_Admin {
 		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
 	}
 
-	/**
-	 * Add IndieAuth options to the WordPress general settings page.
-	 */
+			/**
+			 * Add IndieAuth options to the WordPress general settings page.
+			 */
 	public function general_settings() {
 		if ( class_exists( 'Indieweb_Plugin' ) ) {
 			$path = 'admin.php?page=indieauth';
@@ -123,9 +164,9 @@ class IndieAuth_Admin {
 		printf( __( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ), $path ); // phpcs:ignore
 	}
 
-	/**
-	 * Add admin menu entry
-	 */
+			/**
+			 * Add admin menu entry
+			 */
 	public function admin_menu() {
 		$title = __( 'IndieAuth', 'indieauth' );
 		// If the IndieWeb Plugin is installed use its menu.
@@ -150,10 +191,7 @@ class IndieAuth_Admin {
 		add_action( 'load-' . $options_page, array( $this, 'add_help_tab' ) );
 	}
 
-	/**
-	 * Load settings page
-	 */
-	public function settings_page() {
+	public function test_auth() {
 		$response = wp_remote_post(
 			add_query_params_to_url(
 				array(
@@ -171,14 +209,26 @@ class IndieAuth_Admin {
 		);
 		if ( ! is_wp_error( $response ) ) {
 			$json = json_decode( wp_remote_retrieve_body( $response ) );
-			set_query_var( 'authdiag_message', $json->message );
+			return $json->message;
 		} else {
-			set_query_var( 'authdiag_message', 'Fail' );
+			return false;
 		}
-
-		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
 	}
 
+			/**
+			 * Load settings page
+			 */
+	public function settings_page() {
+		$response = self::test_auth();
+		if ( ! $response ) {
+			ob_start();
+			include plugin_dir_path( __DIR__ ) . 'templates/authdiagfail.php';
+			$response = ob_get_contents();
+			ob_end_clean();
+		}
+		set_query_var( 'authdiag_message', $response );
+		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
+	}
 
 	public function add_help_tab() {
 		get_current_screen()->add_help_tab(
@@ -186,8 +236,8 @@ class IndieAuth_Admin {
 				'id'      => 'overview',
 				'title'   => __( 'Overview', 'indieauth' ),
 				'content' =>
-					'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
-					'<p>' . __( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
+						'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
+						'<p>' . __( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
 			)
 		);
 
@@ -196,19 +246,19 @@ class IndieAuth_Admin {
 				'id'      => 'indieweb',
 				'title'   => __( 'The IndieWeb', 'indieauth' ),
 				'content' =>
-					'<p>' . __( 'The IndieWeb is a people-focused alternative to the "corporate web".', 'indieauth' ) . '</p>' .
-					'<p>
+						'<p>' . __( 'The IndieWeb is a people-focused alternative to the "corporate web".', 'indieauth' ) . '</p>' .
+						'<p>
 						<strong>' . __( 'Your content is yours', 'indieauth' ) . '</strong><br />' .
-						__( 'When you post something on the web, it should belong to you, not a corporation. Too many companies have gone out of business and lost all of their users’ data. By joining the IndieWeb, your content stays yours and in your control.', 'indieauth' ) .
-					'</p>' .
-					'<p>
+							__( 'When you post something on the web, it should belong to you, not a corporation. Too many companies have gone out of business and lost all of their users’ data. By joining the IndieWeb, your content stays yours and in your control.', 'indieauth' ) .
+						'</p>' .
+						'<p>
 						<strong>' . __( 'You are better connected', 'indieauth' ) . '</strong><br />' .
-						__( 'Your articles and status messages can go to all services, not just one, allowing you to engage with everyone. Even replies and likes on other services can come back to your site so they’re all in one place.', 'indieauth' ) .
-					'</p>' .
-					'<p>
+							__( 'Your articles and status messages can go to all services, not just one, allowing you to engage with everyone. Even replies and likes on other services can come back to your site so they’re all in one place.', 'indieauth' ) .
+						'</p>' .
+						'<p>
 						<strong>' . __( 'You are in control', 'indieauth' ) . '</strong><br />' .
-						__( 'You can post anything you want, in any format you want, with no one monitoring you. In addition, you share simple readable links such as example.com/ideas. These links are permanent and will always work.', 'indieauth' ) .
-					'</p>',
+							__( 'You can post anything you want, in any format you want, with no one monitoring you. In addition, you share simple readable links such as example.com/ideas. These links are permanent and will always work.', 'indieauth' ) .
+						'</p>',
 			)
 		);
 
