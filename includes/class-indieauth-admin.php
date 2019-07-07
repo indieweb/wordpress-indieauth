@@ -47,13 +47,13 @@ class IndieAuth_Admin {
 		);
 
 		if ( ! self::test_auth() ) {
-			$result['status']                      = 'critical';
-			$result['label']                       = __( 'Authorization Test Failed', 'indieauth' );
-							$result['description'] = sprintf(
-								'<p>%s</p>',
-								__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
-							);
-			$result['actions']                     = sprintf( '<a href="%1$s" >%2$s</a>', $path, __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
+			$result['status']      = 'critical';
+			$result['label']       = __( 'Authorization Test Failed', 'indieauth' );
+			$result['description'] = sprintf(
+				'<p>%s</p>',
+				__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
+			);
+			$result['actions']     = sprintf( '<a href="%1$s" >%2$s</a>', $path, __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
 		}
 
 		return $result;
@@ -76,10 +76,10 @@ class IndieAuth_Admin {
 		return $column;
 	}
 
-			/**
-			 * Ensure all user URL fields are unique
-			 *
-			 */
+	/**
+	 * Ensure all user URL fields are unique
+	 *
+	 */
 	public function unique_user_url( $data, $update, $id ) {
 		if ( empty( $data['user_url'] ) ) {
 			return $data;
@@ -92,10 +92,9 @@ class IndieAuth_Admin {
 				'fields'         => array( 'ID', 'user_url' ),
 			)
 		);
-			$url          = normalize_url( $data['user_url'], true );
+
+		$url = normalize_url( $data['user_url'], true );
 		foreach ( $users as $user ) {
-			error_log( $url );
-			error_log( $user->user_url );
 			if ( ( normalize_url( $user->user_url, true ) === $url ) && $user->ID !== $id ) {
 				$data['user_url'] = '';
 			}
