@@ -43,11 +43,6 @@ class IndieAuth_Admin {
 	}
 
 	public function site_health_test() {
-		if ( class_exists( 'Indieweb_Plugin' ) ) {
-			$path = 'admin.php?page=indieauth';
-		} else {
-			$path = 'options-general.php?page=indieauth';
-		}
 		$result = array(
 			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
 			'status'      => 'good',
@@ -70,7 +65,7 @@ class IndieAuth_Admin {
 				'<p>%s</p>',
 				__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
 			);
-			$result['actions']     = sprintf( '<a href="%1$s" >%2$s</a>', $path, __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
+			$result['actions']     = sprintf( '<a href="%1$s" >%2$s</a>', menu_page_url( 'indieauth', false ), __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
 		}
 
 		return $result;
