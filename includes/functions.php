@@ -208,7 +208,7 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 
 		$users = get_users( $args );
 		// check result
-		if ( ! empty( $users ) ) {
+		if ( is_countable( $users ) && 1 === count( $users ) ) {
 			return $users[0];
 		}
 		return null;

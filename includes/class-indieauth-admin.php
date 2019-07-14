@@ -15,6 +15,23 @@ class IndieAuth_Admin {
 		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
 		add_filter( 'site_status_tests', array( $this, 'add_indieauth_test' ) );
+		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+	}
+
+
+	public function admin_notices() {
+		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
+			echo '<p class="notice notice-warning">';
+			esc_html_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
+			printf( ' <a href="%1s">%2$s</a>', esc_url( menu_page_url( 'indieauth', false ) ), esc_html__( 'Visit Settings Page', 'indieauth' ) );
+			echo '</p>';
+		}
+		$screen = get_current_screen();
+		if ( ( 'users' === $screen->id ) && $this->check_dupe_user_urls() ) {
+			echo '<p class="notice notice-error">';
+			esc_html_e( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' );
+			echo '</p>';
+		}
 	}
 
 	public function add_indieauth_test( $tests ) {
@@ -100,6 +117,20 @@ class IndieAuth_Admin {
 			}
 		}
 			return $data;
+	}
+
+	public function check_dupe_user_urls() {
+		$urls = get_users(
+			array(
+				'fields' => array( 'user_url' ),
+			)
+		);
+		$urls = array_filter( wp_list_pluck( $urls, 'user_url' ) );
+		$urls = array_map( 'normalize_url', $urls );
+		if ( count( array_unique( $urls ) ) === count( $urls ) ) {
+			return false;
+		}
+		return true;
 	}
 
 	public function login_form_authdiag() {

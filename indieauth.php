@@ -53,22 +53,8 @@ class IndieAuth_Plugin {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-debug.php';
 		}
 
-		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
 
-	public function admin_notices() {
-		if ( class_exists( 'Indieweb_Plugin' ) ) {
-			$path = 'admin.php?page=indieauth';
-		} else {
-			$path = 'options-general.php?page=indieauth';
-		}
-		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
-			echo '<p class="notice notice-warning">';
-			esc_html_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
-			printf( ' <a href="%1s">%2$s</a>', esc_url( $path ), esc_html__( 'Visit Settings Page', 'indieauth' ) );
-			echo '</p>';
-		}
-	}
 }
 
 new IndieAuth_Plugin();
