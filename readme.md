@@ -1,7 +1,7 @@
 # IndieAuth #
 **Contributors:** [indieweb](https://profiles.wordpress.org/indieweb), [pfefferle](https://profiles.wordpress.org/pfefferle), [dshanske](https://profiles.wordpress.org/dshanske)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
-**Requires at least:** 4.7  
+**Requires at least:** 4.9.9  
 **Requires PHP:** 5.4  
 **Tested up to:** 5.2.2  
 **Stable tag:** 3.4.0  
