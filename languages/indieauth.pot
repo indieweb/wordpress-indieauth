@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: IndieAuth 3.4.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2019-07-07 20:07:56+00:00\n"
+"POT-Creation-Date: 2019-07-14 18:14:44+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,11 +14,27 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
 
-#: includes/class-indieauth-admin.php:22
+#: includes/class-indieauth-admin.php:25
+msgid ""
+"In order to ensure IndieAuth tokens will work please visit the settings "
+"page to check:"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:26
+msgid "Visit Settings Page"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:32
+msgid ""
+"Multiple user accounts have the same URL set. This is not permitted as this "
+"value is used by IndieAuth for login. Please resolve"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:39
 msgid "IndieAuth Test"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:35
+#: includes/class-indieauth-admin.php:52
 msgid "Authorization Header Passed"
 msgstr ""
 
@@ -26,67 +42,67 @@ msgstr ""
 msgid "IndieAuth"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:43
+#: includes/class-indieauth-admin.php:60
 msgid ""
 "Your hosting provider allows authorization headers to pass so IndieAuth "
 "should work"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:51
+#: includes/class-indieauth-admin.php:68
 msgid "Authorization Test Failed"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:54
+#: includes/class-indieauth-admin.php:71
 msgid ""
 "Authorization Headers are being blocked by your hosting provider. This will "
 "cause IndieAuth to fail."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:56
+#: includes/class-indieauth-admin.php:73
 msgid "Visit the Settings page for guidance on how to resolve."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:66
+#: includes/class-indieauth-admin.php:83
 msgid "None"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:75
+#: includes/class-indieauth-admin.php:92
 msgid "Website"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:109
+#: includes/class-indieauth-admin.php:140
 msgid "Authorization Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:112
+#: includes/class-indieauth-admin.php:143
 msgid "Alternate Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:142
+#: includes/class-indieauth-admin.php:173
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:150 templates/indieauth-settings.php:2
+#: includes/class-indieauth-admin.php:181 templates/indieauth-settings.php:2
 msgid "IndieAuth Settings"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:163
+#: includes/class-indieauth-admin.php:194
 msgid ""
 "Based on your feedback and to improve the user experience, we decided to "
 "move the settings to a separate <a href=\"%1$s\">settings-page</a>."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:236
+#: includes/class-indieauth-admin.php:267
 msgid "Overview"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:238
+#: includes/class-indieauth-admin.php:269
 msgid ""
 "IndieAuth is a way for doing Web sign-in, where you use your own homepage "
 "to sign in to other places."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:239
+#: includes/class-indieauth-admin.php:270
 msgid ""
 "IndieAuth was built on ideas and technology from existing proven "
 "technologies like OAuth and OpenID but aims at making it easier for users "
@@ -94,19 +110,19 @@ msgid ""
 "completely separate implementations and services can be used for each part."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:246
+#: includes/class-indieauth-admin.php:277
 msgid "The IndieWeb"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:248
+#: includes/class-indieauth-admin.php:279
 msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:250
+#: includes/class-indieauth-admin.php:281
 msgid "Your content is yours"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:251
+#: includes/class-indieauth-admin.php:282
 msgid ""
 "When you post something on the web, it should belong to you, not a "
 "corporation. Too many companies have gone out of business and lost all of "
@@ -114,41 +130,41 @@ msgid ""
 "your control."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:254
+#: includes/class-indieauth-admin.php:285
 msgid "You are better connected"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:255
+#: includes/class-indieauth-admin.php:286
 msgid ""
 "Your articles and status messages can go to all services, not just one, "
 "allowing you to engage with everyone. Even replies and likes on other "
 "services can come back to your site so they’re all in one place."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:258
+#: includes/class-indieauth-admin.php:289
 msgid "You are in control"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:259
+#: includes/class-indieauth-admin.php:290
 msgid ""
 "You can post anything you want, in any format you want, with no one "
 "monitoring you. In addition, you share simple readable links such as "
 "example.com/ideas. These links are permanent and will always work."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:265
+#: includes/class-indieauth-admin.php:296
 msgid "For more information:"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:266
+#: includes/class-indieauth-admin.php:297
 msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:267
+#: includes/class-indieauth-admin.php:298
 msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:268
+#: includes/class-indieauth-admin.php:299
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
@@ -487,16 +503,6 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:67
-msgid ""
-"In order to ensure IndieAuth tokens will work please visit the settings "
-"page to check:"
-msgstr ""
-
-#: indieauth.php:68
-msgid "Visit Settings Page"
-msgstr ""
-
 #: templates/authdiagfail.php:3
 msgid "Authorization has Failed"
 msgstr ""
@@ -519,10 +525,10 @@ msgstr ""
 #: templates/authdiagfail.php:12
 msgid ""
 "If that does not work either, you may need to ask your hosting provider to "
-"whitelist the Authorization header for your account. If they refuse, you "
-"can pass it through Apache with an alternate name. The plugin searches for "
-"the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations "
-"store the header in this location."
+"reconfigure to allow the Authorization header to be passed. If they refuse, "
+"you can pass it through Apache with an alternate name. The plugin searches "
+"for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI "
+"implementations store the header in this location."
 msgstr ""
 
 #: templates/authdiagtest.php:4
