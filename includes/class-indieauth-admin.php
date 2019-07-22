@@ -21,16 +21,16 @@ class IndieAuth_Admin {
 
 	public function admin_notices() {
 		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
-			echo '<p class="notice notice-warning">';
+			echo '<div class="notice notice-warning"><p>';
 			esc_html_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
 			printf( ' <a href="%1s">%2$s</a>', esc_url( menu_page_url( 'indieauth', false ) ), esc_html__( 'Visit Settings Page', 'indieauth' ) );
-			echo '</p>';
+			echo '</p></div>';
 		}
 		$screen = get_current_screen();
 		if ( ( 'users' === $screen->id ) && $this->check_dupe_user_urls() ) {
-			echo '<p class="notice notice-error">';
+			echo '<div class="notice notice-error"><p>';
 			esc_html_e( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' );
-			echo '</p>';
+			echo '</p></div>';
 		}
 	}
 
