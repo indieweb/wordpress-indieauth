@@ -176,9 +176,9 @@ class IndieAuth_Admin {
 		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
 	}
 
-			/**
-			 * Add IndieAuth options to the WordPress general settings page.
-			 */
+	/**
+	 * Add IndieAuth options to the WordPress general settings page.
+	 */
 	public function general_settings() {
 		if ( class_exists( 'Indieweb_Plugin' ) ) {
 			$path = 'admin.php?page=indieauth';
@@ -189,9 +189,9 @@ class IndieAuth_Admin {
 		printf( __( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ), $path ); // phpcs:ignore
 	}
 
-			/**
-			 * Add admin menu entry
-			 */
+	/**
+	 * Add admin menu entry
+	 */
 	public function admin_menu() {
 		$title = __( 'IndieAuth', 'indieauth' );
 		// If the IndieWeb Plugin is installed use its menu.
@@ -240,9 +240,9 @@ class IndieAuth_Admin {
 		}
 	}
 
-			/**
-			 * Load settings page
-			 */
+	/**
+	 * Load settings page
+	 */
 	public function settings_page() {
 		$response = self::test_auth();
 		if ( ! $response ) {
@@ -261,8 +261,8 @@ class IndieAuth_Admin {
 				'id'      => 'overview',
 				'title'   => __( 'Overview', 'indieauth' ),
 				'content' =>
-						'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
-						'<p>' . __( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
+					'<p>' . __( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
+					'<p>' . __( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
 			)
 		);
 
@@ -271,19 +271,19 @@ class IndieAuth_Admin {
 				'id'      => 'indieweb',
 				'title'   => __( 'The IndieWeb', 'indieauth' ),
 				'content' =>
-						'<p>' . __( 'The IndieWeb is a people-focused alternative to the "corporate web".', 'indieauth' ) . '</p>' .
-						'<p>
-						<strong>' . __( 'Your content is yours', 'indieauth' ) . '</strong><br />' .
-							__( 'When you post something on the web, it should belong to you, not a corporation. Too many companies have gone out of business and lost all of their users’ data. By joining the IndieWeb, your content stays yours and in your control.', 'indieauth' ) .
-						'</p>' .
-						'<p>
-						<strong>' . __( 'You are better connected', 'indieauth' ) . '</strong><br />' .
-							__( 'Your articles and status messages can go to all services, not just one, allowing you to engage with everyone. Even replies and likes on other services can come back to your site so they’re all in one place.', 'indieauth' ) .
-						'</p>' .
-						'<p>
-						<strong>' . __( 'You are in control', 'indieauth' ) . '</strong><br />' .
-							__( 'You can post anything you want, in any format you want, with no one monitoring you. In addition, you share simple readable links such as example.com/ideas. These links are permanent and will always work.', 'indieauth' ) .
-						'</p>',
+					'<p>' . __( 'The IndieWeb is a people-focused alternative to the "corporate web".', 'indieauth' ) . '</p>' .
+					'<p>
+					<strong>' . __( 'Your content is yours', 'indieauth' ) . '</strong><br />' .
+						__( 'When you post something on the web, it should belong to you, not a corporation. Too many companies have gone out of business and lost all of their users’ data. By joining the IndieWeb, your content stays yours and in your control.', 'indieauth' ) .
+					'</p>' .
+					'<p>
+					<strong>' . __( 'You are better connected', 'indieauth' ) . '</strong><br />' .
+						__( 'Your articles and status messages can go to all services, not just one, allowing you to engage with everyone. Even replies and likes on other services can come back to your site so they’re all in one place.', 'indieauth' ) .
+					'</p>' .
+					'<p>
+					<strong>' . __( 'You are in control', 'indieauth' ) . '</strong><br />' .
+						__( 'You can post anything you want, in any format you want, with no one monitoring you. In addition, you share simple readable links such as example.com/ideas. These links are permanent and will always work.', 'indieauth' ) .
+					'</p>',
 			)
 		);
 
