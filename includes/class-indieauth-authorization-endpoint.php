@@ -179,12 +179,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code, $token['user'] );
 
-			if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
-				$return = array( 'me' => home_url( '/' ) );
-			} else {
-				// Return the user profile URL and scope
-				$return = array( 'me' => get_author_posts_url( $user->ID ) );
-			}
+			$return = array( 'me' => get_url_from_url( $user->ID ) );
 
 			if ( isset( $token['scope'] ) ) {
 				$return['scope'] = $token['scope'];

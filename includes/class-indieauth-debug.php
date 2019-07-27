@@ -114,8 +114,6 @@ class IndieAuth_Debug {
 		}
 		return indieauth_get_response();
 	}
-
-
 }
 
 new IndieAuth_Debug();

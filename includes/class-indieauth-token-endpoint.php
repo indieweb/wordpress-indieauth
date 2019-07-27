@@ -218,13 +218,9 @@ class IndieAuth_Token_Endpoint {
 			unset( $return['code_challenge'] );
 			unset( $return['code_challenge_method'] );
 		}
-		if ( ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) || ! is_multi_author() ) {
-			$return['me'] = home_url( '/' );
-		} else {
-			// Return the user profile URL and scope
-			$return['me'] = get_author_posts_url( $return['user'] );
-		}
-		$user = get_user_by_identifier( $return['me'] );
+		$return['me'] = get_url_from_user( $return['user'] );
+
+		$user = get_user_by( 'id', $return['user'] );
 		if ( $user ) {
 			$return['profile'] = indieauth_get_user( $user );
 		}

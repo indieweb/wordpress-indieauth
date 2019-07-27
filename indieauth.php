@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 3.3.2
+ * Version: 3.4.0
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -15,7 +15,6 @@
 class IndieAuth_Plugin {
 
 	public function __construct() {
-		add_filter( 'pre_user_url', array( $this, 'pre_user_url' ) );
 
 		// Global Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/functions.php';
@@ -54,24 +53,8 @@ class IndieAuth_Plugin {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-debug.php';
 		}
 
-		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
 
-	public function admin_notices() {
-		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
-			echo '<p class="notice notice-warning">';
-			_e( 'In order to ensure IndieAuth tokens will work please perform this check:', 'indieauth' );
-			printf( ' <a href="%1s">%2$s</a>', add_query_arg( 'action', 'authdiag', wp_login_url() ), __( 'Check Script', 'indieauth' ) );
-			echo '</p>';
-		}
-	}
-
-	public function pre_user_url( $user_url ) {
-		if ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) && ( wp_parse_url( $user_url, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
-			$user_url = set_url_scheme( $user_url, 'https' );
-		}
-		return trailingslashit( $user_url );
-	}
 }
 
 new IndieAuth_Plugin();

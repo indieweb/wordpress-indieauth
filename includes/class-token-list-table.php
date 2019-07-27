@@ -20,13 +20,13 @@ class Token_List_Table extends WP_List_Table {
 
 	public function get_bulk_actions() {
 			  return array(
-				  'revoke'   => __( 'Revoke', 'indieauth' ),
+				  'revoke'       => __( 'Revoke', 'indieauth' ),
 				  'revoke_year'  => __( 'Revoke Tokens Last Accessed 1 Year Ago or Never', 'indieauth' ),
-				  'revoke_month'  => __( 'Revoke Tokens Last Accessed 1 Month Ago or Never', 'indieauth' ),
+				  'revoke_month' => __( 'Revoke Tokens Last Accessed 1 Month Ago or Never', 'indieauth' ),
 				  'revoke_week'  => __( 'Revoke Tokens Last Accessed 1 Week Ago or Never', 'indieauth' ),
-				  'revoke_day'  => __( 'Revoke Tokens Last Accessed 1 Day Ago or Never', 'indieauth' ),
+				  'revoke_day'   => __( 'Revoke Tokens Last Accessed 1 Day Ago or Never', 'indieauth' ),
 				  'revoke_hour'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago or Never', 'indieauth' ),
-				  'cleanup' => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
+				  'cleanup'      => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
 			  );
 	}
 
