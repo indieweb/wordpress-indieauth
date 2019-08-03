@@ -4,7 +4,7 @@
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.4  
 **Tested up to:** 5.2.2  
-**Stable tag:** 3.4.0  
+**Stable tag:** 3.4.1  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -53,9 +53,10 @@ This plugin only supports searching an external site for an authorization endpoi
 
 As of version 3.2, the endpoints return the display name, avatar, and URL from your user profile.
 
-### Does this require users to have their own domain name? ###
+### Does this require each user to have their own unique domain name? ###
 
-No. You can use your author profile URL to login if you do not have a domain name. However how the Indieauth server authenticates you depends on that server.
+No. When you provide the URL of the WordPress site and authenticate to WordPress, it will return the URL of your author profile as your unique URL. Only one user may use the URL of the site itself.
+This setting is set in the plugin settings page, or if there is only a single user, it will default to them.
 
 ### How do I authenticate myself to an Indieauth server? ###
 
@@ -141,6 +142,9 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.4.1 ###
+* Add setting to set the user who will be using the site URL as their URL as opposed to their author URL which removes dependency on Indieweb plugin for this.
 
 ### 3.4.0 ###
 * Enforce unique URLs for user accounts

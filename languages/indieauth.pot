@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.4.0\n"
+"Project-Id-Version: IndieAuth 3.4.1\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2019-07-14 18:16:43+00:00\n"
+"POT-Creation-Date: 2019-08-03 03:59:19+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -34,7 +34,7 @@ msgstr ""
 msgid "IndieAuth Test"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:52
+#: includes/class-indieauth-admin.php:47
 msgid "Authorization Header Passed"
 msgstr ""
 
@@ -42,67 +42,71 @@ msgstr ""
 msgid "IndieAuth"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:60
+#: includes/class-indieauth-admin.php:55
 msgid ""
 "Your hosting provider allows authorization headers to pass so IndieAuth "
 "should work"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:68
+#: includes/class-indieauth-admin.php:63
 msgid "Authorization Test Failed"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:71
+#: includes/class-indieauth-admin.php:66
 msgid ""
 "Authorization Headers are being blocked by your hosting provider. This will "
 "cause IndieAuth to fail."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:73
+#: includes/class-indieauth-admin.php:68
 msgid "Visit the Settings page for guidance on how to resolve."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:83
+#: includes/class-indieauth-admin.php:78 templates/indieauth-settings.php:68
 msgid "None"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:92
+#: includes/class-indieauth-admin.php:87
 msgid "Website"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:140
+#: includes/class-indieauth-admin.php:135
 msgid "Authorization Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:143
+#: includes/class-indieauth-admin.php:138
 msgid "Alternate Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:173
+#: includes/class-indieauth-admin.php:168
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:181 templates/indieauth-settings.php:2
+#: includes/class-indieauth-admin.php:178
+msgid "User Who is Represented by the Site URL"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:186 templates/indieauth-settings.php:2
 msgid "IndieAuth Settings"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:194
+#: includes/class-indieauth-admin.php:199
 msgid ""
 "Based on your feedback and to improve the user experience, we decided to "
 "move the settings to a separate <a href=\"%1$s\">settings-page</a>."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:267
+#: includes/class-indieauth-admin.php:272
 msgid "Overview"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:269
+#: includes/class-indieauth-admin.php:274
 msgid ""
 "IndieAuth is a way for doing Web sign-in, where you use your own homepage "
 "to sign in to other places."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:270
+#: includes/class-indieauth-admin.php:275
 msgid ""
 "IndieAuth was built on ideas and technology from existing proven "
 "technologies like OAuth and OpenID but aims at making it easier for users "
@@ -110,19 +114,19 @@ msgid ""
 "completely separate implementations and services can be used for each part."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:277
+#: includes/class-indieauth-admin.php:282
 msgid "The IndieWeb"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:279
+#: includes/class-indieauth-admin.php:284
 msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:281
+#: includes/class-indieauth-admin.php:286
 msgid "Your content is yours"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:282
+#: includes/class-indieauth-admin.php:287
 msgid ""
 "When you post something on the web, it should belong to you, not a "
 "corporation. Too many companies have gone out of business and lost all of "
@@ -130,41 +134,41 @@ msgid ""
 "your control."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:285
+#: includes/class-indieauth-admin.php:290
 msgid "You are better connected"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:286
+#: includes/class-indieauth-admin.php:291
 msgid ""
 "Your articles and status messages can go to all services, not just one, "
 "allowing you to engage with everyone. Even replies and likes on other "
 "services can come back to your site so they’re all in one place."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:289
+#: includes/class-indieauth-admin.php:294
 msgid "You are in control"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:290
+#: includes/class-indieauth-admin.php:295
 msgid ""
 "You can post anything you want, in any format you want, with no one "
 "monitoring you. In addition, you share simple readable links such as "
 "example.com/ideas. These links are permanent and will always work."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:296
+#: includes/class-indieauth-admin.php:301
 msgid "For more information:"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:297
+#: includes/class-indieauth-admin.php:302
 msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:298
+#: includes/class-indieauth-admin.php:303
 msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:299
+#: includes/class-indieauth-admin.php:304
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
@@ -633,6 +637,14 @@ msgstr ""
 
 #: templates/indieauth-settings.php:57
 msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
+msgstr ""
+
+#: templates/indieauth-settings.php:62
+msgid "Set User to Represent Site URL"
+msgstr ""
+
+#: templates/indieauth-settings.php:75
+msgid "Set a User who will represent the URL of the site"
 msgstr ""
 
 #: templates/websignin-form.php:4
