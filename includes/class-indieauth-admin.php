@@ -170,6 +170,16 @@ class IndieAuth_Admin {
 				'default'      => 0,
 			)
 		);
+		register_setting(
+			'indieauth',
+			'indieauth_root_user',
+			array(
+				'type'         => 'int',
+				'description'  => __( 'User Who is Represented by the Site URL', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => get_option( 'iw_default_author', 0 ),
+			)
+		);
 	}
 
 	public function admin_init() {
@@ -180,7 +190,7 @@ class IndieAuth_Admin {
 	 * Add IndieAuth options to the WordPress general settings page.
 	 */
 	public function general_settings() {
-		if ( class_exists( 'Indieweb_Plugin' ) ) {
+		if ( class_exists( 'IndieWeb_Plugin' ) ) {
 			$path = 'admin.php?page=indieauth';
 		} else {
 			$path = 'options-general.php?page=indieauth';

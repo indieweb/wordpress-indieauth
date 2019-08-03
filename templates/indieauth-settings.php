@@ -57,6 +57,25 @@ if ( $message ) {
 							<?php _e( 'Add a link to the login form to authenticate using an IndieAuth endpoint.', 'indieauth' ); ?>
 						</label>
 					</td>
+				<tr>
+					<th>
+						<?php _e( 'Set User to Represent Site URL', 'indieauth' ); ?>
+					</th>
+					<td>
+						<label for="indieauth_root_user">
+							<?php wp_dropdown_users(
+								array(
+									'show_option_all' => __( 'None', 'indieauth' ),
+									'name' => 'indieauth_root_user',
+									'id' => 'indieauth_root_user',
+									'show' => 'display_name_with_login',
+									'selected' => get_option( 'indieauth_root_user' )
+								)
+							); ?>
+							<?php _e( 'Set a User who will represent the URL of the site', 'indieauth' ); ?>
+						</label>
+					</td>
+				</tr>
 				</tr>
 			</tbody>
 		</table>

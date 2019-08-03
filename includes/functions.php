@@ -178,9 +178,9 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		}
 		// Try to save the expense of a search query if the URL is the site URL
 		if ( home_url( '/' ) === $identifier ) {
-			// Use the Indieweb settings to set the default author
-			if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
-				return get_user_by( 'id', get_option( 'iw_default_author' ) );
+			// Use the settings to set the root user
+			if ( 0 !== (int) get_option( 'indieauth_root_user' ) ) {
+				return get_user_by( 'id', (int) get_option( 'indieauth_root_user' ) );
 			}
 			$author = get_single_author();
 			//  If there is only a single author then they will get the root url
@@ -221,10 +221,8 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
  */
 if ( ! function_exists( 'get_url_from_user' ) ) {
 	function get_url_from_user( $user_id ) {
-		if ( class_exists( 'Indieweb_Plugin' ) && get_option( 'iw_single_author' ) ) {
-			if ( get_option( 'iw_default_author' ) === $user_id ) {
-				return home_url( '/' );
-			}
+		if ( (int) get_option( 'indieauth_root_user' ) === $user_id ) {
+			return home_url( '/' );
 		}
 		$user = get_user_by( 'ID', $user_id );
 		return get_author_posts_url( $user_id );
