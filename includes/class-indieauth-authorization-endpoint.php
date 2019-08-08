@@ -179,7 +179,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code, $token['user'] );
 
-			$return = array( 'me' => get_url_from_url( $user->ID ) );
+			$return = array( 'me' => get_url_from_user( $user->ID ) );
 
 			if ( isset( $token['scope'] ) ) {
 				$return['scope'] = $token['scope'];
