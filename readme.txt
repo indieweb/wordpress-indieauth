@@ -4,7 +4,7 @@ Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.4
 Tested up to: 5.2.2
-Stable tag: 3.4.1
+Stable tag: 3.4.2
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -142,6 +142,9 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.4.2 =
+* Repair issue with other flow caused by function name issue
 
 = 3.4.1 =
 * Add setting to set the user who will be using the site URL as their URL as opposed to their author URL which removes dependency on Indieweb plugin for this.
