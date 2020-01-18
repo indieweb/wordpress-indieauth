@@ -69,3 +69,16 @@ function get_oauth_error( $obj ) {
 function is_oauth_error( $obj ) {
 	return ( $obj instanceof WP_OAuth_Response );
 }
+
+
+function wp_error_to_oauth_response( $error ) {
+	if ( is_wp_error( $error ) ) {
+		$data   = $error->get_error_data();
+		$status = isset( $data['status'] ) ? $data['status'] : 200;
+		if ( is_array( $data ) ) {
+			unset( $data['status'] );
+		}
+		return new WP_OAuth_Response( $error->get_error_code(), $error->get_error_message(), $status, $data );
+	}
+	return null;
+}
