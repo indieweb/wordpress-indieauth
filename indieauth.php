@@ -32,6 +32,7 @@ class IndieAuth_Plugin {
 
 		// Indieauth Authorize Functions
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-authorize.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-local-authorize.php';
 
 		// Web Sign-In
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-web-signin.php';

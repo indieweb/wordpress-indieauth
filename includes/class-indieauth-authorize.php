@@ -1,15 +1,15 @@
 <?php
 /**
- * Authorize class
+ * Authorize base class
  * Helper functions for extracting tokens from the WP-API team Oauth2 plugin
  */
-class IndieAuth_Authorize {
+abstract class IndieAuth_Authorize {
 
 	public $error    = null;
 	public $scopes   = array();
 	public $response = array();
 
-	public function __construct() {
+	public function load() {
 		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority
 		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
@@ -24,12 +24,33 @@ class IndieAuth_Authorize {
 
 	}
 
-	public static function register_index( WP_REST_Response $response ) {
+	/**
+	 * Returns the URL for the authorization endpoint.
+	 *
+	 * @return string Authorization Endpoint.
+	 **/
+	abstract public function get_authorization_endpoint();
+
+	/**
+	 * Returns the URL for the token endpoint.
+	 *
+	 * @return string Token Endpoint.
+	 **/
+	abstract public function get_token_endpoint();
+
+	/**
+	 * Add authentication information into the REST API Index
+	 *
+	 * @param WP_REST_Response $response REST API Response Object
+	 *
+	 * @return WP_REST_Response Response object with endpoint info added
+	 **/
+	public function register_index( WP_REST_Response $response ) {
 		$data                                = $response->get_data();
 		$data['authentication']['indieauth'] = array(
 			'endpoints' => array(
-				'authorization' => rest_url( '/indieauth/1.0/auth' ),
-				'token'         => rest_url( '/indieauth/1.0/token' ),
+				'authorization' => $this->get_authorization_endpoint(),
+				'token'         => $this->get_token_endpoint(),
 			),
 		);
 		$response->set_data( $data );
@@ -44,16 +65,16 @@ class IndieAuth_Authorize {
 		return $response ? $response : $this->response;
 	}
 
-	public static function http_header() {
+	public function http_header() {
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', rest_url( '/indieauth/1.0/auth' ), false ) );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', rest_url( '/indieauth/1.0/token' ), false ) );
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', $this->get_authorization_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', $this->get_token_endpoint(), false ) );
 		}
 	}
 	public static function html_header() {
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/auth' ) ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, rest_url( '/indieauth/1.0/token' ) ); //phpcs:ignore
+			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $this->get_authorization_endpoint() ); // phpcs:ignore
+			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $this->get_token_endpoint() ); //phpcs:ignore
 		}
 	}
 
@@ -81,6 +102,13 @@ class IndieAuth_Authorize {
 		return null;
 	}
 
+	/**
+	 * Uses an IndieAuth token to authenticate to WordPress.
+	 *
+	 * @param int|bool $user_id User ID if one has been determined otherwise false.
+	 *
+	 * @return int|bool User ID otherwise false.
+	 */
 	public function determine_current_user( $user_id ) {
 		$token = $this->get_provided_token();
 		// If there is not a token that means this is not an attempt to log in using IndieAuth
@@ -118,38 +146,23 @@ class IndieAuth_Authorize {
 
 	}
 
-	public function verify_access_token( $token ) {
-		$tokens = new Token_User( '_indieauth_token_' );
-		$return = $tokens->get( $token );
-		if ( ! $return ) {
-			return new WP_OAuth_Response(
-				'invalid_token',
-				__( 'Invalid access token', 'indieauth' ),
-				401
-			);
-		}
-		if ( is_oauth_error( $return ) ) {
-			return $return;
-		}
-		$return['last_accessed'] = current_time( 'timestamp', 1 );
-		$tokens->update( $token, $return );
-		return $return;
-	}
+	/**
+	 * Verifies Access Token
+	 *
+	 * @param string $token The token to verify
+	 *
+	 * @return array|WP_OAuth_Response Return either the token information or an OAuth Error Object
+	 **/
+	abstract public function verify_access_token( $token );
 
-	public static function verify_authorization_code( $post_args ) {
-		$tokens = new Token_User( '_indieauth_code_' );
-		$return = $tokens->get( $post_args['code'] );
-		if ( ! $return ) {
-			return new WP_OAuth_Response(
-				'invalid_code',
-				__( 'Invalid authorization code', 'indieauth' ),
-				401
-			);
-		}
-		// Once the code is verified destroy it
-		$tokens->destroy( $post_args['code'] );
-		return $return;
-	}
+	/**
+	 * Verifies authorixation code.
+	 *
+	 * @param string $code Authorization Code
+	 *
+	 * @return array|WP_OAuth_Response Return either the code information or an OAuth Error object
+	 **/
+	abstract public static function verify_authorization_code( $code );
 
 	/**
 	 * Get the authorization header
@@ -232,5 +245,3 @@ class IndieAuth_Authorize {
 		return null;
 	}
 }
-
-new IndieAuth_Authorize();
