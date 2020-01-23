@@ -14,7 +14,7 @@ class IndieAuth_Admin {
 		add_filter( 'wp_pre_insert_user_data', array( $this, 'unique_user_url' ), 10, 3 );
 		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
-		add_filter( 'site_status_tests', array( $this, 'add_indieauth_test' ) );
+		add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
 
@@ -34,15 +34,49 @@ class IndieAuth_Admin {
 		}
 	}
 
-	public function add_indieauth_test( $tests ) {
-		$tests['direct']['indieauth_plugin'] = array(
+	public function add_indieauth_tests( $tests ) {
+		$tests['direct']['indieauth_header'] = array(
 			'label' => __( 'IndieAuth Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_test' ),
+			'test'  => array( $this, 'site_health_header_test' ),
+		);
+		$tests['direct']['indieauth_https']  = array(
+			'label' => __( 'SSL Test', 'indieauth' ),
+			'test'  => array( $this, 'site_health_https_test' ),
 		);
 		return $tests;
 	}
 
-	public function site_health_test() {
+
+	public function site_health_https_test() {
+		$result = array(
+			'label'       => __( 'HTTPS Check Passed', 'indieauth' ),
+			'status'      => 'good',
+			'badge'       => array(
+				'label' => __( 'IndieAuth', 'indieauth' ),
+				'color' => 'green',
+			),
+			'description' => sprintf(
+				'<p>%s</p>',
+				__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
+			),
+			'actions'     => '',
+			'test'        => 'indieauth_headers',
+		);
+
+		if ( ! is_ssl() ) {
+			$result['status']      = 'critical';
+			$result['label']       = __( 'HTTPS Test Failed', 'indieauth' );
+			$result['description'] = sprintf(
+				'<p>%s</p>',
+				__( 'You are not serving your site via HTTPS. This is a security risk if running IndieAuth.', 'indieauth' )
+			);
+			$result['actions']     = __( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
+		}
+
+		return $result;
+	}
+
+	public function site_health_header_test() {
 		$result = array(
 			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
 			'status'      => 'good',
