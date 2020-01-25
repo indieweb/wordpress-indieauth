@@ -516,3 +516,12 @@ function indieauth_get_user( $user ) {
 	);
 	return array_filter( $return );
 }
+
+function indieauth_get_authorization_endpoint() {
+	return IndieAuth_Plugin::$indieauth->get_authorization_endpoint();
+}
+
+
+function indieauth_get_token_endpoint() {
+	return IndieAuth_Plugin::$indieauth->get_token_endpoint();
+}
