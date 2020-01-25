@@ -82,15 +82,27 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 	}
 
 	public static function auth_settings() {
-			_e( 'Please specify a remote indieauth authorization and token endpoint.', 'indieauth' );
+			esc_html_e( 'Please specify a remote indieauth authorization and token endpoint.', 'indieauth' );
 	}
 
 	public function get_authorization_endpoint() {
-		return get_option( 'indieauth_authorization_endpoint', 'https://indieauth.com/auth' );
+		$return = get_option( 'indieauth_authorization_endpoint', 'https://indieauth.com/auth' );
+		// Sanity Check
+		if ( empty( $return ) ) {
+			delete_option( 'indieauth_authorization_endpoint' );
+			$return = 'https://indieauth.com/auth';
+		}
+		return $return;
 	}
 
 	public function get_token_endpoint() {
-		return get_option( 'indieauth_token_endpoint', 'https://tokens.indieauth.com/token' );
+		$return = get_option( 'indieauth_token_endpoint', 'https://tokens.indieauth.com/token' );
+		// Sanity Check
+		if ( empty( $return ) ) {
+			delete_option( 'indieauth_token_endpoint' );
+			$return = 'https://tokens.indieauth.com/token';
+		}
+		return $return;
 	}
 
 	public function verify_access_token( $token ) {

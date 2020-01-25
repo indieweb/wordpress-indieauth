@@ -196,6 +196,16 @@ class IndieAuth_Admin {
 	public function settings() {
 		register_setting(
 			'indieauth',
+			'indieauth_config',
+			array(
+				'type'         => 'string',
+				'description'  => __( 'Configuration option for IndieAuth Plugin', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 'local',
+			)
+		);
+		register_setting(
+			'indieauth',
 			'indieauth_show_login_form',
 			array(
 				'type'         => 'boolean',
