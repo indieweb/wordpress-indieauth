@@ -6,7 +6,10 @@
 class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 
 
-	public function __construct() {
+	public function __construct( $load = true ) {
+		if ( ! $load ) {
+			return;
+		}
 		$this->load();
 	}
 
@@ -54,4 +57,3 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 
 }
 
-new IndieAuth_Local_Authorize();
