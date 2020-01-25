@@ -84,7 +84,7 @@ class IndieAuth_Token_UI {
 			'client_id'   => admin_url(),
 			'client_name' => wp_strip_all_tags( $name ),
 			'client_icon' => get_avatar_url( $user_id ),
-			'issued_at'   => current_time( 'timestamp', 1 ),
+			'issued_at'   => time(),
 		);
 		return $tokens->set( $token );
 	}

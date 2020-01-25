@@ -53,7 +53,7 @@ abstract class Token_Generic {
 	 * @return int Timestamp.
 	 */
 	public function time() {
-		return current_time( 'timestamp', 1 );
+		return time();
 	}
 
 	/**

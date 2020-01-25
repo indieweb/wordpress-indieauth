@@ -165,7 +165,7 @@ class IndieAuth_Token_Endpoint {
 				'client_id'   => $params['client_id'],
 				'client_name' => $info->get_name(),
 				'client_icon' => $info->get_icon(),
-				'issued_at'   => current_time( 'timestamp', 1 ),
+				'issued_at'   => time(),
 			);
 			$token = array_filter( $token );
 
