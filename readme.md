@@ -3,8 +3,8 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.4  
-**Tested up to:** 5.2.2  
-**Stable tag:** 3.4.2  
+**Tested up to:** 5.3.2  
+**Stable tag:** 3.5.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -47,7 +47,7 @@ This plugin only supports searching an external site for an authorization endpoi
 
 ### What is IndieAuth.com? ###
 
-[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin.
+[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin. If you wish to use Indieauth.com or any remote endpoint, you can disable the local endpoint in the configuration settings.
 
 ### How does the application know my name and avatar? ###
 
@@ -66,13 +66,13 @@ By adding Indieauth support, you can log into sites simply by providing your URL
 
 ### How secure is this? ###
 
-We recommend your site uses SSL to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE), if the client supports it.
+We recommend your site uses HTTPS to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE), if the client supports it.
 
 ### What is a token endpoint? ###
 
 Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site. The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
 
-You can manage and revoke tokens under User->Manage Tokens. You will only see tokens for the currently logged in user.
+You can manage and revoke tokens under User->Manage Tokens if you are using the local configuration only. You will only see tokens for the currently logged in user.
 
 ### How do I incorporate this into my plugin? ###
 
@@ -126,6 +126,10 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 ## Upgrade Notice ##
 
+### 3.5.0 ###
+
+The option to use a remote endpoint has been restored
+
 ### 3.4.0 ###
 
 Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts. If you already set two accounts to the 
@@ -142,6 +146,13 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.5.0 ###
+* Restore ability to use a remote endpoint
+* Add load function and config setting in order to load the files appropriate for your configuration
+* Create Authorization plugin base class that can be used to create different IndieAuth configurations
+* Add Site Health Check for SSL
+* Create local and remote classes that can be instantiated depending on configuration
 
 ### 3.4.2 ###
 * Repair issue with other flow caused by function name issue
