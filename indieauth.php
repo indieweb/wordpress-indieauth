@@ -25,6 +25,8 @@ class IndieAuth_Plugin {
 				'class-indieauth-scope.php', // Scope Class
 				'class-indieauth-scopes.php', // Scopes Class
 				'class-indieauth-authorize.php', // IndieAuth Authorization Base Class
+				'class-token-transient.php',
+				'class-web-signin.php',
 				'class-indieauth-admin.php', // Administration Class
 			)
 		);
@@ -43,8 +45,6 @@ class IndieAuth_Plugin {
 		// Classes Require for using a Remote Endpoint
 		$remotefiles = array(
 			'class-indieauth-remote-authorize.php',
-			'class-token-transient.php',
-			'class-web-signin.php',
 		);
 		$load        = get_option( 'indieauth_config', 'local' );
 		switch ( $load ) {
