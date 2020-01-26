@@ -78,11 +78,11 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 	}
 
 	public static function endpoint_field( $args ) {
-			printf( '<label for="%1$s"><input id="%1$s" name="%1$s" type="url" value="%2$s" placeholder="%3$s" />', esc_attr( $args['label_for'] ), esc_url( get_option( $args['label_for'], $args['default'] ) ), esc_url( $args['default'] ) );
+		printf( '<label for="%1$s"><input id="%1$s" name="%1$s" type="url" value="%2$s" placeholder="%3$s" />', esc_attr( $args['label_for'] ), esc_url( get_option( $args['label_for'], $args['default'] ) ), esc_url( $args['default'] ) );
 	}
 
 	public static function auth_settings() {
-			esc_html_e( 'Please specify a remote indieauth authorization and token endpoint.', 'indieauth' );
+		esc_html_e( 'Please specify a remote indieauth authorization and token endpoint.', 'indieauth' );
 	}
 
 	public function get_authorization_endpoint() {
