@@ -164,8 +164,8 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			return new WP_OAuth_Response( 'indieauth_response_error', __( 'IndieAuth.com seems to have some hiccups, please try it again later.', 'indieauth' ), 401 );
 		}
 
-		if ( 2 === (int) ( $code / 100 ) && isset( $body['me'] ) ) {
-			return $body;
+		if ( 2 === (int) ( $code / 100 ) && isset( $params['me'] ) ) {
+			return $params;
 		}
 		if ( array_key_exists( 'error', $response ) ) {
 			return new WP_Error( 'indieauth_' . $response['error'], esc_html( $response['error_description'] ) );
