@@ -145,7 +145,7 @@ class IndieAuth_Admin {
 				$data['user_url'] = '';
 			}
 		}
-			return $data;
+		return $data;
 	}
 
 	public function check_dupe_user_urls() {
