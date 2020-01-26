@@ -36,7 +36,7 @@ class IndieAuth_Plugin {
 			'class-indieauth-client-discovery.php', // Client Discovery
 			'class-token-user.php',
 			'class-indieauth-token-endpoint.php', // Token Endpoint
-			'client-indieauth-authorization-endpoint.php', // Authorization Endpoint
+			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
 			'class-token-list-table.php', // Token Management UI
 			'class-indieauth-token-ui.php',
 			'class-indieauth-local-authorize.php',
