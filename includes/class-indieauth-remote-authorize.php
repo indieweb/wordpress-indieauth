@@ -45,36 +45,37 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 	public static function admin_init() {
 		$cls  = get_called_class();
 		$page = 'indieauth';
-				add_settings_section(
-					'indieauth',
-					'Remote IndieAuth Endpoint Settings',
-					array( $cls, 'auth_settings' ),
-					$page
-				);
-				add_settings_field(
-					'indieauth_authorization_endpoint',
-					__( 'Authorization Endpoint', 'indieauth' ),
-					array( $cls, 'endpoint_field' ),
-					$page,
-					'indieauth',
-					array(
-						'label_for' => 'indieauth_authorization_endpoint',
-						'class'     => 'widefat',
-						'default'   => 'https://indieauth.com/auth',
-					)
-				);
-				add_settings_field(
-					'indieauth_token_endpoint',
-					__( 'Token Endpoint', 'indieauth' ),
-					array( $cls, 'endpoint_field' ),
-					$page,
-					'indieauth',
-					array(
-						'label_for' => 'indieauth_token_endpoint',
-						'class'     => 'widefat',
-						'default'   => 'https://tokens.indieauth.com/token',
-					)
-				);
+
+		add_settings_section(
+			'indieauth',
+			'Remote IndieAuth Endpoint Settings',
+			array( $cls, 'auth_settings' ),
+			$page
+		);
+		add_settings_field(
+			'indieauth_authorization_endpoint',
+			__( 'Authorization Endpoint', 'indieauth' ),
+			array( $cls, 'endpoint_field' ),
+			$page,
+			'indieauth',
+			array(
+				'label_for' => 'indieauth_authorization_endpoint',
+				'class'     => 'widefat',
+				'default'   => 'https://indieauth.com/auth',
+			)
+		);
+		add_settings_field(
+			'indieauth_token_endpoint',
+			__( 'Token Endpoint', 'indieauth' ),
+			array( $cls, 'endpoint_field' ),
+			$page,
+			'indieauth',
+			array(
+				'label_for' => 'indieauth_token_endpoint',
+				'class'     => 'widefat',
+				'default'   => 'https://tokens.indieauth.com/token',
+			)
+		);
 	}
 
 	public static function endpoint_field( $args ) {
