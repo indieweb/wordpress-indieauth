@@ -82,7 +82,7 @@ class IndieAuth_Authorization_Endpoint {
 		IndieAuth::$scopes->register(
 			new IndieAuth_Scope(
 				'read',
-				__( 'Allows the application read access to channels', 'indieauth' ),
+				__( 'Allows the application read access to Microsub channels', 'indieauth' ),
 				array(
 					'read',
 				)
@@ -92,7 +92,7 @@ class IndieAuth_Authorization_Endpoint {
 		IndieAuth::$scopes->register(
 			new IndieAuth_Scope(
 				'follow',
-				__( 'Allows the application to manage a follow list', 'indieauth' ),
+				__( 'Allows the application to manage a Microsub following list', 'indieauth' ),
 				array(
 					'read',
 				)
@@ -102,7 +102,46 @@ class IndieAuth_Authorization_Endpoint {
 		IndieAuth::$scopes->register(
 			new IndieAuth_Scope(
 				'mute',
-				__( 'Allows the application to mute and unmute users', 'indieauth' ),
+				__( 'Allows the application to mute and unmute users in a Microsub channel', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'block',
+				__( 'Allows the application to block users in a Microsub channel', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'channels',
+				__( 'Allows the application to manage Microsub channels', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'save',
+				__( 'Allows the application to save content for later retrieval', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'profile',
+				__( 'Returns a complete profile to the application as part of the IndieAuth response. Without this only a display name, avatar, and url will be returned', 'indieauth' ),
 				array(
 					'read',
 				)
