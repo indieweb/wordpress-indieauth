@@ -27,6 +27,11 @@ class IndieAuth_Plugin {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-user.php';
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-token-transient.php';
 
+
+		// Scopes
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-scope.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-scopes.php';
+
 		// OAuth REST Error Class
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-oauth-response.php';
 

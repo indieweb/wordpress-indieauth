@@ -7,12 +7,107 @@
 
 class IndieAuth_Authorization_Endpoint {
 	private $tokens;
+	private $scopes;
 
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
-
+		$this->scopes = new IndieAuth_Scopes();
 		$this->tokens = new Token_User( '_indieauth_code_' );
+		$this->register_scopes();
+	}
+
+	/**
+	 * Register Scopes
+	 */
+	public function register_scopes() {
+		$this->scopes->register(
+			new IndieAuth_Scope(
+				'create',
+				__( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
+				array(
+					'edit_posts',
+					'edit_published_posts',
+					'delete_posts',
+					'publish_posts',
+					'upload_files',
+					'read',
+				)
+			)
+		);
+
+		$this->scopes->register(
+			new IndieAuth_Scope(
+				'draft',
+				__( 'Allows the application to create draft posts only.', 'indieauth' ),
+				array(
+					'edit_posts',
+				)
+			)
+		);
+
+		$this->scopes->register(
+			new IndieAuth_Scope(
+				'update',
+				__( 'Allows the application to update posts', 'indieauth' ),
+				array(
+					'edit_published_posts',
+					'edit_others_posts',
+				)
+			)
+		);
+
+		$this->scopes->register(
+			new IndieAuth_Scope(
+				'delete',
+				__( 'Allows the application to delete or undelete posts', 'indieauth' ),
+				array(
+					'delete_posts',
+					'delete_published_posts',
+					'delete_others_posts',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'media',
+				__( 'Allows the application to upload to the media endpoint', 'indieauth' ),
+				array(
+					'upload_files',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'read',
+				__( 'Allows the application read access to channels', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'follow',
+				__( 'Allows the application to manage a follow list', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
+
+		IndieAuth::$scopes->register(
+			new IndieAuth_Scope(
+				'mute',
+				__( 'Allows the application to mute and unmute users', 'indieauth' ),
+				array(
+					'read',
+				)
+			)
+		);
 	}
 
 	/**
