@@ -12,6 +12,10 @@ class IndieAuth_Scopes {
 		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
 	}
 
+	public function map_caps() {
+		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_user', 'edit_user', 'remove_user', 'promote_user', 'delete_post', 'delete_page', 'edit_post', 'edit_page', 'read_post', 'read_page' ) );
+	}
+
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
 		// If this is not null this is an indieauth response
 		$response = indieauth_get_response();
@@ -19,6 +23,14 @@ class IndieAuth_Scopes {
 			$scopes = indieauth_get_scopes();
 			if ( empty( $scopes ) ) {
 				return array( 'do_not_allow' );
+			}
+
+			// This check is only for certain capabilities
+			if ( ! in_array( $cap, $this->map_caps(), true ) ) {
+				if ( WP_DEBUG ) {
+					error_log( sprintf( __( 'Unknown cap: %1s', 'indieauth' ), $cap ) ); // phpcs:ignore
+				}
+				return $caps;
 			}
 			foreach ( $caps as $c ) {
 				// If the capability is not in any of the scopes then do not allow
@@ -45,6 +57,7 @@ class IndieAuth_Scopes {
 					'publish_posts',
 					'upload_files',
 					'read',
+					'unfiltered_html',
 				)
 			)
 		);
@@ -55,6 +68,8 @@ class IndieAuth_Scopes {
 				__( 'Allows the application to create draft posts only.', 'indieauth' ),
 				array(
 					'edit_posts',
+					'unfiltered_html',
+					'read',
 				)
 			)
 		);
@@ -66,6 +81,7 @@ class IndieAuth_Scopes {
 				array(
 					'edit_published_posts',
 					'edit_others_posts',
+					'read',
 				)
 			)
 		);
@@ -78,6 +94,7 @@ class IndieAuth_Scopes {
 					'delete_posts',
 					'delete_published_posts',
 					'delete_others_posts',
+					'read',
 				)
 			)
 		);
@@ -87,6 +104,7 @@ class IndieAuth_Scopes {
 				__( 'Allows the application to upload to the media endpoint', 'indieauth' ),
 				array(
 					'upload_files',
+					'read',
 				)
 			)
 		);
