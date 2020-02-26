@@ -12,9 +12,22 @@ class IndieAuth_Scopes {
 		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 20, 4 );
 	}
 
+	/**
+	 * Offers a list of caps to be checked in the function below. Allows custom capabilities to not be filtered
+	 */
 	public function map_caps() {
 		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages' ) );
 	}
+
+	/**
+	 * Filters a user's capabilities depending on token scope if in the list of appropriate ones.
+	 *
+	 * @param string[] $caps    Array of the user's capabilities.
+	 * @param string   $cap     Capability name.
+	 * @param int      $user_id The user ID.
+	 * @param array    $args    Adds the context to the cap. Typically the object ID.
+	 * @return string[] $caps    Filtered array of user capabilities after factoring in the token permissions.
+	 */
 
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
 		// If this is not null this is an indieauth response
@@ -43,7 +56,8 @@ class IndieAuth_Scopes {
 	}
 
 	/**
-	 * Register Scopes
+	 * Register Scopes. Built-In scopes are the ones documented in https://indieweb.org/scope.
+	 * Scopes for Microsub are provided for benefit of Aperture plugin for WordPress which has this as a dependency.
 	 */
 	public function register_builtin_scopes() {
 		$this->register_scope(
@@ -82,7 +96,7 @@ class IndieAuth_Scopes {
 					'edit_published_posts',
 					'edit_others_posts',
 					'read',
-					'unfiltered_html'
+					'unfiltered_html',
 				)
 			)
 		);
@@ -179,6 +193,13 @@ class IndieAuth_Scopes {
 		);
 	}
 
+	/* Register a scope
+	 *
+	 * @param IndieAuth_Scope $scope
+	 *
+	 * @return boolean Wheterh successful or not
+	 */
+
 	public function register_scope( $scope ) {
 		if ( ! $scope instanceof IndieAuth_Scope ) {
 			return false;
@@ -187,10 +208,21 @@ class IndieAuth_Scopes {
 		return true;
 	}
 
+	/* Deregister scope by name
+	 *
+	 * @param string $name
+	 *
+	 */
 	public function deregister_scope( $name ) {
 		unset( $this->scopes['name'] );
 	}
 
+	/* Retrieve a scope by name
+	 *
+	 * @param string Scope Name
+	 *
+	 * @return null|IndieAuth_Scope
+	 */
 	public function get_scope( $name ) {
 		if ( array_key_exists( $name, $this->scopes ) ) {
 			return $this->scopes[ $name ];
@@ -198,14 +230,33 @@ class IndieAuth_Scopes {
 		return null;
 	}
 
+	/* Return a list of scope names
+	 *
+	 * @return Array of Scope Names
+	 *
+	 */
 	public function get_names() {
 		return array_keys( $this->scopes );
 	}
 
+	/* Confirm if a scope exists by that name
+	 *
+	 * @param string $name Name Being Checked.
+	 *
+	 * @return boolean If exists.
+	 */
 	public function is_scope( $name ) {
 		return array_key_exists( $name, $this->scopes );
 	}
 
+	/* Confirm if a capability is in one of the scopes provided.
+	 *
+	 * @param string $cap Capability
+	 * @param string|string[] $scopes Array of scopes or single scope.
+	 *
+	 * @return boolean If one of the capabilities is in the scope
+	 *
+	 */
 	public function has_cap( $cap, $scopes ) {
 		if ( is_string( $scopes ) ) {
 			$scopes = array( $scopes );
