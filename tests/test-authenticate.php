@@ -51,5 +51,50 @@ class AuthenticateTest extends WP_UnitTestCase {
 		$this->assertEquals( $user_id, self::$author_id );
 	}
 
+	// Tests map_meta_cap for standard permissions
+	public function test_publish_posts_with_scopes() {				
+		add_filter( 'indieauth_scopes', 
+				function ( $scopes ) {
+					return array( 'create', 'update', 'media' );
+				},
+				10 
+			);
+		$this->assertTrue( user_can( static::$author_id, 'publish_posts' ) );
+	}
+
+	// Tests map_meta_cap for delete posts
+	public function test_delete_posts_without_scope() {				
+		add_filter( 'indieauth_response', 
+				function ( $token ) {
+					return static::$test_token;
+				},
+				10 
+			);
+		add_filter( 'indieauth_scopes', 
+				function ( $scopes ) {
+					return array( 'media' );
+				},
+				10 
+			);
+		$this->assertFalse( user_can( static::$author_id, 'delete_posts' ) );
+	}
+
+	// Tests map_meta_cap for delete posts
+	public function test_delete_posts_with_scope() {				
+		add_filter( 'indieauth_response', 
+				function ( $token ) {
+					return static::$test_token;
+				},
+				10 
+			);
+		add_filter( 'indieauth_scopes', 
+				function ( $scopes ) {
+					return array( 'delete' );
+				},
+				10 
+			);
+		$this->assertTrue( user_can( static::$author_id, 'delete_posts' ) );
+	}
+
 
 }
