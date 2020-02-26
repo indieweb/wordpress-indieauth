@@ -2,6 +2,8 @@
 class AuthenticateTest extends WP_UnitTestCase {
 
 	protected static $author_id;
+	protected static $subscriber_id;
+
 
 	protected static $test_token = array(
 		'token_type' => 'Bearer',
@@ -18,10 +20,16 @@ class AuthenticateTest extends WP_UnitTestCase {
 				'role' => 'author',
 			)
 		);
+		static::$subscriber_id = $factory->user->create(
+			array(
+				'role' => 'subscriber',
+			)
+		);
 	}
 
 	public static function wpTearDownAfterClass() {
 		self::delete_user( self::$author_id );
+		self::delete_user( self::$subscriber_id );
 	}
 
 	// Sets a test token
@@ -94,6 +102,23 @@ class AuthenticateTest extends WP_UnitTestCase {
 				10 
 			);
 		$this->assertTrue( user_can( static::$author_id, 'delete_posts' ) );
+	}
+
+	// Tests map_meta_cap for delete posts for a user without this permission
+	public function test_delete_posts_with_scope_but_no_permission() {				
+		add_filter( 'indieauth_response', 
+				function ( $token ) {
+					return static::$test_token;
+				},
+				10 
+			);
+		add_filter( 'indieauth_scopes', 
+				function ( $scopes ) {
+					return array( 'delete' );
+				},
+				10 
+			);
+		$this->assertFalse( user_can( static::$subscriber_id, 'delete_posts' ) );
 	}
 
 
