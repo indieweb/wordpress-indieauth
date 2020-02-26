@@ -9,11 +9,11 @@ class IndieAuth_Scopes {
 	public function __construct() {
 		$this->scopes = array();
 		$this->register_builtin_scopes();
-		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 10, 4 );
+		add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 20, 4 );
 	}
 
 	public function map_caps() {
-		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_user', 'edit_user', 'remove_user', 'promote_user', 'delete_post', 'delete_page', 'edit_post', 'edit_page', 'read_post', 'read_page' ) );
+		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages' ) );
 	}
 
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
@@ -82,6 +82,7 @@ class IndieAuth_Scopes {
 					'edit_published_posts',
 					'edit_others_posts',
 					'read',
+					'unfiltered_html'
 				)
 			)
 		);
