@@ -86,7 +86,7 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 		esc_html_e( 'Please specify a remote indieauth authorization and token endpoint.', 'indieauth' );
 	}
 
-	public function get_authorization_endpoint() {
+	public static function get_authorization_endpoint() {
 		$return = get_option( 'indieauth_authorization_endpoint', 'https://indieauth.com/auth' );
 		// Sanity Check
 		if ( empty( $return ) ) {
@@ -96,7 +96,7 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 		return $return;
 	}
 
-	public function get_token_endpoint() {
+	public static function get_token_endpoint() {
 		$return = get_option( 'indieauth_token_endpoint', 'https://tokens.indieauth.com/token' );
 		// Sanity Check
 		if ( empty( $return ) ) {

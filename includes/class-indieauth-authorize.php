@@ -29,14 +29,14 @@ abstract class IndieAuth_Authorize {
 	 *
 	 * @return string Authorization Endpoint.
 	 **/
-	abstract public function get_authorization_endpoint();
+	abstract public static function get_authorization_endpoint();
 
 	/**
 	 * Returns the URL for the token endpoint.
 	 *
 	 * @return string Token Endpoint.
 	 **/
-	abstract public function get_token_endpoint();
+	abstract public static function get_token_endpoint();
 
 	/**
 	 * Add authentication information into the REST API Index
@@ -67,14 +67,14 @@ abstract class IndieAuth_Authorize {
 
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', $this->get_authorization_endpoint(), false ) );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', $this->get_token_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint(), false ) );
 		}
 	}
 	public static function html_header() {
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $this->get_authorization_endpoint() ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $this->get_token_endpoint() ); //phpcs:ignore
+			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, static::get_authorization_endpoint() ); // phpcs:ignore
+			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, static::get_token_endpoint() ); //phpcs:ignore
 		}
 	}
 

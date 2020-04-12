@@ -13,11 +13,11 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 		$this->load();
 	}
 
-	public function get_authorization_endpoint() {
+	public static function get_authorization_endpoint() {
 		return rest_url( '/indieauth/1.0/auth' );
 	}
 
-	public function get_token_endpoint() {
+	public static function get_token_endpoint() {
 		return rest_url( '/indieauth/1.0/token' );
 	}
 
