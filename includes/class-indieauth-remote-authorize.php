@@ -9,11 +9,10 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 	public function __construct( $load = true ) {
 		$this->register_settings();
 		// Load the hooks for this class only if true. This allows for debugging of the functions
-		if ( ! $load ) {
-			return;
+		if ( true === $load ) {
+			add_action( 'admin_init', array( get_called_class(), 'admin_init' ) );
+			$this->load();
 		}
-		add_action( 'admin_init', array( get_called_class(), 'admin_init' ) );
-		$this->load();
 	}
 
 	public function register_settings() {

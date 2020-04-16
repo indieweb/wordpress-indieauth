@@ -112,13 +112,13 @@ abstract class IndieAuth_Authorize {
 	public function determine_current_user( $user_id ) {
 		$token = $this->get_provided_token();
 		// If there is not a token that means this is not an attempt to log in using IndieAuth
-		if ( ! $token ) {
+		if ( ! isset( $token ) ) {
 			return $user_id;
 		}
 		// If there is a token and it is invalid then reject all logins
 
 		$params = $this->verify_access_token( $token );
-		if ( ! $params ) {
+		if ( ! isset( $params ) ) {
 			return 0;
 		}
 		if ( is_oauth_error( $params ) ) {
@@ -202,14 +202,14 @@ abstract class IndieAuth_Authorize {
 	 */
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
-		if ( $header ) {
+		if ( isset( $header ) ) {
 			$token = $this->get_token_from_bearer_header( $header );
-			if ( $token ) {
+			if ( isset( $token ) ) {
 				return $token;
 			}
 		}
 		$token = $this->get_token_from_request();
-		if ( $token ) {
+		if ( isset( $token ) ) {
 			return $token;
 		}
 		return null;

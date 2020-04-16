@@ -7,10 +7,9 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 
 
 	public function __construct( $load = true ) {
-		if ( ! $load ) {
-			return;
+		if( true === $load ) {
+			$this->load();
 		}
-		$this->load();
 	}
 
 	public static function get_authorization_endpoint() {
@@ -25,7 +24,7 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 	public function verify_access_token( $token ) {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
-		if ( ! $return ) {
+		if ( empty( $return ) ) ) {
 			return new WP_OAuth_Response(
 				'invalid_token',
 				__( 'Invalid access token', 'indieauth' ),
@@ -43,7 +42,7 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 	public static function verify_authorization_code( $code ) {
 		$tokens = new Token_User( '_indieauth_code_' );
 		$return = $tokens->get( $code );
-		if ( ! $return ) {
+		if ( empty( $return ) ) {
 			return new WP_OAuth_Response(
 				'invalid_code',
 				__( 'Invalid authorization code', 'indieauth' ),
