@@ -15,23 +15,6 @@ class IndieAuth_Admin {
 		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
 		add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
-		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-	}
-
-
-	public function admin_notices() {
-		if ( ! get_option( 'indieauth_header_check', 0 ) ) {
-			echo '<div class="notice notice-warning"><p>';
-			esc_html_e( 'In order to ensure IndieAuth tokens will work please visit the settings page to check:', 'indieauth' );
-			printf( ' <a href="%1s">%2$s</a>', esc_url( menu_page_url( 'indieauth', false ) ), esc_html__( 'Visit Settings Page', 'indieauth' ) );
-			echo '</p></div>';
-		}
-		$screen = get_current_screen();
-		if ( ( 'users' === $screen->id ) && $this->check_dupe_user_urls() ) {
-			echo '<div class="notice notice-error"><p>';
-			esc_html_e( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' );
-			echo '</p></div>';
-		}
 	}
 
 	public function add_indieauth_tests( $tests ) {
@@ -42,6 +25,10 @@ class IndieAuth_Admin {
 		$tests['direct']['indieauth_https']  = array(
 			'label' => __( 'SSL Test', 'indieauth' ),
 			'test'  => array( $this, 'site_health_https_test' ),
+		);
+		$tests['direct']['indieauth_users']  = array(
+			'label' => __( 'Unique User URL Test', 'indieauth' ),
+			'test'  => array( $this, 'site_health_users_test' ),
 		);
 		return $tests;
 	}
@@ -76,6 +63,34 @@ class IndieAuth_Admin {
 		return $result;
 	}
 
+	public function site_health_users_test() {
+		$result = array(
+			'label'       => __( 'Unique User URLs Check Passed', 'indieauth' ),
+			'status'      => 'good',
+			'badge'       => array(
+				'label' => __( 'IndieAuth', 'indieauth' ),
+				'color' => 'green',
+			),
+			'description' => sprintf(
+				'<p>%s</p>',
+				__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
+			),
+			'actions'     => '',
+			'test'        => 'indieauth_headers',
+		);
+
+		if ( $this->check_dupe_user_urls() ) {
+			$result['status']      = 'critical';
+			$result['label']       = __( 'Unique User URLs Test Failed', 'indieauth' );
+			$result['description'] = sprintf(
+				'<p>%s</p>',
+				__( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' )
+			);
+			$result['actions']     = __( 'Under IndieAuth, your URL is your identity. Two accounts cannot have the same website URL in their user profile as this might allow one user to gain the credentials of another', 'indieauth' );
+		}
+		return $result;
+	}
+
 	public function site_health_header_test() {
 		$result = array(
 			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
@@ -93,13 +108,13 @@ class IndieAuth_Admin {
 		);
 
 		if ( ! self::test_auth() ) {
-			$result['status']      = 'critical';
-			$result['label']       = __( 'Authorization Test Failed', 'indieauth' );
-			$result['description'] = sprintf(
-				'<p>%s</p>',
-				__( 'Authorization Headers are being blocked by your hosting provider. This will cause IndieAuth to fail.', 'indieauth' )
-			);
-			$result['actions']     = sprintf( '<a href="%1$s" >%2$s</a>', menu_page_url( 'indieauth', false ), __( 'Visit the Settings page for guidance on how to resolve.', 'indieauth' ) );
+			$result['status'] = 'critical';
+			$result['label']  = __( 'Authorization Test Failed', 'indieauth' );
+			ob_start();
+			include plugin_dir_path( __DIR__ ) . 'templates/authdiagfail.php';
+			$result['description'] = ob_get_contents();
+			ob_end_clean();
+			$result['actions'] = sprintf( '<a href="%1$s" >%2$s</a>', 'https://github.com/indieweb/wordpress-indieauth/issues', __( 'If contacting your hosting provider does not work you can open an issue on GitHub and we will try to assist', 'indieauth' ) );
 		}
 
 		return $result;
@@ -167,10 +182,8 @@ class IndieAuth_Admin {
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
 				$return = '<div class="notice notice-success"><p>' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
-				update_option( 'indieauth_header_check', 1 );
 			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
 				$return = '<div class="notice-success"><p>' . esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
-				update_option( 'indieauth_header_check', 1 );
 			}
 			if ( empty( $return ) ) {
 				ob_start();

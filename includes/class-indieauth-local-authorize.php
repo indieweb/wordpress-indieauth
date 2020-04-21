@@ -24,7 +24,7 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 	public function verify_access_token( $token ) {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
-		if ( empty( $return ) ) ) {
+		if ( empty( $return ) ) {
 			return new WP_OAuth_Response(
 				'invalid_token',
 				__( 'Invalid access token', 'indieauth' ),

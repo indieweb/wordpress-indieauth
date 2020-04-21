@@ -1,25 +1,14 @@
 <div class="wrap">
 	<h1><?php esc_html_e( 'IndieAuth Settings', 'indieauth' ); ?></h1>
 
-<?php
-$checked = get_option( 'indieauth_config', 'local' );
-$message = get_query_var( 'authdiag_message' );
-if ( $message ) {
-?>
-<div>
-<?php echo $message; ?>
-</div>
-<?php } else {  ?>
-	<h2 class="title"><?php _e( 'Test your System', 'indieauth' ); ?></h2>
-	<p><?php _e( 'If you are experiencing unauthorized as an error, click below to run a test script.', 'indieauth' ); ?></p>
-	<p><a href="<?php echo add_query_arg( 'action', 'authdiag', wp_login_url() ); ?>"><?php _e( 'Diagnostic Script', 'indieauth' ); ?></a></p>
-<?php } ?>
+<?php $checked = get_option( 'indieauth_config', 'local' ); ?>
+
 	<form method="post" action="options.php">
 		<?php settings_fields( 'indieauth' ); ?>
 
 		<h2 class="title"><?php _e( 'IndieAuth', 'indieauth' ); ?></h2>
 
-		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki.', 'indieauth' ); ?></p>
+		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki. Please run a Site Health check to ensure this will work with your site', 'indieauth' ); ?></p>
 
 		<table class="form-table">
 			<tbody>

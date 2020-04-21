@@ -1,5 +1,5 @@
  
-<div class="notice notice-error">
+<div>
 <h3><?php _e( 'Authorization has Failed', 'indieauth' ); ?></h3>
 
 <p> <?php _e( 'The authorization header was not returned on this test, which means that your server may be stripping the Authorization header. This is needed for IndieAuth to work correctly.', 'indieauth' ); ?>
