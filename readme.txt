@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.4
-Tested up to: 5.3.2
+Tested up to: 5.4
 Stable tag: 3.5.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
@@ -151,7 +151,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Restore ability to use a remote endpoint
 * Add load function and config setting in order to load the files appropriate for your configuration
 * Create Authorization plugin base class that can be used to create different IndieAuth configurations
-* Add Site Health Check for SSL
+* Add Site Health Check for SSL and Unique Users
 * Create local and remote classes that can be instantiated depending on configuration
 
 = 3.4.2 =

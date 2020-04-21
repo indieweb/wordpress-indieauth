@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: IndieAuth 3.5.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2020-01-25 08:01:08+00:00\n"
+"POT-Creation-Date: 2020-04-21 03:19:02+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,31 +14,19 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
 
-#: includes/class-indieauth-admin.php:25
-msgid ""
-"In order to ensure IndieAuth tokens will work please visit the settings "
-"page to check:"
-msgstr ""
-
-#: includes/class-indieauth-admin.php:26
-msgid "Visit Settings Page"
-msgstr ""
-
-#: includes/class-indieauth-admin.php:32
-msgid ""
-"Multiple user accounts have the same URL set. This is not permitted as this "
-"value is used by IndieAuth for login. Please resolve"
-msgstr ""
-
-#: includes/class-indieauth-admin.php:39
+#: includes/class-indieauth-admin.php:22
 msgid "IndieAuth Test"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:43
+#: includes/class-indieauth-admin.php:26
 msgid "SSL Test"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:52
+#: includes/class-indieauth-admin.php:30
+msgid "Unique User URL Test"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:39
 msgid "HTTPS Check Passed"
 msgstr ""
 
@@ -46,99 +34,116 @@ msgstr ""
 msgid "IndieAuth"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:60
+#: includes/class-indieauth-admin.php:47 includes/class-indieauth-admin.php:76
 msgid "You are using HTTPS and IndieAuth will be secure"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:68
+#: includes/class-indieauth-admin.php:55
 msgid "HTTPS Test Failed"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:71
+#: includes/class-indieauth-admin.php:58
 msgid ""
 "You are not serving your site via HTTPS. This is a security risk if running "
 "IndieAuth."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:73
+#: includes/class-indieauth-admin.php:60
 msgid ""
 "We recommend you acquire an SSL Certificate. You can do this for free "
 "through Lets Encrypt"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:81
-msgid "Authorization Header Passed"
+#: includes/class-indieauth-admin.php:68
+msgid "Unique User URLs Check Passed"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:84
+msgid "Unique User URLs Test Failed"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:87
+msgid ""
+"Multiple user accounts have the same URL set. This is not permitted as this "
+"value is used by IndieAuth for login. Please resolve"
 msgstr ""
 
 #: includes/class-indieauth-admin.php:89
+msgid ""
+"Under IndieAuth, your URL is your identity. Two accounts cannot have the "
+"same website URL in their user profile as this might allow one user to gain "
+"the credentials of another"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:96
+msgid "Authorization Header Passed"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:104
 msgid ""
 "Your hosting provider allows authorization headers to pass so IndieAuth "
 "should work"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:97
+#: includes/class-indieauth-admin.php:112
 msgid "Authorization Test Failed"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:100
+#: includes/class-indieauth-admin.php:117
 msgid ""
-"Authorization Headers are being blocked by your hosting provider. This will "
-"cause IndieAuth to fail."
+"If contacting your hosting provider does not work you can open an issue on "
+"GitHub and we will try to assist"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:102
-msgid "Visit the Settings page for guidance on how to resolve."
-msgstr ""
-
-#: includes/class-indieauth-admin.php:112 templates/indieauth-settings.php:63
+#: includes/class-indieauth-admin.php:127 templates/indieauth-settings.php:52
 msgid "None"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:121
+#: includes/class-indieauth-admin.php:136
 msgid "Website"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:169
+#: includes/class-indieauth-admin.php:184
 msgid "Authorization Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:172
+#: includes/class-indieauth-admin.php:186
 msgid "Alternate Header Found. You should be able to use all clients."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:202
+#: includes/class-indieauth-admin.php:215
 msgid "Configuration option for IndieAuth Plugin"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:212
+#: includes/class-indieauth-admin.php:225
 msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:222
+#: includes/class-indieauth-admin.php:235
 msgid "User Who is Represented by the Site URL"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:230 templates/indieauth-settings.php:2
+#: includes/class-indieauth-admin.php:243 templates/indieauth-settings.php:2
 msgid "IndieAuth Settings"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:243
+#: includes/class-indieauth-admin.php:256
 msgid ""
 "Based on your feedback and to improve the user experience, we decided to "
 "move the settings to a separate <a href=\"%1$s\">settings-page</a>."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:316
+#: includes/class-indieauth-admin.php:329
 msgid "Overview"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:318
+#: includes/class-indieauth-admin.php:331
 msgid ""
 "IndieAuth is a way for doing Web sign-in, where you use your own homepage "
 "to sign in to other places."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:319
+#: includes/class-indieauth-admin.php:332
 msgid ""
 "IndieAuth was built on ideas and technology from existing proven "
 "technologies like OAuth and OpenID but aims at making it easier for users "
@@ -146,19 +151,19 @@ msgid ""
 "completely separate implementations and services can be used for each part."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:326
+#: includes/class-indieauth-admin.php:339
 msgid "The IndieWeb"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:328
+#: includes/class-indieauth-admin.php:341
 msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:330
+#: includes/class-indieauth-admin.php:343
 msgid "Your content is yours"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:331
+#: includes/class-indieauth-admin.php:344
 msgid ""
 "When you post something on the web, it should belong to you, not a "
 "corporation. Too many companies have gone out of business and lost all of "
@@ -166,130 +171,134 @@ msgid ""
 "your control."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:334
+#: includes/class-indieauth-admin.php:347
 msgid "You are better connected"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:335
+#: includes/class-indieauth-admin.php:348
 msgid ""
 "Your articles and status messages can go to all services, not just one, "
 "allowing you to engage with everyone. Even replies and likes on other "
 "services can come back to your site so they’re all in one place."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:338
+#: includes/class-indieauth-admin.php:351
 msgid "You are in control"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:339
+#: includes/class-indieauth-admin.php:352
 msgid ""
 "You can post anything you want, in any format you want, with no one "
 "monitoring you. In addition, you share simple readable links such as "
 "example.com/ideas. These links are permanent and will always work."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:345
+#: includes/class-indieauth-admin.php:358
 msgid "For more information:"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:346
+#: includes/class-indieauth-admin.php:359
 msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:347
+#: includes/class-indieauth-admin.php:360
 msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:348
+#: includes/class-indieauth-admin.php:361
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:82
+#: includes/class-indieauth-authorization-endpoint.php:68
 msgid "Legacy Scope (Deprecated)"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:83
+#: includes/class-indieauth-authorization-endpoint.php:69
+#: includes/class-indieauth-scopes.php:66
 msgid "Allows the application to create posts and upload to the Media Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:84
+#: includes/class-indieauth-authorization-endpoint.php:70
+#: includes/class-indieauth-scopes.php:94
 msgid "Allows the application to update posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:85
+#: includes/class-indieauth-authorization-endpoint.php:71
 msgid "Allows the application to delete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:86
+#: includes/class-indieauth-authorization-endpoint.php:72
 msgid "Allows the application to undelete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:87
+#: includes/class-indieauth-authorization-endpoint.php:73
+#: includes/class-indieauth-scopes.php:119
 msgid "Allows the application to upload to the media endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:89
+#: includes/class-indieauth-authorization-endpoint.php:75
 msgid "Allows the application read access to channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:90
+#: includes/class-indieauth-authorization-endpoint.php:76
 msgid "Allows the application to manage a follow list"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:91
+#: includes/class-indieauth-authorization-endpoint.php:77
 msgid "Allows the application to mute and unmute users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:92
+#: includes/class-indieauth-authorization-endpoint.php:78
 msgid "Allows the application to block and unlock users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:93
+#: includes/class-indieauth-authorization-endpoint.php:79
 msgid "Allows the application to manage channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:94
+#: includes/class-indieauth-authorization-endpoint.php:80
+#: includes/class-indieauth-scopes.php:178
 msgid "Allows the application to save content for later retrieval"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:96
+#: includes/class-indieauth-authorization-endpoint.php:82
 msgid ""
 "Returns a complete profile to the application. Without this only a display "
 "name, avatar, and url will be returned"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:101
+#: includes/class-indieauth-authorization-endpoint.php:87
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:111
+#: includes/class-indieauth-authorization-endpoint.php:97
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:117
-#: includes/class-indieauth-authorization-endpoint.php:162
+#: includes/class-indieauth-authorization-endpoint.php:103
+#: includes/class-indieauth-authorization-endpoint.php:148
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:169
-#: includes/class-indieauth-local-authorize.php:49
+#: includes/class-indieauth-authorization-endpoint.php:155
+#: includes/class-indieauth-local-authorize.php:48
 #: includes/class-indieauth-token-endpoint.php:207
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:174
+#: includes/class-indieauth-authorization-endpoint.php:160
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:182
-#: includes/class-indieauth-authorization-endpoint.php:186
+#: includes/class-indieauth-authorization-endpoint.php:168
+#: includes/class-indieauth-authorization-endpoint.php:172
 #: includes/class-indieauth-token-endpoint.php:212
 #: includes/class-indieauth-token-endpoint.php:216
 msgid "Failed PKCE Validation"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:202
+#: includes/class-indieauth-authorization-endpoint.php:188
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -321,7 +330,7 @@ msgid ""
 "showing you as logged in"
 msgstr ""
 
-#: includes/class-indieauth-local-authorize.php:31
+#: includes/class-indieauth-local-authorize.php:30
 #: includes/class-indieauth-token-endpoint.php:100
 msgid "Invalid access token"
 msgstr ""
@@ -348,6 +357,44 @@ msgstr ""
 
 #: includes/class-indieauth-remote-authorize.php:175
 msgid "Supplied Token is Invalid"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:44
+msgid "Unknown cap: %1s"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:82
+msgid "Allows the application to create draft posts only."
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:107
+msgid "Allows the application to delete or undelete posts"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:130
+msgid "Allows the application read access to Microsub channels"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:140
+msgid "Allows the application to manage a Microsub following list"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:150
+msgid "Allows the application to mute and unmute users in a Microsub channel"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:160
+msgid "Allows the application to block users in a Microsub channel"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:169
+msgid "Allows the application to manage Microsub channels"
+msgstr ""
+
+#: includes/class-indieauth-scopes.php:188
+msgid ""
+"Returns a complete profile to the application as part of the IndieAuth "
+"response. Without this only a display name, avatar, and url will be returned"
 msgstr ""
 
 #: includes/class-indieauth-token-endpoint.php:90
@@ -563,7 +610,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:82
+#: indieauth.php:83
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""
@@ -650,47 +697,34 @@ msgid ""
 "application."
 msgstr ""
 
-#: templates/indieauth-settings.php:13
-msgid "Test your System"
-msgstr ""
-
-#: templates/indieauth-settings.php:14
-msgid ""
-"If you are experiencing unauthorized as an error, click below to run a test "
-"script."
-msgstr ""
-
-#: templates/indieauth-settings.php:15
-msgid "Diagnostic Script"
-msgstr ""
-
-#: templates/indieauth-settings.php:22
+#: templates/indieauth-settings.php:11
 msgid ""
 "With IndieAuth, you can use your blog, to log into sites like the "
-"IndieWeb-Wiki."
+"IndieWeb-Wiki. Please run a Site Health check to ensure this will work with "
+"your site"
 msgstr ""
 
-#: templates/indieauth-settings.php:29
+#: templates/indieauth-settings.php:18
 msgid "Endpoints"
 msgstr ""
 
-#: templates/indieauth-settings.php:33
+#: templates/indieauth-settings.php:22
 msgid "Authorization Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:37
+#: templates/indieauth-settings.php:26
 msgid "Token Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:44
+#: templates/indieauth-settings.php:33
 msgid "Configuration"
 msgstr ""
 
-#: templates/indieauth-settings.php:47
+#: templates/indieauth-settings.php:36
 msgid "Use Your Own Site as an IndieAuth Endpoint"
 msgstr ""
 
-#: templates/indieauth-settings.php:48
+#: templates/indieauth-settings.php:37
 msgid ""
 "The endpoint is hosted entirely inside your WordPress instance and requires "
 "no external server. When you try to log into a client with your URL you "
@@ -699,40 +733,40 @@ msgid ""
 "recommended option."
 msgstr ""
 
-#: templates/indieauth-settings.php:50
+#: templates/indieauth-settings.php:39
 msgid "Use Another Site as an IndieAuth Endpoint"
 msgstr ""
 
-#: templates/indieauth-settings.php:51
+#: templates/indieauth-settings.php:40
 msgid ""
 "For those who do not wish to host their own IndieAuth endpoint or delegate "
 "their site authentication to another site. By default, this is "
 "indieauth.com which is free for use, but can be any endpoint."
 msgstr ""
 
-#: templates/indieauth-settings.php:57
+#: templates/indieauth-settings.php:46
 msgid "Set User to Represent Site URL"
 msgstr ""
 
-#: templates/indieauth-settings.php:70
+#: templates/indieauth-settings.php:59
 msgid "Set a User who will represent the URL of the site"
 msgstr ""
 
-#: templates/indieauth-settings.php:77 templates/websignin-link.php:3
+#: templates/indieauth-settings.php:66 templates/websignin-link.php:3
 msgid "Web Sign-In"
 msgstr ""
 
-#: templates/indieauth-settings.php:79
+#: templates/indieauth-settings.php:68
 msgid ""
 "Enable Web Sign-In for your blog, so others can use IndieAuth or RelMeAuth "
 "to log into this site."
 msgstr ""
 
-#: templates/indieauth-settings.php:85
+#: templates/indieauth-settings.php:74
 msgid "Use IndieAuth login"
 msgstr ""
 
-#: templates/indieauth-settings.php:91
+#: templates/indieauth-settings.php:80
 msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
 msgstr ""
 
