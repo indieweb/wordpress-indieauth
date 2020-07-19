@@ -2,7 +2,7 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
-Requires PHP: 5.4
+Requires PHP: 5.6
 Tested up to: 5.4.2
 Stable tag: 3.5.0
 License: MIT
