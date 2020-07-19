@@ -44,6 +44,6 @@
     ],
     "phpcs": "./vendor/bin/phpcs -p",
     "phpcbf": "./vendor/bin/phpcbf -p",
-    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests ."
+    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules ."
   }
 }
