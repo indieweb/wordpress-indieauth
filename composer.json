@@ -21,12 +21,13 @@
     "composer/installers": "~1.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "5.7.*",
+    "phpunit/phpunit": "^5.0 || ^7.0",
     "squizlabs/php_codesniffer": "^2.2 || ^3.5",
     "phpcompatibility/php-compatibility": "^9.3",
     "wp-coding-standards/wpcs": "*",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
-    "phpcompatibility/phpcompatibility-wp": "^2.1"
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "sebastian/phpcpd": "^5.0"
   },
   "scripts": {
     "install-codestandards": [
@@ -36,6 +37,13 @@
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
       "vendor/bin/phpunit"
-    ]
+    ],
+    "lint": [
+      "./vendor/bin/phpcs -n -p",
+      "@phpcpd"
+    ],
+    "phpcs": "./vendor/bin/phpcs -p",
+    "phpcbf": "./vendor/bin/phpcbf -p",
+    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests ."
   }
 }
