@@ -12,6 +12,12 @@
  * Domain Path: /languages
  */
 
+
+/* If this is set then it will activate the remote mode for delegating your login to a remote endpoint */
+if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
+	define( 'INDIEAUTH_REMOTE_MODE', 0 );
+}
+
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
 
@@ -48,7 +54,10 @@ class IndieAuth_Plugin {
 		$remotefiles = array(
 			'class-indieauth-remote-authorize.php',
 		);
-		$load        = get_option( 'indieauth_config', 'local' );
+		
+		// $load        = get_option( 'indieauth_config', 'local' );
+		$load = INDIEAUTH_REMOTE_MODE ? 'remote' : 'local';
+		
 		switch ( $load ) {
 			case 'remote':
 				self::load( $remotefiles );
