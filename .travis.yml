@@ -10,7 +10,6 @@ cache:
     - vendor
     - $HOME/.composer/cache
 after_success:
-  - bash bin/deploy.sh
 env:
   matrix:
   - WP_VERSION=latest WP_MULTISITE=0
@@ -18,7 +17,6 @@ env:
   - WP_TRAVISCI=travis:phpunit
   - SVN_REPO: https://plugins.svn.wordpress.org/indieauth/
   - GH_REF: https://github.com/indieweb/wordpress-indieauth.git
-  - secure: "ppYi84vGXGXTstjdk1JwuwYSnzDI3zpsf3NqVXle8y0A19urkdf5GTMFwGLiCkLynHPZfWWly3x5fB6YIaGxIAu0rNPgbOUufMWremIssAXl7wcy5pNdhgbDKO/veXg5l+M+4WMuhLvH/fZGRiqtF7nC5VY8VmlmMxnvHeJ8mFW9RJavvsmeZivbSH65TvKecrAbYHGY0Yj2B2aMk/RX7gafZL3/7azSkKcjZ3zke2pu0sVFI8IjGJh3e9n2eJ9iWChHTjSQSV/uWmw0VQ5OCgiHENy37NSPIpw+qqwrcGtDscAhdfJj8r7HlCYdHtbJN5COWV7dZ3IIo6mITnuca4bFwnMb82ffL1gyk9D/PPKXVWrRZAqA6zCCf8e7OByUlkuhFmrsAQCHnGQCnOnv+2RQqbgu9/n9bPU7wQcuPlgv1nUpwa4YNBSMA/f2ENeeUBi+WeXWHtpFyNpehjp0RAxVBYpu4sS7vnLMe+T+qXOHoGxFN/xmFooffuk5ik2AGfYRdhrzjaY4+oc1GQ7iikq77Y/1VqExYKnLXw17lk8AxuMQ9Kac7Ef6hiTtgnCLw6qnPHbiMXwh23Dmn4ciByZFawLNVnAD4WFWwLgdRt67/2Te+EOwaIk029UtenhrEcQhIQPgukL5CO7VM7z/vl0ZLoVRwlkkpLfcg0IakZM="
 matrix:
   include:
   - php: 7.3
