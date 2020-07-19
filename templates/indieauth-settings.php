@@ -30,16 +30,6 @@
 				</tr>
 				<tr>
 					<th>
-						<?php _e( 'Configuration', 'indieauth' ); ?>
-					</th>
-					<td>
-						<p><input type="radio" name="indieauth_config" value="local" <?php checked( $checked, 'local' ); ?>><strong><?php _e( 'Use Your Own Site as an IndieAuth Endpoint', 'indieauth' ); ?></strong> <br />
-						<?php _e( 'The endpoint is hosted entirely inside your WordPress instance and requires no external server. When you try to log into a client with your URL you will be presented with your WordPress login screen after which you will be asked if you wish to grant the client permission to act as you. This is the recommended option.', 'indieauth' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th>
 						<?php _e( 'Set User to Represent Site URL', 'indieauth' ); ?>
 					</th>
 					<td>
