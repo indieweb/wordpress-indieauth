@@ -1,27 +1,18 @@
 <div class="wrap">
 	<h1><?php esc_html_e( 'IndieAuth Settings', 'indieauth' ); ?></h1>
 
-<?php 
-$message = get_query_var( 'authdiag_message' );
-if ( $message ) {
-?>
-<div>
-<?php echo $message; ?>
-</div>
-<?php } else {  ?>
-	<h2 class="title"><?php _e( 'Test your System', 'indieauth' ); ?></h2>
-	<p><?php _e( 'If you are experiencing unauthorized as an error, click below to run a test script.', 'indieauth' ); ?></p>
-	<p><a href="<?php echo add_query_arg( 'action', 'authdiag', wp_login_url() ); ?>"><?php _e( 'Diagnostic Script', 'indieauth' ); ?></a></p>
-<?php } ?>
+<?php $checked = get_option( 'indieauth_config', 'local' ); ?>
+
 	<form method="post" action="options.php">
 		<?php settings_fields( 'indieauth' ); ?>
 
 		<h2 class="title"><?php _e( 'IndieAuth', 'indieauth' ); ?></h2>
 
-		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki.', 'indieauth' ); ?></p>
+		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki. Please run a Site Health check to ensure this will work with your site', 'indieauth' ); ?></p>
 
 		<table class="form-table">
 			<tbody>
+
 				<tr>
 					<th>
 						<?php _e( 'Endpoints', 'indieauth' ); ?>
@@ -29,12 +20,31 @@ if ( $message ) {
 					<td>
 						<p>
 							<?php _e( 'Authorization Endpoint:', 'indieauth' ); ?><br />
-							<code><?php echo rest_url( '/indieauth/1.0/auth' ); ?></code>
+							<code><?php echo indieauth_get_authorization_endpoint(); ?></code>
 						</p>
 						<p>
 							<?php _e( 'Token Endpoint:', 'indieauth' ); ?><br />
-							<code><?php echo rest_url( '/indieauth/1.0/token' ); ?></code>
+							<code><?php echo indieauth_get_token_endpoint(); ?></code>
 						</p>
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<?php _e( 'Set User to Represent Site URL', 'indieauth' ); ?>
+					</th>
+					<td>
+						<label for="indieauth_root_user">
+							<?php wp_dropdown_users(
+								array(
+									'show_option_all' => __( 'None', 'indieauth' ),
+									'name' => 'indieauth_root_user',
+									'id' => 'indieauth_root_user',
+									'show' => 'display_name_with_login',
+									'selected' => get_option( 'indieauth_root_user' )
+								)
+							); ?>
+							<?php _e( 'Set a User who will represent the URL of the site', 'indieauth' ); ?>
+						</label>
 					</td>
 				</tr>
 			</tbody>
@@ -57,25 +67,6 @@ if ( $message ) {
 							<?php _e( 'Add a link to the login form to authenticate using an IndieAuth endpoint.', 'indieauth' ); ?>
 						</label>
 					</td>
-				<tr>
-					<th>
-						<?php _e( 'Set User to Represent Site URL', 'indieauth' ); ?>
-					</th>
-					<td>
-						<label for="indieauth_root_user">
-							<?php wp_dropdown_users(
-								array(
-									'show_option_all' => __( 'None', 'indieauth' ),
-									'name' => 'indieauth_root_user',
-									'id' => 'indieauth_root_user',
-									'show' => 'display_name_with_login',
-									'selected' => get_option( 'indieauth_root_user' )
-								)
-							); ?>
-							<?php _e( 'Set a User who will represent the URL of the site', 'indieauth' ); ?>
-						</label>
-					</td>
-				</tr>
 				</tr>
 			</tbody>
 		</table>

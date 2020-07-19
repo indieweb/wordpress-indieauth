@@ -29,14 +29,14 @@ abstract class IndieAuth_Authorize {
 	 *
 	 * @return string Authorization Endpoint.
 	 **/
-	abstract public function get_authorization_endpoint();
+	abstract public static function get_authorization_endpoint();
 
 	/**
 	 * Returns the URL for the token endpoint.
 	 *
 	 * @return string Token Endpoint.
 	 **/
-	abstract public function get_token_endpoint();
+	abstract public static function get_token_endpoint();
 
 	/**
 	 * Add authentication information into the REST API Index
@@ -46,12 +46,17 @@ abstract class IndieAuth_Authorize {
 	 * @return WP_REST_Response Response object with endpoint info added
 	 **/
 	public function register_index( WP_REST_Response $response ) {
-		$data                                = $response->get_data();
+		$data      = $response->get_data();
+		$endpoints = array(
+			'authorization' => $this->get_authorization_endpoint(),
+			'token'         => $this->get_token_endpoint(),
+		);
+		$endpoints = array_filter( $endpoints );
+		if ( empty( $endpoints ) ) {
+			return $response;
+		}
 		$data['authentication']['indieauth'] = array(
-			'endpoints' => array(
-				'authorization' => $this->get_authorization_endpoint(),
-				'token'         => $this->get_token_endpoint(),
-			),
+			'endpoints' => $endpoints,
 		);
 		$response->set_data( $data );
 		return $response;
@@ -66,18 +71,27 @@ abstract class IndieAuth_Authorize {
 	}
 
 	public function http_header() {
+		$auth  = static::get_authorization_endpoint();
+		$token = static::get_token_endpoint();
+		if ( empty( $auth ) || empty( $token ) ) {
+			return;
+		}
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', $this->get_authorization_endpoint(), false ) );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', $this->get_token_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint(), false ) );
 		}
 	}
 	public static function html_header() {
+		$auth  = static::get_authorization_endpoint();
+		$token = static::get_token_endpoint();
+		if ( empty( $auth ) || empty( $token ) ) {
+			return;
+		}
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $this->get_authorization_endpoint() ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $this->get_token_endpoint() ); //phpcs:ignore
+			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ); // phpcs:ignore
+			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ); //phpcs:ignore
 		}
 	}
-
 
 	/**
 	 * Report our errors, if we have any.
@@ -112,13 +126,13 @@ abstract class IndieAuth_Authorize {
 	public function determine_current_user( $user_id ) {
 		$token = $this->get_provided_token();
 		// If there is not a token that means this is not an attempt to log in using IndieAuth
-		if ( ! $token ) {
+		if ( ! isset( $token ) ) {
 			return $user_id;
 		}
 		// If there is a token and it is invalid then reject all logins
 
 		$params = $this->verify_access_token( $token );
-		if ( ! $params ) {
+		if ( ! isset( $params ) ) {
 			return 0;
 		}
 		if ( is_oauth_error( $params ) ) {
@@ -202,14 +216,14 @@ abstract class IndieAuth_Authorize {
 	 */
 	public function get_provided_token() {
 		$header = $this->get_authorization_header();
-		if ( $header ) {
+		if ( isset( $header ) ) {
 			$token = $this->get_token_from_bearer_header( $header );
-			if ( $token ) {
+			if ( isset( $token ) ) {
 				return $token;
 			}
 		}
 		$token = $this->get_token_from_request();
-		if ( $token ) {
+		if ( isset( $token ) ) {
 			return $token;
 		}
 		return null;

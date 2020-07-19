@@ -63,14 +63,10 @@ class Token_Transient extends Token_Generic {
 	}
 
 	public function destroy_with_cookie( $key ) {
-		if ( isset( $_COOKIE[ $this->prefix  ] ) ) {
-			setcookie( $this->prefix, '', current_time( 'timestamp' ) - 1000, '/', false, true );
+		if ( isset( $_COOKIE[ $this->prefix ] ) ) {
+			setcookie( $this->prefix, '', time() - 1000, '/', false, true );
 		}
 		$this->destroy( $key );
-	}
-
-	protected function hash( $string ) {
-		return parent::hash( $string );
 	}
 
 	/**

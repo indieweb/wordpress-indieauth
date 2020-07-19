@@ -151,7 +151,8 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 if ( ! function_exists( 'get_single_author' ) ) {
 	function get_single_author() {
 		global $wpdb;
-		if ( false === ( $single_author = get_transient( 'single_author' ) ) ) {
+		$single_author = get_transient( 'single_author' );
+		if ( false === $single_author ) {
 			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" );
 			$single_author = 1 === count( $rows ) ? (int) $rows[0] : false;
 			set_transient( 'single_author', $single_author );
@@ -515,4 +516,13 @@ function indieauth_get_user( $user ) {
 		),
 	);
 	return array_filter( $return );
+}
+
+function indieauth_get_authorization_endpoint() {
+	return IndieAuth_Plugin::$indieauth->get_authorization_endpoint();
+}
+
+
+function indieauth_get_token_endpoint() {
+	return IndieAuth_Plugin::$indieauth->get_token_endpoint();
 }
