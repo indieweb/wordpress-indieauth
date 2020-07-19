@@ -117,8 +117,12 @@ class IndieAuth_Authorization_Endpoint {
 				'code_challenge_method' => isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null,
 			)
 		);
+
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : 'create update';
+			if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
+			}
 		}
 		$url = add_query_params_to_url( $args, $url );
 
