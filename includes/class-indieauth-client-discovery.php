@@ -64,7 +64,7 @@ class IndieAuth_Client_Discovery {
 
 	private function ifset( $array, $key, $default = false ) {
 		if ( ! is_array( $array ) ) {
-			return $defaul;
+			return $default;
 		}
 		if ( is_array( $key ) ) {
 			foreach ( $key as $k ) {
