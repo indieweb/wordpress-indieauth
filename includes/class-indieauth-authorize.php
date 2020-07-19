@@ -46,12 +46,17 @@ abstract class IndieAuth_Authorize {
 	 * @return WP_REST_Response Response object with endpoint info added
 	 **/
 	public function register_index( WP_REST_Response $response ) {
-		$data                                = $response->get_data();
+		$data      = $response->get_data();
+		$endpoints = array(
+			'authorization' => $this->get_authorization_endpoint(),
+			'token'         => $this->get_token_endpoint(),
+		);
+		$endpoints = array_filter( $endpoints );
+		if ( empty( $endpoints ) ) {
+			return $response;
+		}
 		$data['authentication']['indieauth'] = array(
-			'endpoints' => array(
-				'authorization' => $this->get_authorization_endpoint(),
-				'token'         => $this->get_token_endpoint(),
-			),
+			'endpoints' => $endpoints,
 		);
 		$response->set_data( $data );
 		return $response;
@@ -66,18 +71,27 @@ abstract class IndieAuth_Authorize {
 	}
 
 	public function http_header() {
+		$auth  = static::get_authorization_endpoint();
+		$token = static::get_token_endpoint();
+		if ( empty( $auth ) || empty( $token ) ) {
+			return;
+		}
 		if ( is_author() || is_front_page() ) {
 			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint(), false ) );
 			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint(), false ) );
 		}
 	}
 	public static function html_header() {
+		$auth  = static::get_authorization_endpoint();
+		$token = static::get_token_endpoint();
+		if ( empty( $auth ) || empty( $token ) ) {
+			return;
+		}
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, static::get_authorization_endpoint() ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, static::get_token_endpoint() ); //phpcs:ignore
+			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ); // phpcs:ignore
+			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ); //phpcs:ignore
 		}
 	}
-
 
 	/**
 	 * Report our errors, if we have any.

@@ -47,7 +47,7 @@ This plugin only supports searching an external site for an authorization endpoi
 
 ### What is IndieAuth.com? ###
 
-[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol and available for public use. If you activate this plugin you do not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin. If you wish to use Indieauth.com or any remote endpoint, you can disable the local endpoint in the configuration settings.
+[Indieauth.com](https://indieauth.com) is the reference implementation of the IndieAuth Protocol. If you activate this plugin you do not need to use this site. IndieAuth.com uses rel-me links on your website to determine your identity for authentication, but this is not required to use this plugin which uses your WordPress login to verify your identity.
 
 ### How does the application know my name and avatar? ###
 

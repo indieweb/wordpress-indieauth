@@ -60,7 +60,6 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			array(
 				'label_for' => 'indieauth_authorization_endpoint',
 				'class'     => 'widefat',
-				'default'   => 'https://indieauth.com/auth',
 			)
 		);
 		add_settings_field(
@@ -72,7 +71,6 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			array(
 				'label_for' => 'indieauth_token_endpoint',
 				'class'     => 'widefat',
-				'default'   => 'https://tokens.indieauth.com/token',
 			)
 		);
 	}
@@ -86,23 +84,11 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 	}
 
 	public static function get_authorization_endpoint() {
-		$return = get_option( 'indieauth_authorization_endpoint', 'https://indieauth.com/auth' );
-		// Sanity Check
-		if ( empty( $return ) ) {
-			delete_option( 'indieauth_authorization_endpoint' );
-			$return = 'https://indieauth.com/auth';
-		}
-		return $return;
+		return get_option( 'indieauth_authorization_endpoint', '' );
 	}
 
 	public static function get_token_endpoint() {
-		$return = get_option( 'indieauth_token_endpoint', 'https://tokens.indieauth.com/token' );
-		// Sanity Check
-		if ( empty( $return ) ) {
-			delete_option( 'indieauth_token_endpoint' );
-			$return = 'https://tokens.indieauth.com/token';
-		}
-		return $return;
+		return get_option( 'indieauth_token_endpoint', '' );
 	}
 
 	public function verify_access_token( $token ) {
