@@ -18,7 +18,10 @@ class IndieAuth_Client_Discovery {
 			$this->manifest = self::get_manifest( $this->html['manifest'] );
 		}
 		$this->client_icon = $this->determine_icon();
-		$this->client_name = $this->ifset( $this->manifest, 'name' ) ?: $this->ifset( $this->html, 'application-name' ) ?: $this->ifset( $this->html, 'og:title' ) ?: $this->ifset( $this->html, 'title' ) ?: '';
+		$this->client_name = $this->ifset( $this->manifest, 'name', '' );
+		if ( empty( $this->client_name ) ) {
+			$this->client_name = $this->ifset( $this->html, array( 'application-name', 'og:title', 'title' ), '' );
+		}
 	}
 
 	private function fetch( $url ) {
@@ -60,10 +63,18 @@ class IndieAuth_Client_Discovery {
 	}
 
 	private function ifset( $array, $key, $default = false ) {
-		if ( is_array( $array ) ) {
+		if ( ! is_array( $array ) ) {
+			return $defaul;
+		}
+		if ( is_array( $key ) ) {
+			foreach ( $key as $k ) {
+				if ( isset( $array[ $k ] ) ) {
+					return $array[ $k ];
+				}
+			}
+		} else {
 			return isset( $array[ $key ] ) ? $array[ $key ] : $default;
 		}
-			return $default;
 	}
 
 	public function get_name() {
