@@ -7,7 +7,7 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 
 
 	public function __construct( $load = true ) {
-		if( true === $load ) {
+		if ( true === $load ) {
 			$this->load();
 		}
 	}
