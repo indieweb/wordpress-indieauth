@@ -277,4 +277,3 @@ class IndieAuth_Authorization_Endpoint {
 	}
 }
 
-new IndieAuth_Authorization_Endpoint();

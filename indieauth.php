@@ -31,6 +31,8 @@ class IndieAuth_Plugin {
 			)
 		);
 
+		new IndieAuth_Admin();
+
 		// Classes Required for the Local Endpoint
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
@@ -54,12 +56,15 @@ class IndieAuth_Plugin {
 				break;
 			default:
 				self::load( $localfiles );
+				new IndieAuth_Authorization_Endpoint();
+				new IndieAuth_Token_Endpoint();
 				static::$indieauth = new IndieAuth_Local_Authorize();
 				break;
 		}
 
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
+			new IndieAuth_Debug();
 		}
 
 	}
