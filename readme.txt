@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.4
-Tested up to: 5.4
+Tested up to: 5.4.2
 Stable tag: 3.5.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
@@ -126,10 +126,6 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 == Upgrade Notice ==
 
-= 3.5.0 =
-
-The option to use a remote endpoint has been restored
-
 = 3.4.0 =
 
 Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts. If you already set two accounts to the 
@@ -148,7 +144,7 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
 = 3.5.0 =
-* Restore ability to use a remote endpoint
+* Restore ability to use a remote endpoint but keep this feature hidden for now.
 * Add load function and config setting in order to load the files appropriate for your configuration
 * Create Authorization plugin base class that can be used to create different IndieAuth configurations
 * Add Site Health Check for SSL and Unique Users

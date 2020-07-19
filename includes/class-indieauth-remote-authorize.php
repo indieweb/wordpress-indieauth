@@ -60,6 +60,7 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			array(
 				'label_for' => 'indieauth_authorization_endpoint',
 				'class'     => 'widefat',
+				'default'   => '',
 			)
 		);
 		add_settings_field(
@@ -71,6 +72,7 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			array(
 				'label_for' => 'indieauth_token_endpoint',
 				'class'     => 'widefat',
+				'default'   => ''
 			)
 		);
 	}

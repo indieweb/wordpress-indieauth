@@ -36,9 +36,6 @@
 						<p><input type="radio" name="indieauth_config" value="local" <?php checked( $checked, 'local' ); ?>><strong><?php _e( 'Use Your Own Site as an IndieAuth Endpoint', 'indieauth' ); ?></strong> <br />
 						<?php _e( 'The endpoint is hosted entirely inside your WordPress instance and requires no external server. When you try to log into a client with your URL you will be presented with your WordPress login screen after which you will be asked if you wish to grant the client permission to act as you. This is the recommended option.', 'indieauth' ); ?>
 						</p>
-						<p><input type="radio" name="indieauth_config" value="remote" <?php checked( $checked, 'remote' ); ?>> <strong><?php _e( 'Use Another Site as an IndieAuth Endpoint', 'indieauth' ); ?></strong> <br />
-						<?php _e( 'For those who do not wish to host their own IndieAuth endpoint or delegate their site authentication to another site. By default, this is indieauth.com which is free for use, but can be any endpoint.', 'indieauth' ); ?>
-						</p>
 					</td>
 				</tr>
 				<tr>
