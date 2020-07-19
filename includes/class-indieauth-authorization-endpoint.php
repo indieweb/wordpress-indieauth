@@ -66,6 +66,7 @@ class IndieAuth_Authorization_Endpoint {
 		$scopes = array(
 			// Micropub Scopes
 			'post'     => __( 'Legacy Scope (Deprecated)', 'indieauth' ),
+			'draft'    => __( 'Allows the applicate to create posts in draft status only', 'indieauth' ),
 			'create'   => __( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
 			'update'   => __( 'Allows the application to update posts', 'indieauth' ),
 			'delete'   => __( 'Allows the application to delete posts', 'indieauth' ),
