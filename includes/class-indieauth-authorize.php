@@ -249,10 +249,11 @@ abstract class IndieAuth_Authorize {
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_request() {
-		if ( empty( $_REQUEST['access_token'] ) ) {
+		if ( empty( $_POST['access_token'] ) ) {
 			return null;
 		}
-		$token = $_REQUEST['access_token'];
+		$token = $_POST['access_token'];
+
 		if ( is_string( $token ) ) {
 			return $token;
 		}

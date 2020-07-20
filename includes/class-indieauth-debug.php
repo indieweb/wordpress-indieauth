@@ -116,4 +116,3 @@ class IndieAuth_Debug {
 	}
 }
 
-new IndieAuth_Debug();

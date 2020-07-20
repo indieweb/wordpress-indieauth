@@ -363,4 +363,3 @@ class IndieAuth_Admin {
 	}
 }
 
-new IndieAuth_Admin();

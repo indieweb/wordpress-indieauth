@@ -12,6 +12,12 @@
  * Domain Path: /languages
  */
 
+
+/* If this is set then it will activate the remote mode for delegating your login to a remote endpoint */
+if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
+	define( 'INDIEAUTH_REMOTE_MODE', 0 );
+}
+
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
 
@@ -31,6 +37,8 @@ class IndieAuth_Plugin {
 			)
 		);
 
+		new IndieAuth_Admin();
+
 		// Classes Required for the Local Endpoint
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
@@ -46,7 +54,10 @@ class IndieAuth_Plugin {
 		$remotefiles = array(
 			'class-indieauth-remote-authorize.php',
 		);
-		$load        = get_option( 'indieauth_config', 'local' );
+		
+		// $load        = get_option( 'indieauth_config', 'local' );
+		$load = INDIEAUTH_REMOTE_MODE ? 'remote' : 'local';
+		
 		switch ( $load ) {
 			case 'remote':
 				self::load( $remotefiles );
@@ -54,12 +65,15 @@ class IndieAuth_Plugin {
 				break;
 			default:
 				self::load( $localfiles );
+				new IndieAuth_Authorization_Endpoint();
+				new IndieAuth_Token_Endpoint();
 				static::$indieauth = new IndieAuth_Local_Authorize();
 				break;
 		}
 
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
+			new IndieAuth_Debug();
 		}
 
 	}

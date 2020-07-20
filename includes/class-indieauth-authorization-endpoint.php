@@ -66,6 +66,7 @@ class IndieAuth_Authorization_Endpoint {
 		$scopes = array(
 			// Micropub Scopes
 			'post'     => __( 'Legacy Scope (Deprecated)', 'indieauth' ),
+			'draft'    => __( 'Allows the applicate to create posts in draft status only', 'indieauth' ),
 			'create'   => __( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
 			'update'   => __( 'Allows the application to update posts', 'indieauth' ),
 			'delete'   => __( 'Allows the application to delete posts', 'indieauth' ),
@@ -116,8 +117,12 @@ class IndieAuth_Authorization_Endpoint {
 				'code_challenge_method' => isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null,
 			)
 		);
+
 		if ( 'code' === $params['response_type'] ) {
 			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : 'create update';
+			if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
+			}
 		}
 		$url = add_query_params_to_url( $args, $url );
 
@@ -272,4 +277,3 @@ class IndieAuth_Authorization_Endpoint {
 	}
 }
 
-new IndieAuth_Authorization_Endpoint();

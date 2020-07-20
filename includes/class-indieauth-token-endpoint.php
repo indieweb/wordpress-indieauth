@@ -231,4 +231,3 @@ class IndieAuth_Token_Endpoint {
 
 }
 
-new IndieAuth_Token_Endpoint();

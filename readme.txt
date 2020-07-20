@@ -2,7 +2,7 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
-Requires PHP: 5.4
+Requires PHP: 5.6
 Tested up to: 5.4.2
 Stable tag: 3.5.0
 License: MIT
@@ -13,7 +13,7 @@ IndieAuth is a way to allow users to use their own domain to sign into other web
 
 == Description ==
 
-The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url.
+The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url. We recommend your site be served over https to use this.
 
 You can also install this plugin to enable web sign-in for your site using your domain.
 
