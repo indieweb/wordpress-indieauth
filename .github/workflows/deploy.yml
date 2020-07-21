@@ -1,4 +1,5 @@
-name: Deploy to WordPress.org
+n
+me: Deploy to WordPress.org
 on:
   push:
     tags:
@@ -14,4 +15,4 @@ jobs:
      env:
        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-       slug: indieauth
+       SLUG: indieauth
