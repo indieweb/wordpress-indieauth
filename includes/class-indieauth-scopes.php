@@ -63,7 +63,7 @@ class IndieAuth_Scopes {
 		$this->register_scope(
 			new IndieAuth_Scope(
 				'create',
-				__( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
+				__( 'Allows the application to create posts', 'indieauth' ),
 				array(
 					'edit_posts',
 					'edit_published_posts',
