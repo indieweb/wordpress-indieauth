@@ -118,6 +118,9 @@ If that doesn't work, [try this line](https://github.com/georgestephanis/applica
 
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+You can also try:
+    CGIPassAuth On
+
 If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
 
 ### I get an error that parameter redirect_uri is missing but I see it in the URL ###
