@@ -72,7 +72,7 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 			array(
 				'label_for' => 'indieauth_token_endpoint',
 				'class'     => 'widefat',
-				'default'   => ''
+				'default'   => '',
 			)
 		);
 	}
