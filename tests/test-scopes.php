@@ -14,6 +14,13 @@ class AuthenticateTest extends WP_UnitTestCase {
 		'issued_at'  => 1532569712,
 	);
 
+	public function setUp() {
+		global $wp_rest_server;
+		$wp_rest_server = new Spy_REST_Server;
+		do_action( 'rest_api_init', $wp_rest_server );
+		parent::setUp();
+	}
+
 	public static function wpSetUpBeforeClass( $factory ) {
 		static::$author_id = $factory->user->create(
 			array(
