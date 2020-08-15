@@ -60,7 +60,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 	public function test_authorize() {
 		$token = self::set_token();
 		$_REQUEST['micropub']       = 'endpoint';
-		$_REQUEST['access_token'] = $token;
+		$_POST['access_token'] = $token;
 		$authorize = new Indieauth_Local_Authorize();
 		$user_id = $authorize->determine_current_user( 0 );
 		$this->assertEquals( $user_id, self::$author_id );
