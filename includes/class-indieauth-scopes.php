@@ -16,7 +16,7 @@ class IndieAuth_Scopes {
 	 * Offers a list of caps to be checked in the function below. Allows custom capabilities to not be filtered
 	 */
 	public function map_caps() {
-		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages' ) );
+		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages', 'unfiltered_html' ) );
 	}
 
 	/**
@@ -63,13 +63,12 @@ class IndieAuth_Scopes {
 		$this->register_scope(
 			new IndieAuth_Scope(
 				'create',
-				__( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
+				__( 'Allows the application to create posts', 'indieauth' ),
 				array(
 					'edit_posts',
 					'edit_published_posts',
 					'delete_posts',
 					'publish_posts',
-					'upload_files',
 					'read',
 					'unfiltered_html',
 				)

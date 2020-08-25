@@ -3,12 +3,14 @@
 
 <?php $checked = get_option( 'indieauth_config', 'local' ); ?>
 
+	<p class="notice-warning notice"><?php printf( __( 'Some host configurations can block the ability of this site to work and may require change. Please run a <a href="%1s">Site Health check</a> to ensure this will work with your site', 'indieauth' ), admin_url( 'site-health.php' ) ); ?></p>
 	<form method="post" action="options.php">
 		<?php settings_fields( 'indieauth' ); ?>
 
 		<h2 class="title"><?php _e( 'IndieAuth', 'indieauth' ); ?></h2>
 
-		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki. Please run a Site Health check to ensure this will work with your site', 'indieauth' ); ?></p>
+		<p><?php _e( 'With IndieAuth, you can use your blog, to log into sites like the IndieWeb-Wiki.', 'indieauth' ); ?></p>
+
 
 		<table class="form-table">
 			<tbody>

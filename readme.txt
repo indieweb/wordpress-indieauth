@@ -3,8 +3,8 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
-Tested up to: 5.4.2
-Stable tag: 3.5.0
+Tested up to: 5.5
+Stable tag: 3.5.1
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -118,6 +118,10 @@ If that doesn't work, [try this line](https://github.com/georgestephanis/applica
 
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+You can also try:
+
+    CGIPassAuth On
+
 If that doesn't work either, you may need to ask your hosting provider to whitelist the `Authorization` header for your account. If they refuse, you can [pass it through Apache with an alternate name](https://github.com/indieweb/wordpress-micropub/issues/56#issuecomment-299569822). The plugin searches for the header in REDIRECT_HTTP_AUTHORIZATION, as some FastCGI implementations store the header in this location.
 
 = I get an error that parameter redirect_uri is missing but I see it in the URL =
@@ -142,6 +146,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 3.5.1 =
+* Make Site Health More Explicit
+* Update scope descriptions
+* Adjust scope capabilities to be more consistent
 
 = 3.5.0 =
 * Restore ability to use a remote endpoint but keep this feature hidden for now.

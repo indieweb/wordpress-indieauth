@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 3.5.0
+ * Version: 3.5.1
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -54,10 +54,10 @@ class IndieAuth_Plugin {
 		$remotefiles = array(
 			'class-indieauth-remote-authorize.php',
 		);
-		
+
 		// $load        = get_option( 'indieauth_config', 'local' );
 		$load = INDIEAUTH_REMOTE_MODE ? 'remote' : 'local';
-		
+
 		switch ( $load ) {
 			case 'remote':
 				self::load( $remotefiles );
