@@ -23,9 +23,9 @@ class IndieAuth_Authorization_Endpoint {
 			'/auth',
 			array(
 				array(
-					'methods'  => WP_REST_Server::READABLE,
-					'callback' => array( $this, 'request' ),
-					'args'     => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'request' ),
+					'args'                => array(
 						'response_type' => array(),
 						'client_id'     => array(
 							'validate_callback' => 'rest_is_valid_url',
@@ -41,11 +41,12 @@ class IndieAuth_Authorization_Endpoint {
 						),
 						'state'         => array(),
 					),
+					'permission_callback' => '__return_true',
 				),
 				array(
-					'methods'  => WP_REST_Server::CREATABLE,
-					'callback' => array( $this, 'verify' ),
-					'args'     => array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'verify' ),
+					'args'                => array(
 						'code'         => array(),
 						'client_id'    => array(
 							'validate_callback' => 'rest_is_valid_url',
@@ -56,6 +57,7 @@ class IndieAuth_Authorization_Endpoint {
 							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
+					'permission_callback' => '__return_true',
 				),
 			)
 		);

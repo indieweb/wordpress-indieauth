@@ -36,9 +36,9 @@ class IndieAuth_Token_Endpoint {
 			'/token',
 			array(
 				array(
-					'methods'  => WP_REST_Server::CREATABLE,
-					'callback' => array( $this, 'post' ),
-					'args'     => array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'post' ),
+					'args'                => array(
 						'grant_type'    => array(),
 						'code'          => array(),
 						'code_verifier' => array(),
@@ -57,6 +57,7 @@ class IndieAuth_Token_Endpoint {
 						'action'        => array(),
 						'token'         => array(),
 					),
+					'permission_callback' => '__return_true',
 				),
 			)
 		);
@@ -65,9 +66,10 @@ class IndieAuth_Token_Endpoint {
 			'/token',
 			array(
 				array(
-					'methods'  => WP_REST_Server::READABLE,
-					'callback' => array( $this, 'get' ),
-					'args'     => array(),
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get' ),
+					'args'                => array(),
+					'permission_callback' => '__return_true',
 				),
 			)
 		);
@@ -88,7 +90,7 @@ class IndieAuth_Token_Endpoint {
 			return new WP_OAuth_Response(
 				'parameter_absent',
 				__(
-					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin 
+					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
 				IndieAuth Settings Page',
 					'indieauth'
 				),
