@@ -102,4 +102,4 @@ class IndieAuth_Plugin {
 
 }
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 9 );
+add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 2 );

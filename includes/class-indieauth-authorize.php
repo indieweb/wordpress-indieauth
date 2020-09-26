@@ -21,6 +21,7 @@ abstract class IndieAuth_Authorize {
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
+		add_filter( 'wp_rest_server_class', array( $this, 'wp_rest_server_class' ) );
 
 	}
 
@@ -37,6 +38,29 @@ abstract class IndieAuth_Authorize {
 	 * @return string Token Endpoint.
 	 **/
 	abstract public static function get_token_endpoint();
+
+
+	/**
+	 * Prevent caching of unauthenticated status.  See comment below.
+	 *
+	 * We don't actually care about the `wp_rest_server_class` filter, it just
+	 * happens right after the constant we do care about is defined. This is taken from the Application Passwords plugin.
+	 *
+	 */
+	public static function wp_rest_server_class( $class ) {
+		global $current_user;
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && $current_user instanceof WP_User && 0 === $current_user->ID ) {
+			/*
+			 * For our authentication to work, we need to remove the cached lack
+			 * of a current user, so the next time it checks, we can detect that
+			 * this is a rest api request and allow our override to happen.  This
+			 * is because the constant is defined later than the first get current
+			 * user call may run.
+			 */
+			$current_user = null; // phpcs:ignore
+		}
+		return $class;
+	}
 
 	/**
 	 * Add authentication information into the REST API Index
