@@ -39,22 +39,32 @@ class IndieAuth_Token_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
+						/* grant_type=authorization_code is the only one currently supported.
+						 */
 						'grant_type'    => array(),
+						/* The authorization code received from the authorization endpoint in the redirect.
+						 */
 						'code'          => array(),
-						'code_verifier' => array(),
+						/* The client's URL, which MUST match the client_id used in the authentication request.
+						 */
 						'client_id'     => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
+						/* The client's redirect URL, which MUST match the initial authentication request.
+						 */
 						'redirect_uri'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'me'            => array(
-							'validate_callback' => 'rest_is_valid_url',
-							'sanitize_callback' => 'esc_url_raw',
-						),
+						/* The original plaintext random string generated before starting the authorization request.
+						 */
+						'code_verifier' => array(),
+						/* Currently only Used for Token Revokation as action=revoke
+						 */
 						'action'        => array(),
+						/* Paired with Action for Token Revokation
+						 */
 						'token'         => array(),
 					),
 					'permission_callback' => '__return_true',
@@ -151,84 +161,64 @@ class IndieAuth_Token_Endpoint {
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
-		$response = $this->verify_local_authorization_code( $args );
-		$error    = get_oauth_error( $response );
+		$response = indieauth_verify_local_authorization_code( $args );
+
+		$error = get_oauth_error( $response );
 		if ( $error ) {
 			return $error;
 		}
-		// Do not issue a token if the authorization code contains no scope
+
+		$return = array(
+			'me' => $response['me'],
+		);
+
 		if ( isset( $response['scope'] ) ) {
-			$info  = new IndieAuth_Client_Discovery( $params['client_id'] );
-			$token = array(
-				'token_type'  => 'Bearer',
-				'scope'       => $response['scope'],
-				'me'          => $response['me'],
-				'issued_by'   => rest_url( 'indieauth/1.0/token' ),
-				'client_id'   => $params['client_id'],
-				'client_name' => $info->get_name(),
-				'client_icon' => $info->get_icon(),
-				'issued_at'   => time(),
-			);
-			$token = array_filter( $token );
-
-			$token['access_token'] = $this->set_token( $token );
-			$user                  = get_user_by_identifier( $response['me'] );
-			if ( $user ) {
-				$token['profile'] = indieauth_get_user( $user->ID );
+			$scopes = array_filter( explode( ' ', $response['scope'] ) );
+			if ( ! array_key_exists( 'user', $response ) ) {
+				$user = get_user_by_identifier( $response['me'] );
+				$user = $user->ID;
 			}
-			if ( $token ) {
-				// Return only the standard keys in the response
-				return new WP_REST_Response(
-					wp_array_slice_assoc(
-						$token,
-						array(
-							'access_token',
-							'token_type',
-							'scope',
-							'me',
-							'profile',
-						)
-					),
-					200, // Status Code
+			if ( in_array( 'profile', $scopes, true ) ) {
+				$token['profile'] = indieauth_get_user( $user, in_array( 'email', $scopes, true ) );
+			}
+
+			// Issue a token
+			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) && array( 'profile' ) !== $scopes ) {
+				$info                  = new IndieAuth_Client_Discovery( $params['client_id'] );
+				$return['token_type']  = 'Bearer';
+				$return['scope']       = $response['scope'];
+				$return['issued_by']   = rest_url( 'indieauth/1.0/token' );
+				$return['client_id']   = $params['client_id'];
+				$return['client_name'] = $info->get_name();
+				$return['client_icon'] = $info->get_icon();
+				$return['issued_at']   = time();
+				$return                = array_filter( $return );
+
+				$return['access_token'] = $this->set_token( $return );
+			}
+		}
+
+		if ( $return ) {
+			// Return only the standard keys in the response
+			return new WP_REST_Response(
+				wp_array_slice_assoc(
+					$return,
 					array(
-						'Cache-Control' => 'no-store',
-						'Pragma'        => 'no-cache',
+						'access_token',
+						'token_type',
+						'scope',
+						'me',
+						'profile',
 					)
-				);
-			}
-		} else {
-			return new WP_OAuth_Response( 'invalid_grant', __( 'This authorization code was issued with no scope, so it cannot be used to obtain an access token', 'indieauth' ), 400 );
+				),
+				200, // Status Code
+				array(
+					'Cache-Control' => 'no-store',
+					'Pragma'        => 'no-cache',
+				)
+			);
 		}
-		return new WP_OAuth_Response( 'server_error', __( 'There was an error issuing the access token', 'indieauth' ), 500 );
-	}
-
-	public static function verify_local_authorization_code( $post_args ) {
-		$tokens = new Token_User( '_indieauth_code_' );
-		$return = $tokens->get( $post_args['code'] );
-		if ( ! $return ) {
-			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
-		}
-		if ( isset( $return['code_challenge'] ) ) {
-			if ( ! isset( $post_args['code_verifier'] ) ) {
-				$tokens->destroy( $post_args['code'] );
-				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
-			}
-			if ( ! pkce_verifier( $return['code_challenge'], $post_args['code_verifier'], $return['code_challenge_method'] ) ) {
-				$tokens->destroy( $post_args['code'] );
-				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
-			}
-			unset( $return['code_challenge'] );
-			unset( $return['code_challenge_method'] );
-		}
-		$return['me'] = get_url_from_user( $return['user'] );
-
-		$user = get_user_by( 'id', $return['user'] );
-		if ( $user ) {
-			$return['profile'] = indieauth_get_user( $user );
-		}
-
-		$tokens->destroy( $post_args['code'] );
-		return $return;
+		return new WP_OAuth_Response( 'server_error', __( 'There was an error in response.', 'indieauth' ), 500 );
 	}
 
 }
