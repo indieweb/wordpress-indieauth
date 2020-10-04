@@ -4,7 +4,7 @@
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
 **Tested up to:** 5.5  
-**Stable tag:** 3.5.1  
+**Stable tag:** 3.6.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -130,6 +130,11 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 ## Upgrade Notice ##
 
+### 3.6.0 ###
+
+Due to the fact that this upgrades the spec adherence to address the changes in the IndieAuth Living Standard as of September 26, 2020, there may be unanticipated issues with clients not meeting the changes.
+Until such a time as more IndieAuth clients adopt the changes, some elements of the changes will not be mandatory, such as PKCE compliance.
+
 ### 3.4.0 ###
 
 Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts. If you already set two accounts to the 
@@ -146,6 +151,14 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.6.0 ###
+* Adopt changes to the living spec as of the September 26, 2020 version.
+* Drop explicit support for response_type=id. Endpoint will convert to type code for backcompat until further notice.
+* Change experimental profile return behavior to match newly documented behavior in spec.
+* Support profile and email scopes, to be handled within this plugin. 
+* Add additional code comments
+* Remove unique URL code as looking for user URLs is no longer supported
 
 ### 3.5.1 ###
 * Make Site Health More Explicit
