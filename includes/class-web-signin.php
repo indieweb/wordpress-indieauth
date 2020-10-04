@@ -241,7 +241,7 @@ class Web_Signin {
 			$redirect_to = rawurldecode( $redirect_to );
 
 			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore
-				$me = esc_url_raw( $_POST['websignin_identifier'] );
+				$me = esc_url_raw( $_POST['websignin_identifier'] ); //phpcs:ignore
 				// Check for valid URLs
 				if ( ! wp_http_validate_url( $me ) ) {
 					return new WP_Error( 'websignin_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
