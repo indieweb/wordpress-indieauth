@@ -169,7 +169,7 @@ class IndieAuth_Authorization_Endpoint {
 			if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
 			}
-			$scopes = explode( ' ', $scopes );
+			$scopes = explode( ' ', $args['scope'] );
 			if ( in_array( 'email', $scopes, true ) && ! in_array( 'profile', $scopes, true ) ) {
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Cannot request email scope without profile scope', 'indieauth' ), 400 );
 			}
