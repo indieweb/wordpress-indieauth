@@ -23,10 +23,6 @@ class IndieAuth_Admin {
 			'label' => __( 'SSL Test', 'indieauth' ),
 			'test'  => array( $this, 'site_health_https_test' ),
 		);
-		$tests['direct']['indieauth_users']  = array(
-			'label' => __( 'Unique User URL Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_users_test' ),
-		);
 		return $tests;
 	}
 
@@ -57,34 +53,6 @@ class IndieAuth_Admin {
 			$result['actions']     = __( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
 		}
 
-		return $result;
-	}
-
-	public function site_health_users_test() {
-		$result = array(
-			'label'       => __( 'Unique User URLs Check Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => __( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => sprintf(
-				'<p>%s</p>',
-				__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_headers',
-		);
-
-		if ( $this->check_dupe_user_urls() ) {
-			$result['status']      = 'critical';
-			$result['label']       = __( 'Unique User URLs Test Failed', 'indieauth' );
-			$result['description'] = sprintf(
-				'<p>%s</p>',
-				__( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' )
-			);
-			$result['actions']     = __( 'Under IndieAuth, your URL is your identity. Two accounts cannot have the same website URL in their user profile as this might allow one user to gain the credentials of another', 'indieauth' );
-		}
 		return $result;
 	}
 
