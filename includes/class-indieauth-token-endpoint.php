@@ -179,7 +179,7 @@ class IndieAuth_Token_Endpoint {
 				$user = $user->ID;
 			}
 			if ( in_array( 'profile', $scopes, true ) ) {
-				$token['profile'] = indieauth_get_user( $user, in_array( 'email', $scopes, true ) );
+				$return['profile'] = indieauth_get_user( $user, in_array( 'email', $scopes, true ) );
 			}
 
 			// Issue a token
