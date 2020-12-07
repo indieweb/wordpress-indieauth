@@ -183,7 +183,7 @@ class IndieAuth_Token_Endpoint {
 			}
 
 			// Issue a token
-			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) && array( 'profile' ) !== $scopes ) {
+			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
 				$info                  = new IndieAuth_Client_Discovery( $params['client_id'] );
 				$return['token_type']  = 'Bearer';
 				$return['scope']       = $response['scope'];
