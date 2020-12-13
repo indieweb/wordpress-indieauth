@@ -143,7 +143,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( 'code' !== $params['response_type'] ) {
 			return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
 		}
-		$required = array( 'redirect_uri', 'client_id', 'state', 'me' );
+		$required = array( 'redirect_uri', 'client_id', 'state' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter
@@ -157,7 +157,7 @@ class IndieAuth_Authorization_Endpoint {
 				'_wpnonce'              => wp_create_nonce( 'wp_rest' ),
 				'response_type'         => $params['response_type'],
 				'client_id'             => $params['client_id'],
-				'me'                    => $params['me'],
+				'me'                    => isset( $params['me'] ) ? $params['me'] : null,
 				'state'                 => $params['state'],
 				'code_challenge'        => isset( $params['code_challenge'] ) ? $params['code_challenge'] : null,
 				'code_challenge_method' => isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null,
@@ -195,7 +195,7 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	public function verify( $request ) {
-		$params   = $request->get_params();
+		$params = $request->get_params();
 
 		$required = array( 'redirect_uri', 'client_id', 'code' );
 		foreach ( $required as $require ) {
@@ -287,7 +287,7 @@ class IndieAuth_Authorization_Endpoint {
 			)
 		);
 		$url    = add_query_params_to_url( $args, wp_login_url() );
-		if ( empty( $scopes ) || empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) || array( 'profile' ) === $scopes ) {
+		if ( empty( $scopes ) || empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authenticate-form.php';
 		} else {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php';
@@ -320,7 +320,6 @@ class IndieAuth_Authorization_Endpoint {
 		// In IndieAuth 1.1, me parameter is optional. Me should actually be derived only from the logged in user not from this parameter.
 		// In other implementations, there may be multiple identities permitted for a single user, but this is not currently practical on a 
 		// WordPress site, so we will just ignore the optional me parameter and always return our own.
-		// $me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
 		$me = get_url_from_user( $user );
 
 

@@ -149,7 +149,7 @@ class IndieAuth_Token_Endpoint {
 
 	// Request a Token
 	public function request( $params ) {
-		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri', 'me' ), array_keys( $params ) );
+		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
@@ -184,13 +184,13 @@ class IndieAuth_Token_Endpoint {
 
 			// Issue a token
 			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
-				$info                  = new IndieAuth_Client_Discovery( $params['client_id'] );
-				$return['token_type']  = 'Bearer';
+				$info                 = new IndieAuth_Client_Discovery( $params['client_id'] );
+				$return['token_type'] = 'Bearer';
 
 				/* Add UUID for reference. In case you’d like to build infrastructure for additional properties and store them in an alternate location.
-				 * This idea came from the core application password implementation. 
+				 * This idea came from the core application password implementation.
 				 */
-				$return['uuid']        =  wp_generate_uuid4(); 
+				$return['uuid'] = wp_generate_uuid4();
 
 				$return['scope']       = $response['scope'];
 				$return['issued_by']   = rest_url( 'indieauth/1.0/token' );
