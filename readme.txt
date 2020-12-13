@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
-Tested up to: 5.5
+Tested up to: 5.6
 Stable tag: 3.6.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
@@ -114,7 +114,7 @@ If your Micropub client includes an `Authorization` HTTP request header but you 
 
     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-If that doesn't work, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing):
+If you are not running the latest version of WordPress, [try this line](https://github.com/georgestephanis/application-passwords/wiki/Basic-Authorization-Header----Missing). It is added automatically as of 5.6:
 
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
@@ -132,7 +132,7 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 = 3.6.0 =
 
-Due to the fact that this upgrades the spec adherence to address the changes in the IndieAuth Living Standard as of September 26, 2020, there may be unanticipated issues with clients not meeting the changes.
+Due to the fact that this upgrades the spec adherence to address the changes in the IndieAuth Living Standard as of November 26, 2020, there may be unanticipated issues with clients not meeting the changes.
 Until such a time as more IndieAuth clients adopt the changes, some elements of the changes will not be mandatory, such as PKCE compliance.
 
 = 3.4.0 =
@@ -153,12 +153,14 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
 = 3.6.0 = 
-* Adopt changes to the living spec as of the September 26, 2020 version.
+* Adopt changes to the living spec as of the November 26, 2020 version.
 * Drop explicit support for response_type=id. Endpoint will convert to type code for backcompat until further notice.
 * Change experimental profile return behavior to match newly documented behavior in spec.
 * Support profile and email scopes, to be handled within this plugin. 
 * Add additional code comments
 * Remove unique URL code as looking for user URLs is no longer supported
+* Add UUID to tokens as used in the WP5.6 Application Password feature.
+* Add Last IP Accessed to storage as used in the WP5.6 Application Password feature.
 
 = 3.5.1 =
 * Make Site Health More Explicit
