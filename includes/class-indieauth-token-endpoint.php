@@ -186,6 +186,12 @@ class IndieAuth_Token_Endpoint {
 			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
 				$info                  = new IndieAuth_Client_Discovery( $params['client_id'] );
 				$return['token_type']  = 'Bearer';
+
+				/* Add UUID for reference. In case you’d like to build infrastructure for additional properties and store them in an alternate location.
+				 * This idea came from the core application password implementation. 
+				 */
+				$return['uuid']        =  wp_generate_uuid4(); 
+
 				$return['scope']       = $response['scope'];
 				$return['issued_by']   = rest_url( 'indieauth/1.0/token' );
 				$return['client_id']   = $params['client_id'];
