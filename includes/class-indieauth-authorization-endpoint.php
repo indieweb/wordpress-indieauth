@@ -80,7 +80,9 @@ class IndieAuth_Authorization_Endpoint {
 						/* grant_type=authorization_code is the only one supported right now. This remains optional as not required in
 						 * the original IndieAuth spec, but will eventually be mandatory.
 						 */
-						'grant_type'    => array(),
+						'grant_type'    => array(
+							'default' => 'authorization_code',
+						),
 						/* The authorization code received from the authorization endpoint in the redirect.
 						 */
 						'code'          => array(),
@@ -197,12 +199,15 @@ class IndieAuth_Authorization_Endpoint {
 	public function verify( $request ) {
 		$params = $request->get_params();
 
-		$required = array( 'redirect_uri', 'client_id', 'code' );
+		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
+		}
+		if ( 'authorization_code' !== $params['grant_type'] ) {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
 		}
 		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );

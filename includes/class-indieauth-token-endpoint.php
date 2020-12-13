@@ -41,7 +41,9 @@ class IndieAuth_Token_Endpoint {
 					'args'                => array(
 						/* grant_type=authorization_code is the only one currently supported.
 						 */
-						'grant_type'    => array(),
+						'grant_type'    => array(
+							'default' => 'authorization_code',
+						),
 						/* The authorization code received from the authorization endpoint in the redirect.
 						 */
 						'code'          => array(),
@@ -140,8 +142,10 @@ class IndieAuth_Token_Endpoint {
 			return __( 'The Token Provided is No Longer Valid', 'indieauth' );
 		}
 		// Request Token
-		if ( isset( $params['grant_type'] ) && 'authorization_code' === $params['grant_type'] ) {
+		if ( 'authorization_code' === $params['grant_type'] ) {
 			return $this->request( $params );
+		} else {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
 		}
 		// Everything Failed
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
