@@ -225,7 +225,9 @@ if ( ! function_exists( 'get_url_from_user' ) ) {
 		if ( (int) get_option( 'indieauth_root_user' ) === $user_id ) {
 			return home_url( '/' );
 		}
-		$user = get_user_by( 'ID', $user_id );
+		if ( ! $user_id ) {
+			return null;
+		}
 		return get_author_posts_url( $user_id );
 	}
 }

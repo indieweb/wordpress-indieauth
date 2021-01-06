@@ -13,7 +13,8 @@ login_header(
 			printf(
 				'<p>' . __( 'The app <strong>%1$s</strong> would like to sign you in as <strong>%2$s</strong>.', 'indieauth' ) . '</p>',
 				$client_id,
-				$me
+				get_url_from_user( $current_user->ID )
+				
 			);
 
 		if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
@@ -38,7 +39,7 @@ login_header(
 	<p class="submit">
 	<?php
 		// Hook to allow adding to form
-		do_action( 'indieauth_authentication_form', $current_user->user_id, $client_id );
+		do_action( 'indieauth_authentication_form', $current_user->ID, $client_id );
 	?>
 		<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
 		<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
