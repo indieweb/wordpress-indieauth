@@ -32,13 +32,7 @@ login_header(
 	<div class="scope-info">
 		<?php _e( 'The app is requesting the following <a href="https://indieweb.org/scope">scopes</a>', 'indieauth' ); ?>
 		<ul>
-		<?php
-		if ( ! empty( $scopes ) ) {
-			foreach ( $scopes as $s ) {
-				printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), self::scopes( $s ) );
-			}
-		}
-		?>
+		<?php self::scope_list( $scopes ); ?>
 		</ul>
 	</div>
 	<p class="submit">

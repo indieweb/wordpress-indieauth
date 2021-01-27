@@ -137,6 +137,19 @@ class IndieAuth_Authorization_Endpoint {
 		return apply_filters( 'indieauth_scope_description', $description, $scope );
 	}
 
+	/*
+	 * Output a list of checkboxes to select scopes.
+	 *
+	 * @param array $scopes Scopes to Output.
+	 */
+	public static function scope_list( $scopes ) {
+		if ( ! empty( $scopes ) ) {
+			foreach ( $scopes as $s ) {
+				printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), self::scopes( $s ) );
+			}
+		}
+	}
+
 	public function request( $request ) {
 		$params = $request->get_params();
 		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
