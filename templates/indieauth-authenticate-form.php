@@ -5,6 +5,12 @@ login_header(
 	'',
 	$errors
 );
+$user_id = get_url_from_user( $current_user->ID );
+if ( ! $user_id ) {
+	__e( 'The application cannot sign you in as WordPress cannot determine the current user', 'indieauth' );
+	exit;
+}
+	
 ?>
 <form method="post" action="<?php echo $url; ?>">
 	<div class="login-info">
@@ -13,7 +19,7 @@ login_header(
 			printf(
 				'<p>' . __( 'The app <strong>%1$s</strong> would like to sign you in as <strong>%2$s</strong>.', 'indieauth' ) . '</p>',
 				$client_id,
-				get_url_from_user( $current_user->ID )
+				$user_id
 				
 			);
 
