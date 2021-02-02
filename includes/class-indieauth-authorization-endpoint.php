@@ -26,20 +26,50 @@ class IndieAuth_Authorization_Endpoint {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'request' ),
 					'args'                => array(
-						'response_type' => array(),
-						'client_id'     => array(
+						/* Code is currently the only type as of IndieAuth 1.1 and a response_type is now required, but not requiring it here yet.
+						 * Indicates to the authorization server that an authorization code should be returned as the response.
+						 */
+						'response_type'         => array(
+							'default' => 'code',
+						),
+						// The Client URL.
+						'client_id'             => array(
+							'validate_callback' => 'rest_is_valid_url',
+							'sanitize_callback' => 'esc_url_raw',
+							'required'          => true,
+						),
+						// The redirect URL indicating where the user should be redirected to after approving the request.
+						'redirect_uri'          => array(
+							'validate_callback' => 'rest_is_valid_url',
+							'sanitize_callback' => 'esc_url_raw',
+							'required'          => true,
+						),
+						/* A parameter set by the client which will be included when the user is redirected back to the client.
+						 * This is used to prevent CSRF attacks. The authorization server MUST return the unmodified state value back to the client.
+						 */
+						'state'                 => array(
+							'required' => true,
+						),
+						/* Code Challenge.
+						 * IndieAuth 1.1 requires PKCE, but for now these parameters will remain optional to give time for other implementers.
+						 */
+						'code_challenge'        => array(),
+						/* The hashing method used to calculate the code challenge, e.g. "S256"
+						 */
+						'code_challenge_method' => array(),
+
+						/* A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
+						 * If the client omits this value, the authorization server MUST NOT issue an access token for this authorization code.
+						 * Only the user's profile URL may be returned without any scope requested. See Profile Information for details about
+						 * which scopes to request to return user profile information. Optional.
+						 */
+						'scope'                 => array(),
+						/* The Profile URL the user entered. Optional.
+						 */
+						'me'                    => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'redirect_uri'  => array(
-							'validate_callback' => 'rest_is_valid_url',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-						'me'            => array(
-							'validate_callback' => 'rest_is_valid_url',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-						'state'         => array(),
 					),
 					'permission_callback' => '__return_true',
 				),
@@ -47,15 +77,30 @@ class IndieAuth_Authorization_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'verify' ),
 					'args'                => array(
-						'code'         => array(),
-						'client_id'    => array(
+						/* grant_type=authorization_code is the only one supported right now. This remains optional as not required in
+						 * the original IndieAuth spec, but will eventually be mandatory.
+						 */
+						'grant_type'    => array(
+							'default' => 'authorization_code',
+						),
+						/* The authorization code received from the authorization endpoint in the redirect.
+						 */
+						'code'          => array(),
+						/* The client's URL, which MUST match the client_id used in the authentication request.
+						*/
+						'client_id'     => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'redirect_uri' => array(
+						/* The client's redirect URL, which MUST match the initial authentication request.
+						 */
+						'redirect_uri'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
+						/* The original plaintext random string generated before starting the authorization request.
+						 */
+						'code_verifier' => array(),
 					),
 					'permission_callback' => '__return_true',
 				),
@@ -82,7 +127,8 @@ class IndieAuth_Authorization_Endpoint {
 			'channels' => __( 'Allows the application to manage channels', 'indieauth' ),
 			'save'     => __( 'Allows the application to save content for later retrieval', 'indieauth' ),
 			// Profile
-			'profile'  => __( 'Returns a complete profile to the application. Without this only a display name, avatar, and url will be returned', 'indieauth' ),
+			'profile'  => __( 'Allows access to the users default profile information which includes name, photo, and url', 'indieauth' ),
+			'email'    => __( 'Allows access to the users email address', 'indieauth' ),
 		);
 		if ( 'all' === $scope ) {
 			return $scopes;
@@ -91,15 +137,28 @@ class IndieAuth_Authorization_Endpoint {
 		return apply_filters( 'indieauth_scope_description', $description, $scope );
 	}
 
+	/*
+	 * Output a list of checkboxes to select scopes.
+	 *
+	 * @param array $scopes Scopes to Output.
+	 */
+	public static function scope_list( $scopes ) {
+		if ( ! empty( $scopes ) ) {
+			foreach ( $scopes as $s ) {
+				printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), self::scopes( $s ) );
+			}
+		}
+	}
+
 	public function request( $request ) {
 		$params = $request->get_params();
-		if ( ! isset( $params['response_type'] ) ) {
-			$params['response_type'] = 'id';
+		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
+			$params['response_type'] = 'code';
 		}
-		if ( 'code' !== $params['response_type'] && 'id' !== $params['response_type'] ) {
+		if ( 'code' !== $params['response_type'] ) {
 			return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
 		}
-		$required = array( 'redirect_uri', 'client_id', 'state', 'me' );
+		$required = array( 'redirect_uri', 'client_id', 'state' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter
@@ -113,7 +172,7 @@ class IndieAuth_Authorization_Endpoint {
 				'_wpnonce'              => wp_create_nonce( 'wp_rest' ),
 				'response_type'         => $params['response_type'],
 				'client_id'             => $params['client_id'],
-				'me'                    => $params['me'],
+				'me'                    => isset( $params['me'] ) ? $params['me'] : null,
 				'state'                 => $params['state'],
 				'code_challenge'        => isset( $params['code_challenge'] ) ? $params['code_challenge'] : null,
 				'code_challenge_method' => isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null,
@@ -121,9 +180,13 @@ class IndieAuth_Authorization_Endpoint {
 		);
 
 		if ( 'code' === $params['response_type'] ) {
-			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : 'create update';
+			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : '';
 			if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
+			}
+			$scopes = explode( ' ', $args['scope'] );
+			if ( in_array( 'email', $scopes, true ) && ! in_array( 'profile', $scopes, true ) ) {
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Cannot request email scope without profile scope', 'indieauth' ), 400 );
 			}
 		}
 		$url = add_query_params_to_url( $args, $url );
@@ -147,13 +210,17 @@ class IndieAuth_Authorization_Endpoint {
 	}
 
 	public function verify( $request ) {
-		$params   = $request->get_params();
-		$required = array( 'redirect_uri', 'client_id', 'code' );
+		$params = $request->get_params();
+
+		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
+		}
+		if ( 'authorization_code' !== $params['grant_type'] ) {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
 		}
 		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
@@ -185,7 +252,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( array() === array_diff_assoc( $params, $token ) ) {
 			$this->delete_code( $code, $token['user'] );
 
-			$return = array( 'me' => get_url_from_user( $user->ID ) );
+			$return = array( 'me' => $token['me'] );
 
 			if ( isset( $token['scope'] ) ) {
 				$return['scope'] = $token['scope'];
@@ -218,7 +285,7 @@ class IndieAuth_Authorization_Endpoint {
 		$client_icon = $info->get_icon();
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
-		$scopes        = explode( ' ', $scope );
+		$scopes        = array_filter( explode( ' ', $scope ) );
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
@@ -238,34 +305,45 @@ class IndieAuth_Authorization_Endpoint {
 			)
 		);
 		$url    = add_query_params_to_url( $args, wp_login_url() );
-		if ( 'code' === $_GET['response_type'] ) {
-			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php';
-		} elseif ( 'id' === $_GET['response_type'] ) {
+		if ( empty( $scopes ) || empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authenticate-form.php';
+		} else {
+			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authorize-form.php';
 		}
+
 		include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
 	}
 
 	public function confirmed() {
 		$current_user = wp_get_current_user();
+		$user         = $current_user->ID;
 		// phpcs:disable
 		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;
 		$code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? wp_unslash( $_POST['code_challenge_method'] ) : null;
+
+		// Do not allow the post scope as deprecated. For compatibility, instead update the offering to the more limited but functionally identical create/update.
 		$search = array_search( 'post', $scope, true );
 		if ( is_numeric( $search ) ) {
 			unset( $scope[ $search ] );
 			$scope = array_unique( array_merge( $scope, array( 'create', 'update' ) ) );
 		}
+
 		$scope = implode( ' ', $scope );
 
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
-		$me            = isset( $_POST['me'] ) ? wp_unslash( $_POST['me'] ) : null;
+		
+		// In IndieAuth 1.1, me parameter is optional. Me should actually be derived only from the logged in user not from this parameter.
+		// In other implementations, there may be multiple identities permitted for a single user, but this is not currently practical on a 
+		// WordPress site, so we will just ignore the optional me parameter and always return our own.
+		$me = get_url_from_user( $user );
+
+
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
 		/// phpcs:enable
-		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method' );
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user' );
 		$token = array_filter( $token );
 		$code  = self::set_code( $current_user->ID, $token );
 		$url   = add_query_params_to_url(

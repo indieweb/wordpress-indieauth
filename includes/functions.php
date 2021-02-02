@@ -225,7 +225,9 @@ if ( ! function_exists( 'get_url_from_user' ) ) {
 		if ( (int) get_option( 'indieauth_root_user' ) === $user_id ) {
 			return home_url( '/' );
 		}
-		$user = get_user_by( 'ID', $user_id );
+		if ( ! $user_id ) {
+			return null;
+		}
 		return get_author_posts_url( $user_id );
 	}
 }
@@ -492,10 +494,13 @@ function base64_urlencode( $string ) {
 }
 
 
-/* Returns jf2 formatted user data
+/* Returns IndieAuth profile user data
  *
+ * @param int|WP_User User.
+ * @param boolean $email Whether to return email or not.
+ * @return array User information or empty if none.
  */
-function indieauth_get_user( $user ) {
+function indieauth_get_user( $user, $email = false ) {
 	if ( is_numeric( $user ) ) {
 		$user = get_user_by( 'ID', $user );
 	}
@@ -503,10 +508,8 @@ function indieauth_get_user( $user ) {
 		return array();
 	}
 	$return = array(
-		'type'  => 'card',
 		'name'  => $user->display_name,
 		'url'   => empty( $user->user_url ) ? get_author_posts_url( $user->ID ) : $user->user_url,
-		'note'  => get_user_meta( $user->ID, 'description', true ),
 		'photo' => get_avatar_url(
 			$user->ID,
 			array(
@@ -514,8 +517,32 @@ function indieauth_get_user( $user ) {
 				'default' => '404',
 			)
 		),
+		'email' => $email ? $user->user_email : false,
 	);
 	return array_filter( $return );
+}
+
+function indieauth_verify_local_authorization_code( $args ) {
+	$tokens = new Token_User( '_indieauth_code_' );
+	$return = $tokens->get( $args['code'] );
+	if ( ! $return ) {
+		return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+	}
+	if ( isset( $return['code_challenge'] ) ) {
+		if ( ! isset( $args['code_verifier'] ) ) {
+			$tokens->destroy( $post_args['code'] );
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+		}
+		if ( ! pkce_verifier( $return['code_challenge'], $args['code_verifier'], $return['code_challenge_method'] ) ) {
+			$tokens->destroy( $args['code'] );
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+		}
+		unset( $return['code_challenge'] );
+		unset( $return['code_challenge_method'] );
+	}
+
+	$tokens->destroy( $args['code'] );
+	return $return;
 }
 
 function indieauth_get_authorization_endpoint() {

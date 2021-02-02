@@ -11,9 +11,6 @@ class IndieAuth_Admin {
 		add_action( 'init', array( $this, 'settings' ) );
 		add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-		add_filter( 'wp_pre_insert_user_data', array( $this, 'unique_user_url' ), 10, 3 );
-		add_filter( 'manage_users_columns', array( $this, 'add_user_url_column' ) );
-		add_filter( 'manage_users_custom_column', array( $this, 'user_url_column' ), 10, 3 );
 		add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
 	}
 
@@ -25,10 +22,6 @@ class IndieAuth_Admin {
 		$tests['direct']['indieauth_https']  = array(
 			'label' => __( 'SSL Test', 'indieauth' ),
 			'test'  => array( $this, 'site_health_https_test' ),
-		);
-		$tests['direct']['indieauth_users']  = array(
-			'label' => __( 'Unique User URL Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_users_test' ),
 		);
 		return $tests;
 	}
@@ -63,34 +56,6 @@ class IndieAuth_Admin {
 		return $result;
 	}
 
-	public function site_health_users_test() {
-		$result = array(
-			'label'       => __( 'Unique User URLs Check Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => __( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => sprintf(
-				'<p>%s</p>',
-				__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_headers',
-		);
-
-		if ( $this->check_dupe_user_urls() ) {
-			$result['status']      = 'critical';
-			$result['label']       = __( 'Unique User URLs Test Failed', 'indieauth' );
-			$result['description'] = sprintf(
-				'<p>%s</p>',
-				__( 'Multiple user accounts have the same URL set. This is not permitted as this value is used by IndieAuth for login. Please resolve', 'indieauth' )
-			);
-			$result['actions']     = __( 'Under IndieAuth, your URL is your identity. Two accounts cannot have the same website URL in their user profile as this might allow one user to gain the credentials of another', 'indieauth' );
-		}
-		return $result;
-	}
-
 	public function site_health_header_test() {
 		$result = array(
 			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
@@ -118,63 +83,6 @@ class IndieAuth_Admin {
 		}
 
 		return $result;
-	}
-
-	public function user_url_column( $val, $column_id, $user_id ) {
-		if ( 'user_url' === $column_id ) {
-			$user = get_user_by( 'id', $user_id );
-			if ( ! wp_http_validate_url( $user->user_url ) ) {
-				return __( 'None', 'indieauth' );
-			}
-			$url = esc_url( $user->user_url );
-			return sprintf( '<a href="%1s">%1$s</a>', $url );
-		}
-		return $val;
-	}
-
-	public function add_user_url_column( $column ) {
-		$column['user_url'] = __( 'Website', 'indieauth' );
-		return $column;
-	}
-
-	/**
-	 * Ensure all user URL fields are unique
-	 *
-	 */
-	public function unique_user_url( $data, $update, $id ) {
-		if ( empty( $data['user_url'] ) ) {
-			return $data;
-		}
-		$data['user_url'] = normalize_url( $data['user_url'] );
-		$users            = get_users(
-			array(
-				'search'         => '*' . wp_parse_url( $data['user_url'], PHP_URL_HOST ) . '*',
-				'search_columns' => array( 'user_url' ),
-				'fields'         => array( 'ID', 'user_url' ),
-			)
-		);
-
-		$url = normalize_url( $data['user_url'], true );
-		foreach ( $users as $user ) {
-			if ( ( normalize_url( $user->user_url, true ) === $url ) && $user->ID !== $id ) {
-				$data['user_url'] = '';
-			}
-		}
-		return $data;
-	}
-
-	public function check_dupe_user_urls() {
-		$urls = get_users(
-			array(
-				'fields' => array( 'user_url' ),
-			)
-		);
-		$urls = array_filter( wp_list_pluck( $urls, 'user_url' ) );
-		$urls = array_map( 'normalize_url', $urls );
-		if ( count( array_unique( $urls ) ) === count( $urls ) ) {
-			return false;
-		}
-		return true;
 	}
 
 	public function login_form_authdiag() {
