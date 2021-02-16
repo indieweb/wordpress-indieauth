@@ -1,7 +1,7 @@
 <?php
 $errors = new WP_Error();
 login_header(
-	__( 'Authenticate', 'indieauth' ),
+	sprintf( __( 'Authenticate %1$s', 'indieauth' ), empty( $client_name ) ? $client_id : $client_name ),
 	'',
 	$errors
 );
@@ -13,29 +13,42 @@ if ( ! $user_id ) {
 	
 ?>
 <form method="post" action="<?php echo $url; ?>">
-	<div class="login-info">
-		<?php echo get_avatar( $current_user->ID, '78' ); ?>
+	<div class="user-info">
+		<?php echo get_avatar( $current_user->ID, '48' ); ?>
 		<?php
 			printf(
-				'<p>' . __( 'The app <strong>%1$s</strong> would like to sign you in as <strong>%2$s</strong>.', 'indieauth' ) . '</p>',
-				$client_id,
-				$user_id
+				'<p>' . __( 'The app <strong>%1$s</strong> would like to identify you as <strong>%2$s</strong>, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
+				$client,
+				$user_id,
+				$current_user->display_name,
+				$current_user->user_nicename
 				
 			);
-
-		if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
+		?>
+	</div>
+	<div class="notices">
+		<?php if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
 		?>
 		<p class="redirect">
-			<?php _e( '<strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
+			<?php _e( '&#9888; <strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
+		</p>
+		<?php } 
+
+		if ( ! is_null( $code_challenge ) && 'S256' === $code_challenge_method ) { 
+		?>
+		<p class="pkce">
+			<?php _e( '&#9919; <strong>This app is using <a href="https://indieweb.org/PKCE">PKCE</a> for security.</strong>', 'indieauth' ); ?>
 		</p>
 		<?php } ?>
 	</div>
-	<div class="scope-info">
-		<?php _e( 'In addition, the app is requesting access to additional user profile information', 'indieauth' ); ?>
-		<ul>
-		<?php self::scope_list( $scopes ); ?>
-		</ul>
-	</div>
+	<?php if ( ! empty( $scopes ) ) { ?>
+			<div class="scope-info">
+			<?php _e( 'The app will have no access to your site, but is requesting access to the following information:', 'indieauth' ); ?>
+			<ul>
+			<?php self::scope_list( $scopes ); ?>
+			</ul>
+		</div>
+	<?php } ?>
 	<p class="submit">
 	<?php
 		// Hook to allow adding to form
@@ -46,7 +59,7 @@ if ( ! $user_id ) {
 		<input type="hidden" name="me" value="<?php echo $me; ?>" />
 		<input type="hidden" name="response_type" value="<?php echo $response_type; ?>" />
 		<input type="hidden" name="state" value="<?php echo $state; ?>" />
-		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php _e( 'Authenticate', 'indieauth' ); ?></button>
+		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php _e( 'Allow', 'indieauth' ); ?></button>
 		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
 	</p>
 </form>

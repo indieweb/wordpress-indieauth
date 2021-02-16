@@ -1,14 +1,27 @@
 <style>
-.login-info img {
-	width: 78px;
+
+.client-info, .user-info, .notices {
 	display: block;
+	clear:both;
+	padding: 0.5em;
+}
+
+.client-info img {
+	width: 48px;
+	display: inline;
 	margin: 0 auto;
 	border-radius: 6px;
-	
+	float: left;
+	padding-right: 1em;
 }
-.login-info p {
-	clear: both;
-	margin-top: 1em;
+
+.user-info img {
+	width: 48px;
+	display: inline;
+	margin: 0 auto;
+	border-radius: 6px;
+	padding-left: 1em;
+	float: right;
 }
 
 #login form p.submit {
@@ -22,6 +35,7 @@
 .scope-info ul {
 	margin-top: 1em;
 	margin-left: 2em;
+	list-style: none;
 }
 .redirect-info {
 	margin-top: 1em;
@@ -33,10 +47,6 @@
 
 form input {
 	width: 100%;
-}
-
-.redirect {
-	margin: 1em;
 }
 
 </style>

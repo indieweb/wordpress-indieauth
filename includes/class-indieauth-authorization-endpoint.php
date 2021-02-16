@@ -283,6 +283,12 @@ class IndieAuth_Authorization_Endpoint {
 		$info = new IndieAuth_Client_Discovery( $client_id );
 		$client_name = $info->get_name();
 		$client_icon = $info->get_icon();
+		if ( ! empty( $client_name ) ) {
+			$client = sprintf( '<a href="%1$s">%2$s</a>', $client_id, $client_name );
+		} else {
+			$client = sprintf( '<a href="%1$s">%1$s</a>', $client_id );
+		}
+
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
 		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
 		$scopes        = array_filter( explode( ' ', $scope ) );
