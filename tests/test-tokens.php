@@ -21,4 +21,20 @@ class TokensTest extends WP_UnitTestCase {
 		$this->assertFalse( $get );
 	}
 
+	public function test_destroy_token() {
+		$user_id = self::factory()->user->create();
+		$tokens = new Token_User( '_indieauth_code_', $user_id );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar' );
+		$key = $tokens->set( $token, 300 );
+		$get = $tokens->get( $key );
+		unset( $get['user'] );
+		unset( $get['expiration' ] );
+		$this->assertEquals( $get, $token );
+		$destroy = $tokens->destroy( $key );
+		$this->assertTrue( $destroy );
+		$get = $tokens->get( $key );
+		$this->assertFalse( $get );
+	}
+
+
 }

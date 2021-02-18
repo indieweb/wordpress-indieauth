@@ -18,8 +18,42 @@ if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 	define( 'INDIEAUTH_REMOTE_MODE', 0 );
 }
 
+register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'schedule' ) );
+register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivate' ) );
+
+
+add_action( 'upgrader_process_complete', array( 'IndieAuth_Plugin', 'upgrader_process_complete' ), 10, 2 );
+
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
+
+	/*
+	 * Process to Trigger on Plugin Update.
+	 */
+	public static function upgrader_process_complete( $upgrade_object, $options ) {
+		$current_plugin_path_name = plugin_basename( __FILE__ );
+		if ( ( 'update' === $options['action'] ) && ( 'plugin' === $options['type'] ) ) {
+			foreach ( $options['plugins'] as $each_plugin ) {
+				if ( $each_plugin === $current_plugin_path_name ) {
+					self::schedule();
+				}
+			}
+		}
+	}
+
+	public static function deactivate() {
+		$timestamp = wp_next_scheduled( 'indieauth_cleanup', array( false ) );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, 'indieauth_cleanup', array( false ) );
+		}
+	}
+
+	public static function schedule() {
+		if ( ! wp_next_scheduled( 'indieauth_cleanup', array( false ) ) ) {
+			return wp_schedule_event( time() + HOUR_IN_SECONDS, 'twicedaily', 'indieauth_cleanup', array( false ) );
+		}
+		return true;
+	}
 
 	public static function plugins_loaded() {
 		// Load Core Classes that are always loaded
