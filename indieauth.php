@@ -23,6 +23,7 @@ register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivate' ) 
 
 
 add_action( 'upgrader_process_complete', array( 'IndieAuth_Plugin', 'upgrader_process_complete' ), 10, 2 );
+add_action( 'indieauth_cleanup', array( 'IndieAuth_Plugin', 'expires' ) );
 
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
@@ -53,6 +54,17 @@ class IndieAuth_Plugin {
 			return wp_schedule_event( time() + HOUR_IN_SECONDS, 'twicedaily', 'indieauth_cleanup', array( false ) );
 		}
 		return true;
+	}
+
+	/*
+	 * Expires authorization codes in the event any are left in the system.
+	 *
+	 */
+	public static function expires() {
+		// The get_all function retrieves all tokens and destroys any expired token.
+		$t = new Token_User( '_indieauth_token_', $user_id );
+		$t->get_all();
+		$t = new Token_User( '_indieauth_code_', $user_id );
 	}
 
 	public static function plugins_loaded() {
