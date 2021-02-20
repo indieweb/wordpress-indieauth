@@ -101,7 +101,7 @@ class Token_User extends Token_Generic {
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
 				$value         = maybe_unserialize( array_pop( $value ) );
-				$key = str_replace( $this->prefix, '', $key );
+				$key           = str_replace( $this->prefix, '', $key );
 				$value['user'] = $this->user_id;
 				if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
 					$this->destroy( $key );
@@ -150,6 +150,7 @@ class Token_User extends Token_Generic {
 		$args    = array(
 			'number'      => 1,
 			'count_total' => false,
+			'fields'      => 'ID',
 			'meta_query'  => array(
 				array(
 					'key'     => $key,
@@ -157,25 +158,24 @@ class Token_User extends Token_Generic {
 				),
 			),
 		);
-		$query   = new WP_User_Query( $args );
-		$results = $query->get_results();
+		$results = get_users( $args );
 		if ( empty( $results ) ) {
 			return false;
 		}
-		$user  = $results[0];
-		$value = get_user_meta( $user->ID, $key, true );
+		$user_id = $results[0];
+		$value   = get_user_meta( $user_id, $key, true );
 		if ( empty( $value ) ) {
 			return false;
 		}
 
 		// If this token has expired destroy the token and return false;
 		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
-			$this->destroy( $key, $user->ID );
+			$this->destroy( $key, $user_ID );
 			return false;
 		}
 
-		$this->user_id = $user->ID;
-		$value['user'] = $user->ID;
+		$this->user_id = $user_id;
+		$value['user'] = $user_id;
 		return $value;
 
 	}
