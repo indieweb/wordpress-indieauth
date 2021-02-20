@@ -203,4 +203,22 @@ class Token_User extends Token_Generic {
 		}
 		return update_user_meta( $this->user_id, $key, $info );
 	}
+
+	/**
+	 *
+	 */
+	public function find_token_users() {
+		$args     = array(
+			'count_total' => false,
+			'fields'      => 'ID',
+			'meta_query'  => array(
+				array(
+					'key'         => $this->prefix,
+					'compare_key' => 'LIKE',
+				),
+			),
+		);
+		$user_ids = get_users( $args );
+		return $user_ids;
+	}
 }
