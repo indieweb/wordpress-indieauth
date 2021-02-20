@@ -101,8 +101,13 @@ class Token_User extends Token_Generic {
 		foreach ( $meta as $key => $value ) {
 			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
 				$value         = maybe_unserialize( array_pop( $value ) );
+				$key = str_replace( $this->prefix, '', $key );
 				$value['user'] = $this->user_id;
-				$tokens[ str_replace( $this->prefix, '', $key ) ] = $value;
+				if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+					$this->destroy( $key );
+				} else {
+					$tokens[ $key ] = $value;
+				}
 			}
 		}
 		return $tokens;
