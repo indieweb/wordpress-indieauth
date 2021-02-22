@@ -30,14 +30,14 @@ if ( ! $user_id ) {
 		<?php if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
 		?>
 		<p class="redirect">
-			<?php _e( '&#9888; <strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
+			<?php _e( '⚠️  <strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
 		</p>
 		<?php } 
 
 		if ( ! is_null( $code_challenge ) && 'S256' === $code_challenge_method ) { 
 		?>
 		<p class="pkce">
-			<?php _e( '&#9919; <strong>This app is using <a href="https://indieweb.org/PKCE">PKCE</a> for security.</strong>', 'indieauth' ); ?>
+			<?php _e( '🔒 <strong>This app is using <a href="https://indieweb.org/PKCE">PKCE</a> for security.</strong>', 'indieauth' ); ?>
 		</p>
 		<?php } ?>
 	</div>
