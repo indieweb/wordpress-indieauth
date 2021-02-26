@@ -177,6 +177,7 @@ class Token_User extends Token_Generic {
 			return false;
 		}
 		$user_id = $results[0];
+
 		$value   = get_user_meta( $user_id, $key, true );
 		if ( empty( $value ) ) {
 			return false;
@@ -184,11 +185,10 @@ class Token_User extends Token_Generic {
 
 		// If this token has expired destroy the token and return false;
 		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
-			$this->destroy( $key, $user_ID );
+			$this->destroy( $key );
 			return false;
 		}
 
-		$this->user_id = $user_id;
 		$value['user'] = $user_id;
 		return $value;
 
