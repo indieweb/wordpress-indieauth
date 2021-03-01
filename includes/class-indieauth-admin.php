@@ -40,7 +40,7 @@ class IndieAuth_Admin {
 				__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
 			),
 			'actions'     => '',
-			'test'        => 'indieauth_headers',
+			'test'        => 'indieauth_https',
 		);
 
 		if ( ! is_ssl() ) {
