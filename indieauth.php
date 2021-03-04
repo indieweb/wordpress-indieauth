@@ -19,7 +19,7 @@ if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 }
 
 register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'schedule' ) );
-register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivate' ) );
+register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivation' ) );
 
 
 add_action( 'upgrader_process_complete', array( 'IndieAuth_Plugin', 'upgrader_process_complete' ), 10, 2 );
@@ -42,7 +42,7 @@ class IndieAuth_Plugin {
 		}
 	}
 
-	public static function deactivate() {
+	public static function deactivation() {
 		$timestamp = wp_next_scheduled( 'indieauth_cleanup', array( false ) );
 		if ( $timestamp ) {
 			wp_unschedule_event( $timestamp, 'indieauth_cleanup', array( false ) );
