@@ -34,6 +34,16 @@ class Token_User extends Token_Generic {
 	 * @return string|boolean The pre-hashed key or false if there is an error.
 	 */
 	public function set( $info, $expiration = null ) {
+		// Whenever setting a token check to see if this user is one who has tokens and add to option.
+		$user_ids = get_option( $this->prefix . 'ids' );
+		if ( ! $user_ids ) {
+			add_option( $this->prefix . 'ids', array( $this->user_id ) );
+		}
+		if ( is_array( $user_ids ) && ! array_key_exists( $this->user_id ) ) {
+			$user_ids[] = $this->user_id;
+			update_option( $this->prefix . 'ids', $user_ids );
+		}
+
 		if ( ! is_array( $info ) ) {
 			return false;
 		}
@@ -87,22 +97,31 @@ class Token_User extends Token_Generic {
 
 
 	/**
-	 * Retrieves all tokens for a user
+	 * Retrieves all tokens
 	 *
 	 * @return array|boolean Token or false if not found
 	 */
 	public function get_all() {
 		if ( ! $this->user_id ) {
-			return false;
+			$ids = $this->find_token_users();
+		} else {
+			$ids = array( $this->user_id );
 		}
-		$meta   = get_user_meta( $this->user_id, '' );
-		$tokens = array();
 
-		foreach ( $meta as $key => $value ) {
-			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
-				$value         = maybe_unserialize( array_pop( $value ) );
-				$value['user'] = $this->user_id;
-				$tokens[ str_replace( $this->prefix, '', $key ) ] = $value;
+		$tokens = array();
+		foreach ( $ids as $user_id ) {
+			$meta = get_user_meta( $user_id, '' );
+			foreach ( $meta as $key => $value ) {
+				if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
+					$value         = maybe_unserialize( array_pop( $value ) );
+					$key           = str_replace( $this->prefix, '', $key );
+					$value['user'] = $user_id;
+					if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+						$this->destroy( $key );
+					} else {
+						$tokens[ $key ] = $value;
+					}
+				}
 			}
 		}
 		return $tokens;
@@ -145,6 +164,7 @@ class Token_User extends Token_Generic {
 		$args    = array(
 			'number'      => 1,
 			'count_total' => false,
+			'fields'      => 'ID',
 			'meta_query'  => array(
 				array(
 					'key'     => $key,
@@ -152,25 +172,24 @@ class Token_User extends Token_Generic {
 				),
 			),
 		);
-		$query   = new WP_User_Query( $args );
-		$results = $query->get_results();
+		$results = get_users( $args );
 		if ( empty( $results ) ) {
 			return false;
 		}
-		$user  = $results[0];
-		$value = get_user_meta( $user->ID, $key, true );
+		$user_id = $results[0];
+
+		$value   = get_user_meta( $user_id, $key, true );
 		if ( empty( $value ) ) {
 			return false;
 		}
 
 		// If this token has expired destroy the token and return false;
 		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
-			$this->destroy( $key, $user->ID );
+			$this->destroy( $key );
 			return false;
 		}
 
-		$this->user_id = $user->ID;
-		$value['user'] = $user->ID;
+		$value['user'] = $user_id;
 		return $value;
 
 	}
@@ -197,5 +216,32 @@ class Token_User extends Token_Generic {
 			return false;
 		}
 		return update_user_meta( $this->user_id, $key, $info );
+	}
+
+	/**
+	 *
+	 */
+	public function find_token_users( $refresh = false ) {
+		if ( $refresh ) {
+			$user_ids = get_option( $this->prefix . 'ids' );
+		} else {
+			$user_ids = false;
+		}
+		if ( false === $user_ids ) {
+			$args     = array(
+				'count_total' => false,
+				'fields'      => 'ID',
+				'meta_query'  => array(
+					array(
+						'key'         => $this->prefix,
+						'compare_key' => 'LIKE',
+					),
+				),
+			);
+			$user_ids = array_unique( get_users( $args ) );
+			// Like queries can be expensive so save the results.
+			add_option( $this->prefix . 'ids', $user_ids );
+		}
+		return $user_ids;
 	}
 }

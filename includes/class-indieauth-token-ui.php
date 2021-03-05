@@ -100,6 +100,9 @@ class IndieAuth_Token_UI {
 		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
 		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
 		$codes->check_expires();
+		// Check to see if the cleanup function is scheduled.
+		IndieAuth_Plugin::schedule();
+
 		$token_table = new Token_List_Table();
 		echo '<div class="wrap"><h2>' . esc_html__( 'Manage IndieAuth Tokens', 'indieauth' ) . '</h2>';
 		echo '<form method="get">';

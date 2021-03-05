@@ -18,8 +18,62 @@ if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 	define( 'INDIEAUTH_REMOTE_MODE', 0 );
 }
 
+register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'activation' ) );
+register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivation' ) );
+
+
+add_action( 'upgrader_process_complete', array( 'IndieAuth_Plugin', 'upgrader_process_complete' ), 10, 2 );
+add_action( 'indieauth_cleanup', array( 'IndieAuth_Plugin', 'expires' ) );
+
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
+
+	/*
+	 * Process to Trigger on Plugin Update.
+	 */
+	public static function upgrader_process_complete( $upgrade_object, $options ) {
+		$current_plugin_path_name = plugin_basename( __FILE__ );
+		if ( ( 'update' === $options['action'] ) && ( 'plugin' === $options['type'] ) ) {
+			foreach ( $options['plugins'] as $each_plugin ) {
+				if ( $each_plugin === $current_plugin_path_name ) {
+					self::schedule();
+				}
+			}
+		}
+	}
+
+	public static function deactivation() {
+		self::cancel_schedule();
+	}
+
+	public static function cancel_schedule() {
+		$timestamp = wp_next_scheduled( 'indieauth_cleanup', array( false ) );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, 'indieauth_cleanup', array( false ) );
+		}
+	}
+
+	public static function activation() {
+		self::schedule();
+	}
+
+	public static function schedule() {
+		if ( ! wp_next_scheduled( 'indieauth_cleanup', array( false ) ) ) {
+			return wp_schedule_event( time() + HOUR_IN_SECONDS, 'twicedaily', 'indieauth_cleanup', array( false ) );
+		}
+		return true;
+	}
+
+	/*
+	 * Expires authorization codes in the event any are left in the system.
+	 *
+	 */
+	public static function expires() {
+		// The get_all function retrieves all tokens and destroys any expired token.
+		$t = new Token_User( '_indieauth_token_', $user_id );
+		$t->get_all();
+		$t = new Token_User( '_indieauth_code_', $user_id );
+	}
 
 	public static function plugins_loaded() {
 		// Load Core Classes that are always loaded

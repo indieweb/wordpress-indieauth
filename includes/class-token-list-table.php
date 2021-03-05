@@ -26,7 +26,6 @@ class Token_List_Table extends WP_List_Table {
 				  'revoke_week'  => __( 'Revoke Tokens Last Accessed 1 Week Ago or Never', 'indieauth' ),
 				  'revoke_day'   => __( 'Revoke Tokens Last Accessed 1 Day Ago or Never', 'indieauth' ),
 				  'revoke_hour'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago or Never', 'indieauth' ),
-				  'cleanup'      => __( 'Clean Up Expired Tokens and Authorization Codes', 'indieauth' ),
 			  );
 	}
 
@@ -40,8 +39,17 @@ class Token_List_Table extends WP_List_Table {
 		$this->process_action();
 		$this->_column_headers = array( $columns, $hidden, $this->get_sortable_columns() );
 		$t                     = new Token_User( '_indieauth_token_', get_current_user_id() );
+		// Always refresh the list of token users while loading this page.
+		$t->find_token_users( true );
 		$tokens                = $t->get_all();
 		$this->items           = array();
+		$this->set_pagination_args( 
+			array(
+				'total_items' => count( $tokens ),
+				'total_pages' => 1,
+				'per_page' => count( $tokens )
+			)
+		);
 		foreach ( $tokens as $key => $value ) {
 			$value['token'] = $key;
 			$this->items[]  = $value;
@@ -69,11 +77,6 @@ class Token_List_Table extends WP_List_Table {
 						$t->destroy( $token );
 					}
 				}
-				break;
-			case 'cleanup':
-				$t->check_expires();
-				$users = new Token_User( '_indieauth_code_', get_current_user_id() );
-				$users->destroy_all();
 				break;
 			case 'revoke_year':
 				$this->destroy_older_than( $t, 'year' );
