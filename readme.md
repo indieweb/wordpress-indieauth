@@ -3,8 +3,8 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
-**Tested up to:** 5.6  
-**Stable tag:** 3.6.0  
+**Tested up to:** 5.7  
+**Stable tag:** 3.6.1  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -151,6 +151,9 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 3.6.1 ###
+* Clean up template pages in order to remove HTML from i18n strings.
 
 ### 3.6.0 ###
 * Adopt changes to the living spec as of the November 26, 2020 version.
