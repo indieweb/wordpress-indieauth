@@ -41,13 +41,13 @@ class Token_List_Table extends WP_List_Table {
 		$t                     = new Token_User( '_indieauth_token_', get_current_user_id() );
 		// Always refresh the list of token users while loading this page.
 		$t->find_token_users( true );
-		$tokens                = $t->get_all();
-		$this->items           = array();
-		$this->set_pagination_args( 
+		$tokens      = $t->get_all();
+		$this->items = array();
+		$this->set_pagination_args(
 			array(
 				'total_items' => count( $tokens ),
 				'total_pages' => 1,
-				'per_page' => count( $tokens )
+				'per_page'    => count( $tokens ),
 			)
 		);
 		foreach ( $tokens as $key => $value ) {

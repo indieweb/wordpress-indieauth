@@ -4,6 +4,7 @@
 
 	<file>./indieauth.php</file>
 	<file>./includes/</file>
+	<file>./templates/</file>
 	<exclude-pattern>*/includes/*\.(inc|css|js|svg)</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<rule ref="PHPCompatibility"/>

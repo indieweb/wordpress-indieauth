@@ -178,7 +178,7 @@ class Token_User extends Token_Generic {
 		}
 		$user_id = $results[0];
 
-		$value   = get_user_meta( $user_id, $key, true );
+		$value = get_user_meta( $user_id, $key, true );
 		if ( empty( $value ) ) {
 			return false;
 		}
