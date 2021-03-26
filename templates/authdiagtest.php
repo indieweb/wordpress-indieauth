@@ -1,9 +1,9 @@
 <?php
-$errors = new WP_Error();
+$test_errors = new WP_Error();
 login_header(
 	__( 'Authorization Header Test', 'indieauth' ),
 	'',
-	$errors
+	$test_errors
 );
 
 
@@ -17,6 +17,6 @@ $response = wp_remote_post(
 	)
 );
 if ( ! is_wp_error( $response ) ) {
-	echo $response['body'];
+	echo esc_html( $response['body'] );
 }
 
