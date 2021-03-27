@@ -10,7 +10,7 @@
 	if ( ! is_null( $code_challenge ) && 'S256' === $code_challenge_method ) {
 		?>
 	<p class="pkce">
-		<strong>🔒<?php esc_html_e( 'This app is using PKCE for security.', 'indieauth' ); ?> </strong>
+		<strong> 🔒 <?php esc_html_e( 'This app is using PKCE for security.', 'indieauth' ); ?> </strong>
 	</p>
 	<?php } ?>
 </div>
