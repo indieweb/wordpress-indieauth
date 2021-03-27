@@ -108,7 +108,7 @@ class IndieAuth_Admin {
 				array(
 					'div' => array(
 						'class' => array()
-					)
+					),
 					'p' => array()
 				)
 			);
