@@ -103,7 +103,15 @@ class IndieAuth_Admin {
 				header( 'Content-Type: application/json' );
 				$return = wp_json_encode( array( 'message' => $return ) );
 			}
-			echo $return; // phpcs:ignore
+			echo wp_kses( 
+				$return,
+				array(
+					'div' => array(
+						'class' => array()
+					)
+					'p' => array()
+				)
+			);
 			exit;
 		}
 		$args = array(

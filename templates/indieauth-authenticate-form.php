@@ -17,13 +17,21 @@ if ( ! $user_website ) {
 	<div class="user-info">
 		<?php echo get_avatar( $current_user->ID, '48' ); ?>
 		<?php
-			printf(
-				/* translators: 1. Client with link 2. User ID 3. User Display Name 4. User Nicename */
-				'<p>' . esc_html__( 'The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
-				$client, // phpcs:ignore
-				'<strong>' . esc_url( $user_website ) . '</strong>',
-				'<strong>' . esc_html( $current_user->display_name ) . '</strong>',
-				esc_html( $current_user->user_nicename )
+			echo wp_kses(
+				sprintf(
+					/* translators: 1. Client with link 2. User ID 3. User Display Name 4. User Nicename */
+					'<p>' . esc_html__( 'The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
+					$client,
+					'<strong>' . esc_url( $user_website ) . '</strong>',
+					'<strong>' . esc_html( $current_user->display_name ) . '</strong>',
+					$current_user->user_nicename
+				),
+				array(
+					'strong' => array(),
+					'a'      => array(
+						'href' => array(),
+					),
+				)
 			);
 			?>
 	</div>

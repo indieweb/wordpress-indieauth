@@ -145,7 +145,19 @@ class IndieAuth_Authorization_Endpoint {
 	public static function scope_list( $scopes ) {
 		if ( ! empty( $scopes ) ) {
 			foreach ( $scopes as $s ) {
-				printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), esc_html( self::scopes( $s ) ) ); // phpcs:ignore
+				echo wp_kses(
+					sprintf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), esc_html( self::scopes( $s ) ) ),
+					array(
+						'li'     => array(),
+						'strong' => array(),
+						'input'  => array(
+							'type'    => array(),
+							'name'    => array(),
+							'value'   => array(),
+							'checked' => array(),
+						),
+					)
+				);
 			}
 		}
 	}

@@ -15,7 +15,7 @@ login_header(
 		<strong> 
 		<?php
 			/* translators: 1. Client */
-			printf( esc_html__( '%1$s wants to access your site.', 'indieauth' ), $client ); // phpcs:ignore
+			echo esc_html( sprintf( __( '%1$s wants to access your site.', 'indieauth' ), $client ) );
 		?>
 		</strong>
 		</div>

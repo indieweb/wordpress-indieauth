@@ -108,12 +108,18 @@ abstract class IndieAuth_Authorize {
 	public static function html_header() {
 		$auth  = static::get_authorization_endpoint();
 		$token = static::get_token_endpoint();
+		$kses  = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
 		if ( empty( $auth ) || empty( $token ) ) {
 			return;
 		}
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ); //phpcs:ignore
+			wp_kses( sprintf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ), $kses );
+			wp_kses( sprintf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ), $kses );
 		}
 	}
 
@@ -273,10 +279,10 @@ abstract class IndieAuth_Authorize {
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_request() {
-		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore
+		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return null;
 		}
-		$token = $_POST['access_token']; // phpcs:ignore
+		$token = $_POST['access_token']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( is_string( $token ) ) {
 			return $token;
