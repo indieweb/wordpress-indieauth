@@ -101,8 +101,8 @@ abstract class IndieAuth_Authorize {
 			return;
 		}
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint(), false ) );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint() ), false );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint() ), false );
 		}
 	}
 	public static function html_header() {
