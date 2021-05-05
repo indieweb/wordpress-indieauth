@@ -6,7 +6,7 @@ login_header(
 	$login_errors
 );
 ?>
-<form name="loginform" id="loginform" action="<?php esc_url( add_query_arg( 'action', 'websignin', wp_login_url() ) ); ?>" method="post">
+<form name="loginform" id="loginform" action="<?php echo esc_url( add_query_arg( 'action', 'websignin', wp_login_url() ) ); ?>" method="post">
 	<div class="login-info">
 		<p><?php esc_html_e( 'Sign in with your domain', 'indieauth' ); ?></p>
 		<input class="input" type="url" name="websignin_identifier" placeholder="https://example.com" />
