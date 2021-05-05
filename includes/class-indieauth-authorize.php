@@ -16,7 +16,7 @@ abstract class IndieAuth_Authorize {
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 
-		add_action( 'send_headers', array( $this, 'http_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
