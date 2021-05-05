@@ -118,8 +118,8 @@ abstract class IndieAuth_Authorize {
 			return;
 		}
 		if ( is_author() || is_front_page() ) {
-			wp_kses( sprintf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ), $kses );
-			wp_kses( sprintf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ), $kses );
+			echo wp_kses( sprintf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ), $kses );
+			echo wp_kses( sprintf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ), $kses );
 		}
 	}
 
