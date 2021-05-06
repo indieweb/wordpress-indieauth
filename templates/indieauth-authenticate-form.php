@@ -1,49 +1,45 @@
 <?php
-$errors = new WP_Error();
+$login_errors = new WP_Error();
 login_header(
-	sprintf( __( 'Authenticate %1$s', 'indieauth' ), empty( $client_name ) ? $client_id : $client_name ),
+	/* translators: Client Name or ID */
+	sprintf( __( 'Authenticate %1$s', 'indieauth' ), empty( $client_name ) ? esc_url( $client_id ) : $client_name ),
 	'',
-	$errors
+	$login_errors
 );
-$user_id = get_url_from_user( $current_user->ID );
-if ( ! $user_id ) {
+$user_website = esc_url( get_url_from_user( $current_user->ID ) );
+if ( ! $user_website ) {
 	__e( 'The application cannot sign you in as WordPress cannot determine the current user', 'indieauth' );
 	exit;
 }
-	
+
 ?>
-<form method="post" action="<?php echo $url; ?>">
+<form method="post" action="<?php echo esc_url( $url ); ?>">
 	<div class="user-info">
 		<?php echo get_avatar( $current_user->ID, '48' ); ?>
 		<?php
-			printf(
-				'<p>' . __( 'The app <strong>%1$s</strong> would like to identify you as <strong>%2$s</strong>, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
-				$client,
-				$user_id,
-				$current_user->display_name,
-				$current_user->user_nicename
-				
+			echo wp_kses(
+				sprintf(
+					/* translators: 1. Client with link 2. User ID 3. User Display Name 4. User Nicename */
+					'<p>' . esc_html__( 'The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
+					$client,
+					'<strong>' . esc_url( $user_website ) . '</strong>',
+					'<strong>' . esc_html( $current_user->display_name ) . '</strong>',
+					$current_user->user_nicename
+				),
+				array(
+					'strong' => array(),
+					'a'      => array(
+						'href' => array(),
+					),
+				)
 			);
-		?>
+			?>
 	</div>
-	<div class="notices">
-		<?php if ( wp_parse_url( $client_id, PHP_URL_HOST ) !== wp_parse_url( $redirect_uri, PHP_URL_HOST ) ) {
-		?>
-		<p class="redirect">
-			<?php _e( '⚠️  <strong>Warning</strong>: The redirect URL this app is using does not match the domain of the client ID.', 'indieauth' ); ?>
-		</p>
-		<?php } 
 
-		if ( ! is_null( $code_challenge ) && 'S256' === $code_challenge_method ) { 
-		?>
-		<p class="pkce">
-			<?php _e( '🔒 <strong>This app is using <a href="https://indieweb.org/PKCE">PKCE</a> for security.</strong>', 'indieauth' ); ?>
-		</p>
-		<?php } ?>
-	</div>
+	<?php require plugin_dir_path( __FILE__ ) . 'indieauth-notices.php'; ?>
 	<?php if ( ! empty( $scopes ) ) { ?>
 			<div class="scope-info">
-			<?php _e( 'The app will have no access to your site, but is requesting access to the following information:', 'indieauth' ); ?>
+			<?php esc_html_e( 'The app will have no access to your site, but is requesting access to the following information:', 'indieauth' ); ?>
 			<ul>
 			<?php self::scope_list( $scopes ); ?>
 			</ul>
@@ -54,13 +50,14 @@ if ( ! $user_id ) {
 		// Hook to allow adding to form
 		do_action( 'indieauth_authentication_form', $current_user->ID, $client_id );
 	?>
-		<input type="hidden" name="client_id" value="<?php echo $client_id; ?>" />
-		<input type="hidden" name="redirect_uri" value="<?php echo $redirect_uri; ?>" />
-		<input type="hidden" name="me" value="<?php echo $me; ?>" />
-		<input type="hidden" name="response_type" value="<?php echo $response_type; ?>" />
-		<input type="hidden" name="state" value="<?php echo $state; ?>" />
-		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php _e( 'Allow', 'indieauth' ); ?></button>
-		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo home_url(); ?>"><?php _e( 'Cancel', 'indieauth' ); ?></a>
+		<input type="hidden" name="client_id" value="<?php echo esc_url( $client_id ); ?>" />
+		<input type="hidden" name="redirect_uri" value="<?php echo esc_url( $redirect_uri ); ?>" />
+		<input type="hidden" name="me" value="<?php echo esc_url( $me ); ?>" />
+		<input type="hidden" name="response_type" value="<?php echo esc_attr( $response_type ); ?>" />
+		<input type="hidden" name="state" value="<?php echo esc_attr( $state ); ?>" />
+		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php esc_html_e( 'Allow', 'indieauth' ); ?></button>
+		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo esc_url( home_url() ); ?>"><?php esc_html_e( 'Cancel', 'indieauth' ); ?></a>
 	</p>
 </form>
-<p class="redirect-info"><?php printf( __( 'You will be redirected to <code>%1$s</code> after authenticating.', 'indieauth' ), $redirect_uri ); ?></p>
+<?php /* translators: 1. Redirect URI */ ?>
+<p class="redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after authenticating.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></p>

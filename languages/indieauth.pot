@@ -1,15 +1,15 @@
-# Copyright (C) 2020 IndieWebCamp WordPress Outreach Club
+# Copyright (C) 2021 IndieWebCamp WordPress Outreach Club
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.6.0\n"
+"Project-Id-Version: IndieAuth 3.6.1\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2020-12-13 20:38:40+00:00\n"
+"POT-Creation-Date: 2021-03-26 05:04:26+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2020-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2021-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
@@ -245,45 +245,45 @@ msgstr ""
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:146
+#: includes/class-indieauth-authorization-endpoint.php:159
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:152
-#: includes/class-indieauth-authorization-endpoint.php:206
+#: includes/class-indieauth-authorization-endpoint.php:165
+#: includes/class-indieauth-authorization-endpoint.php:219
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:172
+#: includes/class-indieauth-authorization-endpoint.php:185
 msgid "Invalid scope request"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:176
+#: includes/class-indieauth-authorization-endpoint.php:189
 msgid "Cannot request email scope without profile scope"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:210
+#: includes/class-indieauth-authorization-endpoint.php:223
 #: includes/class-indieauth-token-endpoint.php:148
 msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:216
-#: includes/class-indieauth-local-authorize.php:49 includes/functions.php:527
+#: includes/class-indieauth-authorization-endpoint.php:229
+#: includes/class-indieauth-local-authorize.php:49 includes/functions.php:529
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:221
+#: includes/class-indieauth-authorization-endpoint.php:234
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:229
-#: includes/class-indieauth-authorization-endpoint.php:233
-#: includes/functions.php:532 includes/functions.php:536
+#: includes/class-indieauth-authorization-endpoint.php:242
+#: includes/class-indieauth-authorization-endpoint.php:246
+#: includes/functions.php:534 includes/functions.php:538
 msgid "Failed PKCE Validation"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:249
+#: includes/class-indieauth-authorization-endpoint.php:262
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -410,7 +410,7 @@ msgid "There was an error in response."
 msgstr ""
 
 #: includes/class-indieauth-token-ui.php:33
-#: includes/class-indieauth-token-ui.php:104
+#: includes/class-indieauth-token-ui.php:107
 msgid "Manage IndieAuth Tokens"
 msgstr ""
 
@@ -436,19 +436,19 @@ msgid ""
 "anywhere. Please copy and store it."
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:113
+#: includes/class-indieauth-token-ui.php:116
 msgid "Add Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:115
+#: includes/class-indieauth-token-ui.php:118
 msgid "Name for Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:118
+#: includes/class-indieauth-token-ui.php:121
 msgid "Scopes"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:120
+#: includes/class-indieauth-token-ui.php:123
 msgid "Add New Token"
 msgstr ""
 
@@ -481,7 +481,7 @@ msgid "Expires"
 msgstr ""
 
 #: includes/class-token-list-table.php:23
-#: includes/class-token-list-table.php:144
+#: includes/class-token-list-table.php:147
 msgid "Revoke"
 msgstr ""
 
@@ -505,25 +505,21 @@ msgstr ""
 msgid "Revoke Tokens Last Accessed 1 Hour Ago or Never"
 msgstr ""
 
-#: includes/class-token-list-table.php:29
-msgid "Clean Up Expired Tokens and Authorization Codes"
-msgstr ""
-
-#: includes/class-token-list-table.php:145
+#: includes/class-token-list-table.php:148
 msgid "Retrieve Information"
 msgstr ""
 
-#: includes/class-token-list-table.php:148
+#: includes/class-token-list-table.php:151
 msgid "Not Provided"
 msgstr ""
 
-#: includes/class-token-list-table.php:163
-#: includes/class-token-list-table.php:177
+#: includes/class-token-list-table.php:166
+#: includes/class-token-list-table.php:180
 msgid "Never"
 msgstr ""
 
-#: includes/class-token-list-table.php:169
-#: includes/class-token-list-table.php:183
+#: includes/class-token-list-table.php:172
+#: includes/class-token-list-table.php:186
 #. translators: Human time difference ago
 msgid "%s ago"
 msgstr ""
@@ -593,7 +589,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:97
+#: indieauth.php:151
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""
@@ -630,114 +626,133 @@ msgstr ""
 msgid "Authorization Header Test"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:4
-#: templates/indieauth-authenticate-form.php:48
-msgid "Authenticate"
-msgstr ""
-
-#: templates/indieauth-authenticate-form.php:14
-msgid ""
-"The app <strong>%1$s</strong> would like to sign you in as "
-"<strong>%2$s</strong>."
+#: templates/indieauth-authenticate-form.php:5
+#. translators: Client Name or ID
+msgid "Authenticate %1$s"
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:22
-#: templates/indieauth-authorize-form.php:28
-msgid ""
-"<strong>Warning</strong>: The redirect URL this app is using does not match "
-"the domain of the client ID."
+#. translators: 1. Client with link 2. User ID 3. User Display Name 4. User
+#. Nicename
+msgid "The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s)."
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:27
+#: templates/indieauth-authenticate-form.php:34
 msgid ""
-"In addition, the app is requesting access to additional user profile "
-"information"
+"The app will have no access to your site, but is requesting access to the "
+"following information:"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:49
-#: templates/indieauth-authorize-form.php:60
+#: templates/indieauth-authenticate-form.php:50
+msgid "Allow"
+msgstr ""
+
+#: templates/indieauth-authenticate-form.php:51
+#: templates/indieauth-authorize-form.php:59
 msgid "Cancel"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:52
-msgid "You will be redirected to <code>%1$s</code> after authenticating."
+#: templates/indieauth-authenticate-form.php:55
+#. translators: 1. Redirect URI
+msgid "You will be redirected to %1$s after authenticating."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:4
-#: templates/indieauth-authorize-form.php:59
-msgid "Authorize"
+#: templates/indieauth-authorize-form.php:5
+#. translators: 1. Client Name
+msgid "Authorize %1$s"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:16
+#: templates/indieauth-authorize-form.php:18
+#. translators: 1. Client
+msgid "%1$s wants to access your site."
+msgstr ""
+
+#: templates/indieauth-authorize-form.php:28
+#. translators: 1. User Display Name 2. User Nice Name
 msgid ""
-"The app <strong>%1$s</strong> would like to access your site, "
-"<strong>%2$s</strong> using the credentials of <strong>%3$s</strong> (%4$s)."
+"The app will use credentials of %1$s(%2$s). You can revoke access at any "
+"time."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:33
-msgid ""
-"The app is requesting the following <a "
-"href=\"https://indieweb.org/scope\">scopes</a>"
+#: templates/indieauth-authorize-form.php:38
+msgid "Below select the privileges you would like to grant the application."
+msgstr ""
+
+#: templates/indieauth-authorize-form.php:58
+msgid "Approve"
 msgstr ""
 
 #: templates/indieauth-authorize-form.php:63
-msgid ""
-"You will be redirected to <code>%1$s</code> after authorizing this "
-"application."
+#. translators: 1. Redirect URI
+msgid "You will be redirected to %1$s after approving this application."
 msgstr ""
 
-#: templates/indieauth-settings.php:6
+#: templates/indieauth-notices.php:6
+msgid ""
+"The redirect URL this app is using does not match the domain of the client "
+"ID."
+msgstr ""
+
+#: templates/indieauth-notices.php:13
+msgid "This app is using PKCE for security."
+msgstr ""
+
+#: templates/indieauth-settings.php:7
 msgid ""
 "Some host configurations can block the ability of this site to work and may "
-"require change. Please run a <a href=\"%1s\">Site Health check</a> to "
-"ensure this will work with your site"
+"require change. Please run the Site Health check to ensure this will work "
+"with your site."
 msgstr ""
 
-#: templates/indieauth-settings.php:12
+#: templates/indieauth-settings.php:8
+msgid "Click Here"
+msgstr ""
+
+#: templates/indieauth-settings.php:15
 msgid ""
 "With IndieAuth, you can use your blog, to log into sites like the "
 "IndieWeb-Wiki."
 msgstr ""
 
-#: templates/indieauth-settings.php:20
+#: templates/indieauth-settings.php:23
 msgid "Endpoints"
 msgstr ""
 
-#: templates/indieauth-settings.php:24
+#: templates/indieauth-settings.php:27
 msgid "Authorization Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:28
+#: templates/indieauth-settings.php:31
 msgid "Token Endpoint:"
 msgstr ""
 
-#: templates/indieauth-settings.php:35
+#: templates/indieauth-settings.php:38
 msgid "Set User to Represent Site URL"
 msgstr ""
 
-#: templates/indieauth-settings.php:41
+#: templates/indieauth-settings.php:45
 msgid "None"
 msgstr ""
 
-#: templates/indieauth-settings.php:48
+#: templates/indieauth-settings.php:53
 msgid "Set a User who will represent the URL of the site"
 msgstr ""
 
-#: templates/indieauth-settings.php:55 templates/websignin-link.php:3
+#: templates/indieauth-settings.php:60 templates/websignin-link.php:3
 msgid "Web Sign-In"
 msgstr ""
 
-#: templates/indieauth-settings.php:57
+#: templates/indieauth-settings.php:62
 msgid ""
 "Enable Web Sign-In for your blog, so others can use IndieAuth or RelMeAuth "
 "to log into this site."
 msgstr ""
 
-#: templates/indieauth-settings.php:63
+#: templates/indieauth-settings.php:68
 msgid "Use IndieAuth login"
 msgstr ""
 
-#: templates/indieauth-settings.php:69
+#: templates/indieauth-settings.php:77
 msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
 msgstr ""
 
@@ -747,10 +762,6 @@ msgstr ""
 
 #: templates/websignin-form.php:11
 msgid "Sign in with your domain"
-msgstr ""
-
-#: templates/websignin-form.php:12
-msgid "https://example.com"
 msgstr ""
 
 #: templates/websignin-form.php:19

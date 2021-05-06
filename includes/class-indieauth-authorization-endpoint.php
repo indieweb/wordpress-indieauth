@@ -145,7 +145,19 @@ class IndieAuth_Authorization_Endpoint {
 	public static function scope_list( $scopes ) {
 		if ( ! empty( $scopes ) ) {
 			foreach ( $scopes as $s ) {
-				printf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), self::scopes( $s ) );
+				echo wp_kses(
+					sprintf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), esc_html( self::scopes( $s ) ) ),
+					array(
+						'li'     => array(),
+						'strong' => array(),
+						'input'  => array(
+							'type'    => array(),
+							'name'    => array(),
+							'value'   => array(),
+							'checked' => array(),
+						),
+					)
+				);
 			}
 		}
 	}
@@ -279,7 +291,7 @@ class IndieAuth_Authorization_Endpoint {
 	public function authorize() {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
-		$client_id     = wp_unslash( $_GET['client_id'] ); // WPCS: CSRF OK
+		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) ); // WPCS: CSRF OK
 		$info = new IndieAuth_Client_Discovery( $client_id );
 		$client_name = $info->get_name();
 		$client_icon = $info->get_icon();
@@ -290,11 +302,11 @@ class IndieAuth_Authorization_Endpoint {
 		}
 
 		$redirect_uri  = isset( $_GET['redirect_to'] ) ? wp_unslash( $_GET['redirect_to'] ) : null;
-		$scope         = isset( $_GET['scope'] ) ? wp_unslash( $_GET['scope'] ) : null;
+		$scope         = isset( $_GET['scope'] ) ? sanitize_text_field( wp_unslash( $_GET['scope'] ) ) : null;
 		$scopes        = array_filter( explode( ' ', $scope ) );
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
-		$me            = isset( $_GET['me'] ) ? wp_unslash( $_GET['me'] ) : null;
-		$response_type = isset( $_GET['response_type'] ) ? wp_unslash( $_GET['response_type'] ) : null;
+		$me            = isset( $_GET['me'] ) ? esc_url_raw( wp_unslash( $_GET['me'] ) ) : null;
+		$response_type = isset( $_GET['response_type'] ) ? sanitize_text_field( wp_unslash( $_GET['response_type'] ) ) : null;
 		$code_challenge = isset( $_GET['code_challenge'] ) ? wp_unslash( $_GET['code_challenge'] ) : null;
 		$code_challenge_method = isset( $_GET['code_challenge_method'] ) ? wp_unslash( $_GET['code_challenge_method'] ) : null;
 

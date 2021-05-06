@@ -16,7 +16,7 @@ abstract class IndieAuth_Authorize {
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 
-		add_action( 'send_headers', array( $this, 'http_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
@@ -101,19 +101,25 @@ abstract class IndieAuth_Authorize {
 			return;
 		}
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint(), false ) );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint(), false ) );
+			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint() ), false );
+			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint() ), false );
 		}
 	}
 	public static function html_header() {
 		$auth  = static::get_authorization_endpoint();
 		$token = static::get_token_endpoint();
+		$kses  = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
 		if ( empty( $auth ) || empty( $token ) ) {
 			return;
 		}
 		if ( is_author() || is_front_page() ) {
-			printf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ); // phpcs:ignore
-			printf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ); //phpcs:ignore
+			echo wp_kses( sprintf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ), $kses );
+			echo wp_kses( sprintf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ), $kses );
 		}
 	}
 
@@ -273,10 +279,10 @@ abstract class IndieAuth_Authorize {
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_request() {
-		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore
+		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return null;
 		}
-		$token = $_POST['access_token']; // phpcs:ignore
+		$token = $_POST['access_token']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( is_string( $token ) ) {
 			return $token;

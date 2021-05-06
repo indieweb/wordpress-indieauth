@@ -41,7 +41,8 @@ class IndieAuth_Scopes {
 			// This check is only for certain capabilities
 			if ( ! in_array( $cap, $this->map_caps(), true ) ) {
 				if ( WP_DEBUG ) {
-					error_log( sprintf( __( 'Unknown cap: %1s', 'indieauth' ), $cap ) ); // phpcs:ignore
+					/* translators: Capability */
+					error_log( sprintf( __( 'Unknown cap: %s', 'indieauth' ), $cap ) );
 				}
 				return $caps;
 			}
