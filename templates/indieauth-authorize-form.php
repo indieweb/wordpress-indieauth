@@ -15,7 +15,14 @@ login_header(
 		<strong> 
 		<?php
 			/* translators: 1. Client */
-			echo esc_html( sprintf( __( '%1$s wants to access your site.', 'indieauth' ), $client ) );
+			echo wp_kses( 
+				sprintf( __( '%1$s wants to access your site.', 'indieauth' ), $client ),
+				array(
+					'a' => array(
+							'href' => array()
+					)
+				)
+			);
 		?>
 		</strong>
 		</div>
