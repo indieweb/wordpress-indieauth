@@ -24,11 +24,6 @@ matrix:
   - php: 7.4
 jobs:
   include:
-  - stage: lint
-    php: 7.4
-    script:
-      - composer install
-      - composer lint
   - stage: previousversion
     php: 7.4
     env: WP_VERSION=5.3 WP_MULTISITE=0
