@@ -101,7 +101,8 @@ class IndieAuth_Admin {
 			}
 			if ( 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
 				header( 'Content-Type: application/json' );
-				$return = wp_json_encode( array( 'message' => $return ) );
+				echo wp_json_encode( array( 'message' => $return ) );
+				exit;
 			}
 			echo wp_kses( 
 				$return,
