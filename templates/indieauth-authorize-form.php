@@ -14,16 +14,16 @@ login_header(
 		<?php } ?>
 		<strong> 
 		<?php
-			/* translators: 1. Client */
-			echo wp_kses( 
+			echo wp_kses(
+				/* translators: 1. Client */
 				sprintf( __( '%1$s wants to access your site.', 'indieauth' ), $client ),
 				array(
 					'a' => array(
-							'href' => array()
-					)
+						'href' => array(),
+					),
 				)
 			);
-		?>
+			?>
 		</strong>
 		</div>
 		<div class="user-info">

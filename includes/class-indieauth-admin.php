@@ -104,13 +104,13 @@ class IndieAuth_Admin {
 				echo wp_json_encode( array( 'message' => $return ) );
 				exit;
 			}
-			echo wp_kses( 
+			echo wp_kses(
 				$return,
 				array(
 					'div' => array(
-						'class' => array()
+						'class' => array(),
 					),
-					'p' => array()
+					'p'   => array(),
 				)
 			);
 			exit;
