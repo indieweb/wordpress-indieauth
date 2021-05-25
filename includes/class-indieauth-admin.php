@@ -88,9 +88,9 @@ class IndieAuth_Admin {
 	public function login_form_authdiag() {
 		$return = '';
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['HTTP_AUTHORIZATION'] ) {
 				$return = '<div class="notice notice-success"><p>' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
-			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer abc123' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
+			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
 				$return = '<div class="notice-success"><p>' . esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 			}
 			if ( empty( $return ) ) {
@@ -101,7 +101,7 @@ class IndieAuth_Admin {
 			}
 			if ( 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
 				header( 'Content-Type: application/json' );
-				echo wp_json_encode( array( 'message' => $return ) );
+				echo wp_json_encode( array( 'message' => esc_html( $return ) ) );
 				exit;
 			}
 			echo wp_kses(
@@ -211,14 +211,14 @@ class IndieAuth_Admin {
 			array(
 				'method'  => 'POST',
 				'headers' => array(
-					'Authorization' => 'Bearer abc123',
+					'Authorization' => 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG',
 					'Accept'        => 'application/json',
 				),
 			)
 		);
 		if ( ! is_wp_error( $response ) ) {
 			$json = json_decode( wp_remote_retrieve_body( $response ) );
-			return $json->message;
+			return wp_specialchars_decode( $json->message );
 		} else {
 			return false;
 		}
