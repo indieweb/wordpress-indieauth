@@ -39,7 +39,7 @@ class Token_User extends Token_Generic {
 		if ( ! $user_ids ) {
 			add_option( $this->prefix . 'ids', array( $this->user_id ) );
 		}
-		if ( is_array( $user_ids ) && ! array_key_exists( $this->user_id ) ) {
+		if ( is_array( $user_ids ) && ! array_key_exists( $this->user_id, $user_ids ) ) {
 			$user_ids[] = $this->user_id;
 			update_option( $this->prefix . 'ids', $user_ids );
 		}
