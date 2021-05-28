@@ -12,7 +12,7 @@ $response = wp_remote_post(
 	array(
 		'method'  => 'POST',
 		'headers' => array(
-			'Authorization' => 'Bearer abc123',
+			'Authorization' => 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG',
 		),
 	)
 );
