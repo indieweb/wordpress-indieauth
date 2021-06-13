@@ -59,8 +59,9 @@ class IndieAuth_Token_UI {
 		if ( empty( $scopes ) ) {
 			$scopes = 'create update';
 		}
-		$scopes = sanitize_text_field( $scopes );
-		$token  = self::generate_local_token( $client_name, $scopes );
+		$scopes  = sanitize_text_field( $scopes );
+		$expires = sanitize_text_field( $_REQUEST['expires_in'] );
+		$token   = self::generate_local_token( $client_name, $scopes, $expires );
 		?>
 	<p><?php esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
 	<h3><?php echo $token; // phpcs:ignore 
@@ -71,7 +72,7 @@ class IndieAuth_Token_UI {
 		exit;
 	}
 
-	private function generate_local_token( $name, $scopes ) {
+	private function generate_local_token( $name, $scopes, $expires_in = 0 ) {
 		$user_id = get_current_user_id();
 		$tokens  = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( $user_id );
@@ -86,6 +87,10 @@ class IndieAuth_Token_UI {
 			'client_icon' => get_avatar_url( $user_id ),
 			'issued_at'   => time(),
 		);
+		if ( $expires_in > 0 ) {
+			$token['expires_in'] = $expires_in;
+			$token['expiration'] = time() + $expires_in;
+		}
 		return $tokens->set( $token );
 	}
 
@@ -120,6 +125,9 @@ class IndieAuth_Token_UI {
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
 			<h4><?php esc_html_e( 'Scopes', 'indieauth' ); ?></h4>
 			<?php echo esc_html( $this->scopes() ); ?>
+			<p><label><?php esc_html_e( 'Set Expiry Time in Seconds(0 to disable)', 'indieauth' ); ?></label>
+			<input type="number" name="expires_in" id="expires_in" min="0" value="3600" />
+			</p>
 			<p><button class="button-primary"><?php esc_html_e( 'Add New Token', 'indieauth' ); ?></button></p>
 		</form>
 		</div>
