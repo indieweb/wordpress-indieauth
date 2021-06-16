@@ -39,7 +39,7 @@ abstract class Token_Generic {
 		if ( array_key_exists( 'expiration', $token ) ) {
 			$token['expiration'] = $token['expiration'] + $expires;
 		} else {
-			$token['expiration'] = time() + $xpires;
+			$token['expiration'] = time() + $expires;
 		}
 		$token['expires_in'] = $token['expiration'] - time();
 		$this->update( $key, $token, true );
