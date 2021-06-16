@@ -149,7 +149,7 @@ class IndieAuth_Admin {
 			'indieauth_expires_in',
 			array(
 				'type'         => 'numer',
-				'description'  => __( '', 'indieauth' ),
+				'description'  => __( 'IndieAuth Default Expiry Time', 'indieauth' ),
 				'show_in_rest' => true,
 				'default'      => 1209600, // Two Weeks.
 			)
