@@ -202,10 +202,12 @@ class IndieAuth_Token_Endpoint {
 				$return['client_name'] = $info->get_name();
 				$return['client_icon'] = $info->get_icon();
 				$return['issued_at']   = time();
-				$return['expires_in']  = get_option( 'indieauth_expires_in' );
-				$return                = array_filter( $return );
 
-				$return['access_token'] = $this->set_token( $return, get_option( 'indieauth_expires_in' ) );
+				$expires              = (int) get_option( 'indieauth_expires_in' );
+				$return['expires_in'] = $expires;
+				$return               = array_filter( $return );
+
+				$return['access_token'] = $this->set_token( $return, $expires );
 			}
 		}
 

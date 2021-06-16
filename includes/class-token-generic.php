@@ -31,13 +31,17 @@ abstract class Token_Generic {
 		if ( ! $token ) {
 			return;
 		}
+		$expires = (int) get_option( 'indieauth_expires_in' );
+		// Ignore if the renewal time is 0.
+		if ( 0 === $expires ) {
+			return;
+		}
 		if ( array_key_exists( 'expiration', $token ) ) {
-			$token['expiration'] = $token['expiration'] + get_option( 'indieauth_expires_in' );
+			$token['expiration'] = $token['expiration'] + $expires;
 		} else {
-			$token['expiration'] = time() + get_option( 'indieauth_expires_in' );
+			$token['expiration'] = time() + $xpires;
 		}
 		$token['expires_in'] = $token['expiration'] - time();
-		error_log( 'Token!!' );
 		$this->update( $key, $token, true );
 	}
 
