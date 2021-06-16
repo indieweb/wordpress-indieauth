@@ -49,12 +49,15 @@ login_header(
 	</div>
 	<div class="expiration">
 		<?php
+			$expiration = (int) get_option( 'indieauth_expires_in' );
+		if ( 0 !== $expiration ) {
 			printf(
 				/* translators: 1. human time difference */
-				esc_html__( 'The client will have access for %1$s.', 'indieauth' ),
-				esc_html( human_time_diff( time(), time() + get_option( 'indieauth_expires_in' ) ) )
+				'⌛ ' . esc_html__( 'The client will have access for %1$s.', 'indieauth' ),
+				esc_html( human_time_diff( time(), time() + $expiration ) )
 			);
-			?>
+		}
+		?>
 	</div>
 	<p class="submit">
 	<?php
