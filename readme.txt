@@ -3,8 +3,8 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
-Tested up to: 5.7
-Stable tag: 3.7.0
+Tested up to: 5.7.2
+Stable tag: 4.0.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -130,7 +130,7 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 
 == Upgrade Notice ==
 
-= 3.7.0 =
+= 4.0.0 =
 
 This version enables expiring tokens. All existing tokens will remain as they were. New tokens will expire in 14 days by default. You can change this in settings.
 
@@ -156,7 +156,7 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
-= 3.7.0 = 
+= 4.0.0 = 
 
 * Add default expiry time.
 * Ensure tokens expire at their proper time.

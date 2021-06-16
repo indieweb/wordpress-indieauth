@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.7.0\n"
+"Project-Id-Version: IndieAuth 4.0.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2021-06-13 17:40:52+00:00\n"
+"POT-Creation-Date: 2021-06-16 04:09:00+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -84,6 +84,10 @@ msgstr ""
 
 #: includes/class-indieauth-admin.php:142
 msgid "Offer IndieAuth on Login Form"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:152
+msgid "IndieAuth Default Expiry Time"
 msgstr ""
 
 #: includes/class-indieauth-admin.php:162
@@ -406,7 +410,7 @@ msgstr ""
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:232
+#: includes/class-indieauth-token-endpoint.php:234
 msgid "There was an error in response."
 msgstr ""
 
@@ -640,7 +644,7 @@ msgid "Allow"
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:59
-#: templates/indieauth-authorize-form.php:75
+#: templates/indieauth-authorize-form.php:78
 msgid "Cancel"
 msgstr ""
 
@@ -670,16 +674,16 @@ msgstr ""
 msgid "Below select the privileges you would like to grant the application."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:54
+#: templates/indieauth-authorize-form.php:56
 #. translators: 1. human time difference
 msgid "The client will have access for %1$s."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:74
+#: templates/indieauth-authorize-form.php:77
 msgid "Approve"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:79
+#: templates/indieauth-authorize-form.php:82
 #. translators: 1. Redirect URI
 msgid "You will be redirected to %1$s after approving this application."
 msgstr ""
@@ -761,7 +765,7 @@ msgstr ""
 #: templates/indieauth-settings.php:88
 msgid ""
 "Set the Number of Seconds An IndieAuth Tokens Will Expire In (Default is "
-"Two Weeks)"
+"Two Weeks). 0 to Disable"
 msgstr ""
 
 #: templates/websignin-form.php:4
