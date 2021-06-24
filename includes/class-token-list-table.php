@@ -19,11 +19,11 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function get_bulk_actions() {
-			  return array(
-				  'revoke'   => __( 'Revoke', 'indieauth' ),
-				  'renew'    => __( 'Renew', 'indieauth' ),
-				  'noexpire' => __( 'Disable Expiry', 'indieauth' ),
-			  );
+		return array(
+			'revoke'   => __( 'Revoke', 'indieauth' ),
+			'renew'    => __( 'Renew', 'indieauth' ),
+			'noexpire' => __( 'Disable Expiry', 'indieauth' ),
+		);
 	}
 
 	public function get_sortable_columns() {

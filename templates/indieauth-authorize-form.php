@@ -49,7 +49,7 @@ login_header(
 	</div>
 	<div class="expiration">
 		<?php
-			$expiration = (int) get_option( 'indieauth_expires_in' );
+		$expiration = (int) get_option( 'indieauth_expires_in' );
 		if ( 0 !== $expiration ) {
 			printf(
 				/* translators: 1. human time difference */
