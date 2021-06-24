@@ -146,6 +146,16 @@ class IndieAuth_Admin {
 		);
 		register_setting(
 			'indieauth',
+			'indieauth_expires_in',
+			array(
+				'type'         => 'numer',
+				'description'  => __( 'IndieAuth Default Expiry Time', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 1209600, // Two Weeks.
+			)
+		);
+		register_setting(
+			'indieauth',
 			'indieauth_root_user',
 			array(
 				'type'         => 'int',

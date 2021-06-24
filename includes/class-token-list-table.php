@@ -19,14 +19,11 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function get_bulk_actions() {
-			  return array(
-				  'revoke'       => __( 'Revoke', 'indieauth' ),
-				  'revoke_year'  => __( 'Revoke Tokens Last Accessed 1 Year Ago or Never', 'indieauth' ),
-				  'revoke_month' => __( 'Revoke Tokens Last Accessed 1 Month Ago or Never', 'indieauth' ),
-				  'revoke_week'  => __( 'Revoke Tokens Last Accessed 1 Week Ago or Never', 'indieauth' ),
-				  'revoke_day'   => __( 'Revoke Tokens Last Accessed 1 Day Ago or Never', 'indieauth' ),
-				  'revoke_hour'  => __( 'Revoke Tokens Last Accessed 1 Hour Ago or Never', 'indieauth' ),
-			  );
+		return array(
+			'revoke'   => __( 'Revoke', 'indieauth' ),
+			'renew'    => __( 'Renew', 'indieauth' ),
+			'noexpire' => __( 'Disable Expiry', 'indieauth' ),
+		);
 	}
 
 	public function get_sortable_columns() {
@@ -78,20 +75,23 @@ class Token_List_Table extends WP_List_Table {
 					}
 				}
 				break;
-			case 'revoke_year':
-				$this->destroy_older_than( $t, 'year' );
+			case 'renew':
+				if ( is_string( $tokens ) ) {
+					$t->renew( $tokens );
+				} elseif ( is_array( $tokens ) ) {
+					foreach ( $tokens as $token ) {
+						$t->renew( $token );
+					}
+				}
 				break;
-			case 'revoke_month':
-				$this->destroy_older_than( $t, 'month' );
-				break;
-			case 'revoke_week':
-				$this->destroy_older_than( $t, 'week' );
-				break;
-			case 'revoke_day':
-				$this->destroy_older_than( $t, 'day' );
-				break;
-			case 'revoke_hour':
-				$this->destroy_older_than( $t, 'hour' );
+			case 'noexpire':
+				if ( is_string( $tokens ) ) {
+					$t->noexpire( $tokens );
+				} elseif ( is_array( $tokens ) ) {
+					foreach ( $tokens as $token ) {
+						$t->noexpire( $token );
+					}
+				}
 				break;
 			case 'retrieve':
 				if ( is_string( $tokens ) ) {
@@ -143,9 +143,10 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 	public function column_client_name( $item ) {
+		$uri     = wp_doing_ajax() ? wp_get_referer() : $_SERVER['REQUEST_URI'];
+		$uri     = urlencode( wp_unslash( $uri ) );
 		$actions = array(
-			'revoke'   => sprintf( '<a href="?page=%1$s&action=%2$s&tokens=%3$s">%4$s</a>', 'indieauth_user_token', 'revoke', $item['token'], __( 'Revoke', 'indieauth' ) ),
-			'retrieve' => sprintf( '<a href="?page=%1$s&action=%2$s&tokens=%3$s">%4$s</a>', 'indieauth_user_token', 'retrieve', $item['token'], __( 'Retrieve Information', 'indieauth' ) ),
+			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s">%3$s</a>', $item['token'], $uri, __( 'Retrieve Information', 'indieauth' ) ),
 		);
 		if ( ! isset( $item['client_name'] ) ) {
 			$item['client_name'] = __( 'Not Provided', 'indieauth' );
@@ -185,12 +186,12 @@ class Token_List_Table extends WP_List_Table {
 			// translators: Human time difference ago
 			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
 		}
-		return date_i18n( get_option( 'date_format' ), $time );
+		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $time );
 	}
 
 
 	public function column_issued_at( $item ) {
-		return date_i18n( get_option( 'date_format' ), $item['issued_at'] );
+		return wp_date( get_option( 'date_format' ), $item['issued_at'] );
 	}
 
 	public function column_client_id( $item ) {

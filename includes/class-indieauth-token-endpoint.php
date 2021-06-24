@@ -116,14 +116,14 @@ class IndieAuth_Token_Endpoint {
 		return rest_ensure_response( $token );
 	}
 
-	public function set_token( $token ) {
+	public function set_token( $token, $expiration = null ) {
 		if ( ! isset( $token['me'] ) ) {
 			return false;
 		}
 		$user = get_user_by_identifier( $token['me'] );
 		if ( $user instanceof WP_User ) {
 			$this->tokens->set_user( $user->ID );
-			return $this->tokens->set( $token );
+			return $this->tokens->set( $token, $expiration );
 		}
 		return false;
 	}
@@ -202,9 +202,12 @@ class IndieAuth_Token_Endpoint {
 				$return['client_name'] = $info->get_name();
 				$return['client_icon'] = $info->get_icon();
 				$return['issued_at']   = time();
-				$return                = array_filter( $return );
 
-				$return['access_token'] = $this->set_token( $return );
+				$expires              = (int) get_option( 'indieauth_expires_in' );
+				$return['expires_in'] = $expires;
+				$return               = array_filter( $return );
+
+				$return['access_token'] = $this->set_token( $return, $expires );
 			}
 		}
 

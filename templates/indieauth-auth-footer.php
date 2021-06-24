@@ -37,6 +37,11 @@
 	margin-left: 2em;
 	list-style: none;
 }
+
+.expiration {
+	margin-top: 1em;
+}
+
 .redirect-info {
 	margin-top: 1em;
 }

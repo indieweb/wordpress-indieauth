@@ -21,6 +21,49 @@ abstract class Token_Generic {
 	abstract public function destroy( $key );
 
 	/**
+	 * Renews a token.
+	 *
+	 * @param string $key token to renew
+	 * @return boolean Return if successfully renewed
+	 */
+	public function renew( $key ) {
+		$token = $this->get( $key, false );
+		if ( ! $token ) {
+			return;
+		}
+		$expires = (int) get_option( 'indieauth_expires_in' );
+		// Ignore if the renewal time is 0.
+		if ( 0 === $expires ) {
+			return;
+		}
+		if ( array_key_exists( 'expiration', $token ) ) {
+			$token['expiration'] = $token['expiration'] + $expires;
+		} else {
+			$token['expiration'] = time() + $expires;
+		}
+		$token['expires_in'] = $token['expiration'] - time();
+		$this->update( $key, $token, true );
+	}
+
+	/**
+	 * Disable Expiry
+	 *
+	 * @param string $key token to disable
+	 * @return boolean Return if successful
+	 */
+	public function noexpire( $key ) {
+		$token = $this->get( $key, false );
+		if ( ! $token ) {
+			return;
+		}
+		if ( array_key_exists( 'expiration', $token ) ) {
+			unset( $token['expiration'] );
+			unset( $token['expires_in'] );
+		}
+		$this->update( $key, $token, true );
+	}
+
+	/**
 	 * Retrieves a token
 	 *
 	 * @param string  $key token to retrieve.

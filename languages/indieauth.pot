@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 3.6.2\n"
+"Project-Id-Version: IndieAuth 4.0.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2021-05-25 03:26:53+00:00\n"
+"POT-Creation-Date: 2021-06-16 04:09:00+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -87,30 +87,34 @@ msgid "Offer IndieAuth on Login Form"
 msgstr ""
 
 #: includes/class-indieauth-admin.php:152
+msgid "IndieAuth Default Expiry Time"
+msgstr ""
+
+#: includes/class-indieauth-admin.php:162
 msgid "User Who is Represented by the Site URL"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:160 templates/indieauth-settings.php:2
+#: includes/class-indieauth-admin.php:170 templates/indieauth-settings.php:2
 msgid "IndieAuth Settings"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:173
+#: includes/class-indieauth-admin.php:183
 msgid ""
 "Based on your feedback and to improve the user experience, we decided to "
 "move the settings to a separate <a href=\"%1$s\">settings-page</a>."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:246
+#: includes/class-indieauth-admin.php:256
 msgid "Overview"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:248
+#: includes/class-indieauth-admin.php:258
 msgid ""
 "IndieAuth is a way for doing Web sign-in, where you use your own homepage "
 "to sign in to other places."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:249
+#: includes/class-indieauth-admin.php:259
 msgid ""
 "IndieAuth was built on ideas and technology from existing proven "
 "technologies like OAuth and OpenID but aims at making it easier for users "
@@ -118,19 +122,19 @@ msgid ""
 "completely separate implementations and services can be used for each part."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:256
+#: includes/class-indieauth-admin.php:266
 msgid "The IndieWeb"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:258
+#: includes/class-indieauth-admin.php:268
 msgid "The IndieWeb is a people-focused alternative to the \"corporate web\"."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:260
+#: includes/class-indieauth-admin.php:270
 msgid "Your content is yours"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:261
+#: includes/class-indieauth-admin.php:271
 msgid ""
 "When you post something on the web, it should belong to you, not a "
 "corporation. Too many companies have gone out of business and lost all of "
@@ -138,41 +142,41 @@ msgid ""
 "your control."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:264
+#: includes/class-indieauth-admin.php:274
 msgid "You are better connected"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:265
+#: includes/class-indieauth-admin.php:275
 msgid ""
 "Your articles and status messages can go to all services, not just one, "
 "allowing you to engage with everyone. Even replies and likes on other "
 "services can come back to your site so they’re all in one place."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:268
+#: includes/class-indieauth-admin.php:278
 msgid "You are in control"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:269
+#: includes/class-indieauth-admin.php:279
 msgid ""
 "You can post anything you want, in any format you want, with no one "
 "monitoring you. In addition, you share simple readable links such as "
 "example.com/ideas. These links are permanent and will always work."
 msgstr ""
 
-#: includes/class-indieauth-admin.php:275
+#: includes/class-indieauth-admin.php:285
 msgid "For more information:"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:276
+#: includes/class-indieauth-admin.php:286
 msgid "<a href=\"https://indieweb.org/IndieAuth\">IndieWeb Wiki page</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:277
+#: includes/class-indieauth-admin.php:287
 msgid "<a href=\"https://indieauth.rocks/\">Test suite</a>"
 msgstr ""
 
-#: includes/class-indieauth-admin.php:278
+#: includes/class-indieauth-admin.php:288
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
@@ -269,7 +273,7 @@ msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:241
-#: includes/class-indieauth-local-authorize.php:49 includes/functions.php:529
+#: includes/class-indieauth-local-authorize.php:52 includes/functions.php:529
 msgid "Invalid authorization code"
 msgstr ""
 
@@ -406,12 +410,12 @@ msgstr ""
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:231
+#: includes/class-indieauth-token-endpoint.php:234
 msgid "There was an error in response."
 msgstr ""
 
 #: includes/class-indieauth-token-ui.php:33
-#: includes/class-indieauth-token-ui.php:107
+#: includes/class-indieauth-token-ui.php:112
 msgid "Manage IndieAuth Tokens"
 msgstr ""
 
@@ -431,25 +435,29 @@ msgstr ""
 msgid "A Name Must be Set for Your Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:65
+#: includes/class-indieauth-token-ui.php:66
 msgid ""
 "A token has been generated and appears below. This token will not be stored "
 "anywhere. Please copy and store it."
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:116
+#: includes/class-indieauth-token-ui.php:121
 msgid "Add Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:118
+#: includes/class-indieauth-token-ui.php:123
 msgid "Name for Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:121
+#: includes/class-indieauth-token-ui.php:126
 msgid "Scopes"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:123
+#: includes/class-indieauth-token-ui.php:128
+msgid "Set Expiry Time in Seconds(0 to disable)"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:131
 msgid "Add New Token"
 msgstr ""
 
@@ -482,45 +490,32 @@ msgid "Expires"
 msgstr ""
 
 #: includes/class-token-list-table.php:23
-#: includes/class-token-list-table.php:147
 msgid "Revoke"
 msgstr ""
 
 #: includes/class-token-list-table.php:24
-msgid "Revoke Tokens Last Accessed 1 Year Ago or Never"
+msgid "Renew"
 msgstr ""
 
 #: includes/class-token-list-table.php:25
-msgid "Revoke Tokens Last Accessed 1 Month Ago or Never"
+msgid "Disable Expiry"
 msgstr ""
 
-#: includes/class-token-list-table.php:26
-msgid "Revoke Tokens Last Accessed 1 Week Ago or Never"
-msgstr ""
-
-#: includes/class-token-list-table.php:27
-msgid "Revoke Tokens Last Accessed 1 Day Ago or Never"
-msgstr ""
-
-#: includes/class-token-list-table.php:28
-msgid "Revoke Tokens Last Accessed 1 Hour Ago or Never"
-msgstr ""
-
-#: includes/class-token-list-table.php:148
+#: includes/class-token-list-table.php:149
 msgid "Retrieve Information"
 msgstr ""
 
-#: includes/class-token-list-table.php:151
+#: includes/class-token-list-table.php:152
 msgid "Not Provided"
 msgstr ""
 
-#: includes/class-token-list-table.php:166
-#: includes/class-token-list-table.php:180
+#: includes/class-token-list-table.php:167
+#: includes/class-token-list-table.php:181
 msgid "Never"
 msgstr ""
 
-#: includes/class-token-list-table.php:172
-#: includes/class-token-list-table.php:186
+#: includes/class-token-list-table.php:173
+#: includes/class-token-list-table.php:187
 #. translators: Human time difference ago
 msgid "%s ago"
 msgstr ""
@@ -649,7 +644,7 @@ msgid "Allow"
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:59
-#: templates/indieauth-authorize-form.php:66
+#: templates/indieauth-authorize-form.php:78
 msgid "Cancel"
 msgstr ""
 
@@ -679,11 +674,16 @@ msgstr ""
 msgid "Below select the privileges you would like to grant the application."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:65
+#: templates/indieauth-authorize-form.php:56
+#. translators: 1. human time difference
+msgid "The client will have access for %1$s."
+msgstr ""
+
+#: templates/indieauth-authorize-form.php:77
 msgid "Approve"
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:70
+#: templates/indieauth-authorize-form.php:82
 #. translators: 1. Redirect URI
 msgid "You will be redirected to %1$s after approving this application."
 msgstr ""
@@ -756,6 +756,16 @@ msgstr ""
 
 #: templates/indieauth-settings.php:77
 msgid "Add a link to the login form to authenticate using an IndieAuth endpoint."
+msgstr ""
+
+#: templates/indieauth-settings.php:83
+msgid "Set Default Expiration"
+msgstr ""
+
+#: templates/indieauth-settings.php:88
+msgid ""
+"Set the Number of Seconds An IndieAuth Tokens Will Expire In (Default is "
+"Two Weeks). 0 to Disable"
 msgstr ""
 
 #: templates/websignin-form.php:4
