@@ -18,6 +18,12 @@ if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 	define( 'INDIEAUTH_REMOTE_MODE', 0 );
 }
 
+
+/* If this is set then it will enable the experimental Ticket Endpoint */
+if ( ! defined( 'INDIEAUTH_TICKET_ENDPOINT' ) ) {
+	define( 'INDIEAUTH_TICKET_ENDPOINT', 0 );
+}
+
 register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'activation' ) );
 register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivation' ) );
 
@@ -128,6 +134,11 @@ class IndieAuth_Plugin {
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
 			new IndieAuth_Debug();
+		}
+
+		if ( INDIEAUTH_TICKET_ENDPOINT ) {
+			self::load( 'class-indieauth-ticket-endpoint.php' );
+			new IndieAuth_Ticket_Endpoint();
 		}
 
 	}

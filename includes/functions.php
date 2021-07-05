@@ -47,9 +47,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 		if ( ! $endpoints ) {
 			$endpoints = array( 'authorization_endpoint', 'token_endpoint', 'me' );
 		}
-		/** @todo Should use Filter Extension or custom preg_match instead. */
-		$parsed_url = wp_parse_url( $me );
-		if ( ! isset( $parsed_url['host'] ) ) { // Not an URL. This should never happen.
+		if ( ! wp_http_validate_url( $me ) ) { // Not an URL. This should never happen.
 			return false;
 		}
 		// do not search for an Indieauth server on our own uploads
@@ -67,7 +65,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 		);
 		$response   = wp_safe_remote_head( $me, $args );
 		if ( is_wp_error( $response ) ) {
-			return false;
+			return $response;
 		}
 		$return = array();
 		// check link header
@@ -136,6 +134,7 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 		$doc = new DOMDocument();
 		$doc->loadHTML( $contents );
 		$xpath = new DOMXPath( $doc );
+		$return = array();
 		// check <link> and <a> elements
 		foreach ( $xpath->query( '//a[@rel and @href] | //link[@rel and @href]' ) as $hyperlink ) {
 			$return[ $hyperlink->getAttribute( 'rel' ) ] = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
