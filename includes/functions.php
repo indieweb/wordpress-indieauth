@@ -133,7 +133,7 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 		libxml_use_internal_errors( true );
 		$doc = new DOMDocument();
 		$doc->loadHTML( $contents );
-		$xpath = new DOMXPath( $doc );
+		$xpath  = new DOMXPath( $doc );
 		$return = array();
 		// check <link> and <a> elements
 		foreach ( $xpath->query( '//a[@rel and @href] | //link[@rel and @href]' ) as $hyperlink ) {

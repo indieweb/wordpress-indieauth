@@ -82,6 +82,16 @@ class IndieAuth_Ticket_Endpoint {
 			if ( ! array_key_exists( 'resource', $return ) ) {
 				$return['resource'] = $params['resource'];
 			}
+
+			// Add time this token was issued.
+			$return['issued_at'] = time();
+
+			// Add local unique identifier to distinguish if multiple tokens are issued.
+			$return['uuid'] = wp_generate_uuid4();
+
+			if ( array_key_exists( 'expires_in', $return ) && ! array_key_exists( 'expiration', $return ) ) {
+				$return['expiration'] = time() + $return['expires_in'];
+			}
 			$this->save_token( $return );
 		}
 

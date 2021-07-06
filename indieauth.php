@@ -137,7 +137,12 @@ class IndieAuth_Plugin {
 		}
 
 		if ( INDIEAUTH_TICKET_ENDPOINT ) {
-			self::load( 'class-indieauth-ticket-endpoint.php' );
+			$ticket_load = array(
+				'class-external-token-table.php', // Token Management UI
+				'class-external-token-page.php',
+				'class-indieauth-ticket-endpoint.php',
+			);
+			self::load( $ticket_load );
 			new IndieAuth_Ticket_Endpoint();
 		}
 
