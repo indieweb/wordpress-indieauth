@@ -79,7 +79,9 @@ class IndieAuth_Ticket_Endpoint {
 
 		$return = $this->request_token( $token_endpoint, $params );
 		if ( $return ) {
-			$return['resource'] = $params['resource'];
+			if ( ! array_key_exists( 'resource', $return ) ) {
+				$return['resource'] = $params['resource'];
+			}
 			$this->save_token( $return );
 		}
 
