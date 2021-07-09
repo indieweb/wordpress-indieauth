@@ -9,7 +9,7 @@ class External_Token_Table extends WP_List_Table {
 		return array(
 			'cb'         => '<input type="checkbox" />',
 			'resource'   => __( 'Resource', 'indieauth' ),
-			'scope'      => __( 'Scope', 'indieauth' ),
+			'refresh_token' => __( 'Refresh Token', 'indieauth' ),
 			'issued_at'  => __( 'Issue Date', 'indieauth' ),
 			'expiration' => __( 'Expires', 'indieauth' ),
 		);
@@ -124,6 +124,14 @@ class External_Token_Table extends WP_List_Table {
 		}
 
 		return wp_date( get_option( 'date_format' ), $item['issued_at'] );
+	}
+
+	public function column_refresh_token( $item ) {
+		if ( ! array_key_exists( 'refresh_token', $item ) ) {
+			return __( 'None', 'indieauth' );
+		}
+
+		return __( 'Set', 'indieauth' );
 	}
 
 	public function column_resource( $item ) {
