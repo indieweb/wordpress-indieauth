@@ -93,7 +93,7 @@ class IndieAuth_Ticket_Endpoint {
 				$return['expiration'] = time() + $return['expires_in'];
 			}
 			if ( $this->save_token( $return ) ) {
-				return new WP_REST_Response( array(), 202 );
+				return new WP_REST_Response( array(), 200 );
 			} else {
 				return new WP_OAuth_Response( 'unknown', __( 'Unable to Store External Token', 'indieauth' ), 500 );
 			}
