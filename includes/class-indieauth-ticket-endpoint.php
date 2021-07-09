@@ -74,7 +74,7 @@ class IndieAuth_Ticket_Endpoint {
 
 		//If there is no token endpoint found return an error.
 		if ( ! wp_http_validate_url( $token_endpoint ) ) {
-			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+			return new WP_OAuth_Response( 'invalid_request', __( 'Cannot Find Token Endpoint', 'indieauth' ), 400 );
 		}
 
 		$return = $this->request_token( $token_endpoint, $params );
@@ -92,7 +92,11 @@ class IndieAuth_Ticket_Endpoint {
 			if ( array_key_exists( 'expires_in', $return ) && ! array_key_exists( 'expiration', $return ) ) {
 				$return['expiration'] = time() + $return['expires_in'];
 			}
-			$this->save_token( $return );
+			if ( $this->save_token( $return ) ) {
+				return new WP_REST_Response( array(), 202 );
+			} else {
+				return new WP_OAuth_Response( 'unknown', __( 'Unable to Store External Token', 'indieauth' ), 500 );
+			}
 		}
 
 		// If nothing works, return an error.
