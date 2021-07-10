@@ -4,7 +4,7 @@
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
 **Tested up to:** 5.7.2  
-**Stable tag:** 4.0.0  
+**Stable tag:** 4.0.1  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -128,7 +128,24 @@ If that doesn't work either, you may need to ask your hosting provider to whitel
 
 Some hosting providers filter this out using mod_security. For one user, they needed [Rule 340162](https://wiki.atomicorp.com/wiki/index.php/WAF_340162) whitelisted as it detects the use of a URL as an argument.
 
+### What is Ticket Auth and how do I enable it? ###
+
+[Ticket Auth](https://indieweb.org/IndieAuth_Ticket_Auth) is a developing extension to OAuth2/IndieAuth. It creates a ticket endpoint on your site where other sites can send you a ticket, which can be redeemed
+for a token to access private resources on that other site. You can enable the experimental endpoint functionality by adding the below to your wp-config.php. If this becomes more established, it will be added 
+in the settings page.
+
+   define( 'INDIEAUTH_TICKET_ENDPOINT', true );
+
+At this time, the functionality is limited to the receiving of tickets, not the sending of same. It enables a new tab under the User called Manage External Tokens, which allows you to see which external tokens
+are stored. Tokens are stored per user. 
+
+Since the extension is developing, there is currently not a specified way to transfer this token to a client to be used.
+
 ## Upgrade Notice ##
+
+### 4.0.1 ###
+
+Introduces experimental Ticket Auth Endpoint, which allows the receipt of tickets and the storage of external tokens. This is disabled by default and can only be enabled through a flag.
 
 ### 4.0.0 ###
 
@@ -155,6 +172,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.0.1 ###
+
+* Add experimental ticket auth endpoint
+* Bug fix on endpoint discovery discovered during ticket auth development
 
 ### 4.0.0 ###
 
