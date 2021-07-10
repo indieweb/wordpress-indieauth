@@ -94,11 +94,16 @@ class IndieAuth_Ticket_Endpoint {
 			// Store the Token Endpoint so it does not have to be discovered again.
 			$return['token_endpoint'] = $token_endpoint;
 
-			if ( $this->save_token( $return ) ) {
-				return new WP_REST_Response( array(), 200 );
-			} else {
-				return new WP_OAuth_Response( 'unknown', __( 'Unable to Store External Token', 'indieauth' ), 500 );
+			$save = $this->save_token( $return );
+			if ( is_oauth_error( $save ) ) {
+				return $save;
 			}
+			return new WP_REST_Response(
+				array(
+					'success' => __( 'Your Ticket Has Been Redeemed. Thank you for your trust!', 'indieauth' ),
+				),
+				200
+			);
 		}
 
 		// If nothing works, return an error.
@@ -108,13 +113,13 @@ class IndieAuth_Ticket_Endpoint {
 
 	public function save_token( $token ) {
 		if ( ! array_key_exists( 'me', $token ) ) {
-			return false;
+			 return new WP_OAuth_Response( 'invalid_request', __( 'Me Property Missing From Response', 'indieauth' ), 400 );
 		}
 
 		$user = get_user_by_identifier( $token['me'] );
 
 		if ( ! $user instanceof WP_User ) {
-			return false;
+			 return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500 );
 		}
 
 		$tokens = new External_User_Token( $user->ID );
@@ -147,7 +152,7 @@ class IndieAuth_Ticket_Endpoint {
 
 		// check if response was json or not
 		if ( ! is_array( $return ) ) {
-			return new WP_OAuth_Response( 'indieauth_response_error', __( 'This is not working correctly', 'indieauth' ), 401, $body );
+			return new WP_OAuth_Response( 'indieauth_response_error', __( 'On Trying to Redeem a Token the Response was Invalid', 'indieauth' ), 401, $body );
 		}
 
 		if ( array_key_exists( 'error', $return ) ) {
@@ -160,7 +165,7 @@ class IndieAuth_Ticket_Endpoint {
 
 		return new WP_OAuth_Response(
 			'indieauth.invalid_access_token',
-			__( 'Unable to Redeem Ticket for Unknown Reasons', 'indieauth' ),
+			__( 'Unable to Redeem Ticket for Unknown Reasons.', 'indieauth' ),
 			$code
 		);
 	}
