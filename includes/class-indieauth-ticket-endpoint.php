@@ -119,16 +119,13 @@ class IndieAuth_Ticket_Endpoint {
 	}
 
 	public function request_token( $url, $params ) {
-		$args = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
-
 		$resp = wp_safe_remote_post(
 			$url,
 			array(
-				'body' => array(
+				'headers' => array(
+					'Accept' => 'application/json',
+				),
+				'body'    => array(
 					'grant_type' => 'ticket',
 					'ticket'     => $params['ticket'],
 				),

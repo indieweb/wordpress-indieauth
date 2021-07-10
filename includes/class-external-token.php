@@ -51,6 +51,9 @@ class External_User_Token {
 					$refresh = $this->refresh_token( $token );
 					if ( is_array( $refresh ) ) {
 						$token[ $key ] = array_merge( $token[ $key ], $refresh );
+						if ( array_key_exists( 'expires_in', $token[ $key ] ) ) {
+							$token[ $key ]['expiration'] = time() + $token[ $key ]['expires_in'];
+						}
 					}
 				} else {
 					unset( $token[ $key ] );
