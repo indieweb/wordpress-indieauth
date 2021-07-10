@@ -59,37 +59,16 @@ class External_Token_Table extends WP_List_Table {
 		return sprintf( '<input type="checkbox" name="tokens[]" value="%s" />', esc_attr( $item['access_token'] ) );
 	}
 
-	public function revoke_external_token( $token ) {
-		$token_endpoint = find_rels( $token['resource'], 'token_endpoint' );
-
-		if ( ! wp_http_validate_url( $token_endpoint ) ) {
-			return false;
-		}
-
-		$args = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
-
-		$resp = wp_safe_remote_post(
-			$token_endpoint,
-			array(
-				'body' => array(
-					'action' => 'revoke',
-					'token'  => $token['access_token'],
-				),
-			)
-		);
-		return $resp;
-	}
-
 	public function process_action() {
-		$revoke = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
+		$t = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
 		$tokens = new External_User_Token();
 		switch ( $this->current_action() ) {
 			case 'revoke':
-				$tokens->destroy( $revoke );
+				$tokens->destroy( $t );
+				break;
+			case 'verify':
+				$return = $tokens->verify( $t );
+				error_log( 'Verify:' . wp_json_encode( $return ) );
 				break;
 			default:
 		}

@@ -3,7 +3,7 @@
 /* Class for managing external tokens in user meta */
 class External_User_Token {
 
-	private $user_id;
+	protected $user_id;
 
 	public function __construct( $user_id = null ) {
 		if ( is_numeric( $user_id ) ) {
@@ -11,6 +11,101 @@ class External_User_Token {
 		} else {
 			$this->user_id = get_current_user_id();
 		}
+	}
+
+	/**
+	 *
+	 */
+	public function expire_all_tokens() {
+		$args     = array(
+			'count_total' => false,
+			'fields'      => 'ID',
+			'meta_query'  => array(
+				array(
+					'key'         => 'indieauth_external_tokens',
+					'compare_key' => 'EXISTS',
+				),
+			),
+		);
+		$user_ids = array_unique( get_users( $args ) );
+		if ( empty( $user_ids ) ) {
+			return false;
+		}
+		$old_user = $this->user_id;
+		foreach ( $user_ids as $user_id ) {
+			$this->user_id = $user_id;
+			$this->expire_tokens();
+		}
+		$this->user_id = $old_user;
+		return true;
+	}
+
+	/**
+	 *
+	 */
+	protected function expire_tokens() {
+		$tokens = $this->get_all();
+		foreach ( $tokens as $key => $token ) {
+			if ( array_key_exists( 'expiration', $token ) && $this->is_expired( $token['expiration'] ) ) {
+				if ( array_key_exists( 'refresh_token' ) ) {
+					$refresh = $this->refresh_token( $token );
+					if ( is_array( $refresh ) ) {
+						$token[ $key ] = array_merge( $token[ $key ], $refresh );
+					}
+				} else {
+					unset( $token[ $key ] );
+				}
+			}
+		}
+		update_user_meta( $this->user_id, 'indieauth_external_tokens', $tokens );
+		return true;
+	}
+
+	/**
+	 *
+	 */
+	protected function refresh_token( $token ) {
+		if ( ! array_key_exists( 'refresh_token', $token ) ) {
+			return false;
+		}
+
+		// Use stored token endpoint or discover it.
+		if ( array_key_exists( 'token_endpoint', $token ) ) {
+			$token_endpoint = $token['token_endpoint'];
+		} else {
+			$token_endpoint = find_rels( $token['resource'], 'token_endpoint' );
+		}
+
+		if ( ! wp_http_validate_url( $token_endpoint ) ) {
+			return false;
+		}
+
+		$args = array(
+			'headers' => array(
+				'Accept' => 'application/json',
+			),
+			'body'    => array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $token['refresh_token'],
+			),
+		);
+		if ( array_key_exists( 'resource', $token ) ) {
+			$args['body']['resource'] = $token['resource'];
+		}
+
+		$resp = wp_safe_remote_post(
+			$token_endpoint,
+			$args
+		);
+
+		$code = wp_remote_retrieve_response_code( $resp );
+
+		if ( 2 !== (int) ( $code / 100 ) ) {
+			return $false;
+		}
+
+		$body = wp_remote_retrieve_body( $resp );
+		return json_decode( $body, true );
 	}
 
 	/**
@@ -137,16 +232,13 @@ class External_User_Token {
 			return false;
 		}
 
-		$args = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
-
 		$resp = wp_safe_remote_post(
 			$token_endpoint,
 			array(
-				'body' => array(
+				'headers' => array(
+					'Accept' => 'application/json',
+				),
+				'body'    => array(
 					'action' => 'revoke',
 					'token'  => $token['access_token'],
 				),
@@ -163,7 +255,7 @@ class External_User_Token {
 	 * @param boolean $revoke Whether to send revoke request to token endpoint.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */
-	public function verify_external_token( $key ) {
+	public function verify( $key ) {
 
 		$token = $this->get( $key );
 		if ( ! $token ) {
@@ -180,12 +272,6 @@ class External_User_Token {
 		if ( ! wp_http_validate_url( $token_endpoint ) ) {
 			return false;
 		}
-
-		$args = array(
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-		);
 
 		$resp = wp_safe_remote_get(
 			$token_endpoint,
@@ -219,5 +305,4 @@ class External_User_Token {
 		}
 		return ( $expiration <= time() );
 	}
-
 }
