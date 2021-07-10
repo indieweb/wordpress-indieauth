@@ -138,6 +138,7 @@ class IndieAuth_Plugin {
 
 		if ( INDIEAUTH_TICKET_ENDPOINT ) {
 			$ticket_load = array(
+				'class-external-token.php', // External Token Class
 				'class-external-token-table.php', // Token Management UI
 				'class-external-token-page.php',
 				'class-indieauth-ticket-endpoint.php',

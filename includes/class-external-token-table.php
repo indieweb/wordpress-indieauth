@@ -7,17 +7,18 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class External_Token_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
-			'cb'         => '<input type="checkbox" />',
-			'resource'   => __( 'Resource', 'indieauth' ),
+			'cb'            => '<input type="checkbox" />',
+			'resource'      => __( 'Resource', 'indieauth' ),
 			'refresh_token' => __( 'Refresh Token', 'indieauth' ),
-			'issued_at'  => __( 'Issue Date', 'indieauth' ),
-			'expiration' => __( 'Expires', 'indieauth' ),
+			'issued_at'     => __( 'Issue Date', 'indieauth' ),
+			'expiration'    => __( 'Expires', 'indieauth' ),
 		);
 	}
 
 	public function get_bulk_actions() {
 		return array(
 			'revoke' => __( 'Revoke', 'indieauth' ),
+			'verify' => __( 'Verify', 'indieauth' ),
 		);
 	}
 
@@ -30,7 +31,8 @@ class External_Token_Table extends WP_List_Table {
 		$hidden  = array();
 		$this->process_action();
 		$this->_column_headers = array( $columns, $hidden, $this->get_sortable_columns() );
-		$tokens                = get_user_meta( get_current_user_id(), 'indieauth_external_tokens', true );
+		$tokens                = new External_User_Token();
+		$tokens                = $tokens->get_all();
 
 		$this->items = array();
 		$this->set_pagination_args(
@@ -40,7 +42,7 @@ class External_Token_Table extends WP_List_Table {
 				'per_page'    => count( $tokens ),
 			)
 		);
-		foreach ( $tokens as $key => $value ) {
+		foreach ( $tokens as $value ) {
 			$this->items[] = $value;
 		}
 
@@ -84,24 +86,12 @@ class External_Token_Table extends WP_List_Table {
 
 	public function process_action() {
 		$revoke = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
-		$tokens = get_user_meta( get_current_user_id(), 'indieauth_external_tokens', true );
-		if ( ! $tokens ) {
-			return;
-		}
+		$tokens = new External_User_Token();
 		switch ( $this->current_action() ) {
 			case 'revoke':
-				if ( is_string( $revoke ) ) {
-					$revoke = array( $revoke );
-				}
-
-				foreach ( $tokens as $key => $token ) {
-					if ( in_array( $token['access_token'], $revoke, true ) ) {
-						unset( $tokens[ $key ] );
-						$resp = $this->revoke_external_token( $token );
-					}
-				}
-				update_user_meta( get_current_user_id(), 'indieauth_external_tokens', $tokens );
+				$tokens->destroy( $revoke );
 				break;
+			default:
 		}
 	}
 

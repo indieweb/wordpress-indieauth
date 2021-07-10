@@ -86,12 +86,9 @@ class IndieAuth_Ticket_Endpoint {
 			// Add time this token was issued.
 			$return['issued_at'] = time();
 
-			// Add local unique identifier to distinguish if multiple tokens are issued.
-			$return['uuid'] = wp_generate_uuid4();
+			// Store the Token Endpoint so it does not have to be discovered again.
+			$return['token_endpoint'] = $token_endpoint;
 
-			if ( array_key_exists( 'expires_in', $return ) && ! array_key_exists( 'expiration', $return ) ) {
-				$return['expiration'] = time() + $return['expires_in'];
-			}
 			if ( $this->save_token( $return ) ) {
 				return new WP_REST_Response( array(), 200 );
 			} else {
@@ -114,14 +111,10 @@ class IndieAuth_Ticket_Endpoint {
 		if ( ! $user instanceof WP_User ) {
 			return false;
 		}
-		$tokens = get_user_meta( $user->ID, 'indieauth_external_tokens', true );
-		if ( ! is_array( $tokens ) ) {
-			$tokens = array( $token );
-		} else {
-			$tokens[] = $token;
-		}
 
-		update_user_meta( $user->ID, 'indieauth_external_tokens', $tokens );
+		$tokens = new External_User_Token( $user->ID );
+		$tokens->update( $token );
+
 		return true;
 	}
 
