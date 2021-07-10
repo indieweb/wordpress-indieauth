@@ -33,6 +33,9 @@ class External_Token_Table extends WP_List_Table {
 		$this->_column_headers = array( $columns, $hidden, $this->get_sortable_columns() );
 		$tokens                = new External_User_Token();
 		$tokens                = $tokens->get_all();
+		if ( empty( $tokens ) ) {
+			return;
+		}
 
 		$this->items = array();
 		$this->set_pagination_args(
