@@ -44,7 +44,10 @@ class External_User_Token {
 	 *
 	 */
 	protected function expire_tokens() {
-		$tokens = $this->get_all();
+		$tokens = get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
+		if ( empty( $tokens ) ) {
+			return false;
+		}
 		foreach ( $tokens as $key => $token ) {
 			if ( array_key_exists( 'expiration', $token ) && $this->is_expired( $token['expiration'] ) ) {
 				if ( array_key_exists( 'refresh_token' ) ) {
