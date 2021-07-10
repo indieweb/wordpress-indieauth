@@ -70,7 +70,11 @@ class IndieAuth_Ticket_Endpoint {
 	public function post( $request ) {
 		$params = $request->get_params();
 
-		$token_endpoint = find_rels( $params['resource'], 'token_endpoint' );
+		if ( is_array( $params['resource'] ) ) {
+			$token_endpoint = find_rels( $params['resource'][0], 'token_endpoint' );
+		} else {
+			$token_endpoint = find_rels( $params['resource'], 'token_endpoint' );
+		}
 
 		//If there is no token endpoint found return an error.
 		if ( ! wp_http_validate_url( $token_endpoint ) ) {
@@ -113,13 +117,13 @@ class IndieAuth_Ticket_Endpoint {
 
 	public function save_token( $token ) {
 		if ( ! array_key_exists( 'me', $token ) ) {
-			 return new WP_OAuth_Response( 'invalid_request', __( 'Me Property Missing From Response', 'indieauth' ), 400 );
+			return new WP_OAuth_Response( 'invalid_request', __( 'Me Property Missing From Response', 'indieauth' ), 400 );
 		}
 
 		$user = get_user_by_identifier( $token['me'] );
 
 		if ( ! $user instanceof WP_User ) {
-			 return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500 );
+			return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500 );
 		}
 
 		$tokens = new External_User_Token( $user->ID );
