@@ -78,6 +78,11 @@ class IndieAuth_Ticket_Endpoint {
 		}
 
 		$return = $this->request_token( $token_endpoint, $params );
+
+		if ( is_oauth_error( $return ) ) {
+			return $return;
+		}
+
 		if ( $return ) {
 			if ( ! array_key_exists( 'resource', $return ) ) {
 				$return['resource'] = $params['resource'];
@@ -146,7 +151,7 @@ class IndieAuth_Ticket_Endpoint {
 		}
 
 		if ( array_key_exists( 'error', $return ) ) {
-			return new WP_Error( 'indieauth_' . $return['error'], esc_html( $return['error_description'] ) );
+			return new WP_OAuth_Response( 'indieauth_' . $return['error'], esc_html( $return['error_description'] ) );
 		}
 
 		if ( 2 === (int) ( $code / 100 ) ) {
@@ -155,7 +160,7 @@ class IndieAuth_Ticket_Endpoint {
 
 		return new WP_OAuth_Response(
 			'indieauth.invalid_access_token',
-			__( 'Unable to Redeem Ticket', 'indieauth' ),
+			__( 'Unable to Redeem Ticket for Unknown Reasons', 'indieauth' ),
 			$code
 		);
 	}
