@@ -144,6 +144,20 @@ class IndieAuth_Authorization_Endpoint {
 	 */
 	public static function scope_list( $scopes ) {
 		if ( ! empty( $scopes ) ) {
+			$create = array_search( 'create', $scopes );
+			if ( false !== $create ) {
+				unset( $scopes[ $create ] );
+				$draft = array_search( 'draft', $scopes );
+				if ( false !== $draft ) {
+					unset( $scopes[ $draft ] );
+				}
+				$scopes = array_values( $scopes );
+				echo '<div class="create_scope">';
+				echo sprintf( '<li><input type="radio" name="scope[]" value="create"><strong>create</strong> - %1$s</li>', esc_html( self::scopes( 'create' ) ) );
+				echo sprintf( '<li><input type="radio" name="scope[]" value="draft"><strong>draft</strong> - %1$s</li>', esc_html( self::scopes( 'draft' ) ) );
+				echo sprintf( '<li><input type="radio" name="scope[]" value=""><strong>none</strong> - %1$s</li>', __( 'Token will have no privileges to create posts', 'indieauth' ) );
+				echo '</div>';
+			}
 			foreach ( $scopes as $s ) {
 				echo wp_kses(
 					sprintf( '<li><input type="checkbox" name="scope[]" value="%1$s" %2$s /><strong>%1$s</strong> - %3$s</li>', $s, checked( true, true, false ), esc_html( self::scopes( $s ) ) ),
