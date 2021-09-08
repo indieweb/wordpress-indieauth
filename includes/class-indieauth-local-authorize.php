@@ -35,7 +35,7 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 			return $return;
 		}
 		$return['last_accessed'] = time();
-		$return['last_ip'] = $_SERVER['REMOTE_ADDR'];
+		$return['last_ip']       = $_SERVER['REMOTE_ADDR'];
 		$tokens->update( $token, $return );
 		if ( array_key_exists( 'exp', $return ) ) {
 			$return['expires_in'] = $return['exp'] - time();

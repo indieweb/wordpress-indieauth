@@ -140,26 +140,26 @@ class IndieAuth_Token_Endpoint {
 
 		// Action Handler
 		if ( isset( $params['action'] ) ) {
-			switch( $params['action'] ) {
+			switch ( $params['action'] ) {
 				// Revoke Token
 				case 'revoke':
 					if ( isset( $params['token'] ) ) {
 						$this->delete_token( $params['token'] );
 						return __( 'The Token Provided is No Longer Valid', 'indieauth' );
 					}
-				default: 
+					// In the event the token parameter is not set, fall through to the default.
+				default:
 					return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 			}
-					
 		}
 
 		// Grant Type Handler.
 		if ( isset( $params['grant_type'] ) ) {
-			switch( $params['grant_type'] ) {
+			switch ( $params['grant_type'] ) {
 				// Request Token
 				case 'authorization_code':
 					return $this->authorization_code( $params );
-				default: 
+				default:
 					return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
 			}
 		}
