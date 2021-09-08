@@ -48,7 +48,7 @@ class Token_User extends Token_Generic {
 			return false;
 		}
 		if ( $expiration ) {
-			$info['expiration'] = $this->expires( $expiration );
+			$info['exp'] = $this->expires( $expiration );
 		}
 		$key = $this->generate_token();
 		// Will only add if value is not set
@@ -116,7 +116,8 @@ class Token_User extends Token_Generic {
 					$value         = maybe_unserialize( array_pop( $value ) );
 					$key           = str_replace( $this->prefix, '', $key );
 					$value['user'] = $user_id;
-					if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+					// Check for old and new property.
+					if ( ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) || ( isset( $value['exp'] ) && $this->is_expired( $value['exp'] ) ) ) {
 						$this->destroy( $key );
 					} else {
 						$tokens[ $key ] = $value;
@@ -142,7 +143,7 @@ class Token_User extends Token_Generic {
 		}
 		$return = false;
 		foreach ( $tokens as $key => $value ) {
-			if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+			if ( ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) || ( isset( $value['exp'] ) && $this->is_expired( $value['exp'] ) ) ) {
 				$this->destroy( $key );
 				$return = true;
 			}
@@ -184,7 +185,7 @@ class Token_User extends Token_Generic {
 		}
 
 		// If this token has expired destroy the token and return false;
-		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+		if ( ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) || ( isset( $value['exp'] ) && $this->is_expired( $value['exp'] ) ) ) {
 			$this->destroy( $key );
 			return false;
 		}

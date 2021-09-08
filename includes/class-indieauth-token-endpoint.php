@@ -201,13 +201,18 @@ class IndieAuth_Token_Endpoint {
 				$return['client_id']   = $params['client_id'];
 				$return['client_name'] = $info->get_name();
 				$return['client_icon'] = $info->get_icon();
-				$return['issued_at']   = time();
+				$return['iat']         = time();
 
-				$expires              = (int) get_option( 'indieauth_expires_in' );
-				$return['expires_in'] = $expires;
-				$return               = array_filter( $return );
+				$expires = (int) get_option( 'indieauth_expires_in' );
+
+				$return = array_filter( $return );
 
 				$return['access_token'] = $this->set_token( $return, $expires );
+
+				// Do Not Add Expires In for the Return Until After It is Saved to the Database
+				if ( 0 !== $expires ) {
+					$return['expires_in'] = $expires;
+				}
 			}
 		}
 
@@ -222,6 +227,7 @@ class IndieAuth_Token_Endpoint {
 						'scope',
 						'me',
 						'profile',
+						'expires_in',
 					)
 				),
 				200, // Status Code
