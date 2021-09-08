@@ -41,7 +41,7 @@ class TokensTest extends WP_UnitTestCase {
 		$key = $tokens->set( $token, 300 );
 		$get = $tokens->get( $key );
 		unset( $get['user'] );
-		unset( $get['expiration' ] );
+		unset( $get['exp' ] );
 		$this->assertEquals( $get, $token );
 		$destroy = $tokens->destroy( $key );
 		$this->assertTrue( $destroy );

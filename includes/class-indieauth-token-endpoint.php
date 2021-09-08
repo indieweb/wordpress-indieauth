@@ -113,6 +113,7 @@ class IndieAuth_Token_Endpoint {
 		if ( ! $token ) {
 			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
 		}
+		$token['active'] = 'true';
 		return rest_ensure_response( $token );
 	}
 
@@ -136,23 +137,50 @@ class IndieAuth_Token_Endpoint {
 	// Request or revoke a token
 	public function post( $request ) {
 		$params = $request->get_params();
-		// Revoke Token
-		if ( isset( $params['action'] ) && isset( $params['token'] ) && 'revoke' === $params['action'] ) {
-			$this->delete_token( $params['token'] );
-			return __( 'The Token Provided is No Longer Valid', 'indieauth' );
+
+		// Action Handler
+		if ( isset( $params['action'] ) ) {
+			switch( $params['action'] ) {
+				// Revoke Token
+				case 'revoke':
+					if ( isset( $params['token'] ) ) {
+						$this->delete_token( $params['token'] );
+						return __( 'The Token Provided is No Longer Valid', 'indieauth' );
+					}
+				default: 
+					return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+			}
+					
 		}
-		// Request Token
-		if ( 'authorization_code' === $params['grant_type'] ) {
-			return $this->request( $params );
-		} else {
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
+
+		// Grant Type Handler.
+		if ( isset( $params['grant_type'] ) ) {
+			switch( $params['grant_type'] ) {
+				// Request Token
+				case 'authorization_code':
+					return $this->authorization_code( $params );
+				default: 
+					return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
+			}
 		}
+
+		// If there is no action or grant_type, that means this is a token introspection request.
+		if ( isset( $params['token'] ) ) {
+			$token = $this->get_token( $params['token'] );
+			if ( $token ) {
+				$token['active'] = 'true';
+				return rest_ensure_response( $token );
+			} else {
+				return rest_ensure_response( array( 'active' => 'false' ) );
+			}
+		}
+
 		// Everything Failed
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
 
-	// Request a Token
-	public function request( $params ) {
+	// Authorization Code Grant Type.
+	public function authorization_code( $params ) {
 		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
