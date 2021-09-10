@@ -255,10 +255,9 @@ class External_User_Token {
 
 
 	/**
-	 * Revokes an External token.
+	 * Verifies an External token.
 	 *
 	 * @param array $key Token to verify.
-	 * @param boolean $revoke Whether to send revoke request to token endpoint.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */
 	public function verify( $key ) {
