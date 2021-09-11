@@ -25,7 +25,7 @@ class Token_Transient extends Token_Generic {
 			return false;
 		}
 		if ( $expiration ) {
-			$info['expiration'] = $this->expires( $expiration );
+			$info['exp'] = $this->expires( $expiration );
 		}
 		$key = $this->generate_token();
 
@@ -97,7 +97,7 @@ class Token_Transient extends Token_Generic {
 		}
 
 		// Even though WordPress should do it for us, if this token has expired destroy the token and return false;
-		if ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) {
+		if ( ( isset( $value['expiration'] ) && $this->is_expired( $value['expiration'] ) ) || ( isset( $value['exp'] ) && $this->is_expired( $value['exp'] ) ) ) {
 			$this->destroy( $key );
 			return false;
 		}
@@ -121,7 +121,7 @@ class Token_Transient extends Token_Generic {
 		if ( ! $old ) {
 			return false;
 		}
-		$expires = $old['expiration'] - $this->time();
+		$expires = $old['exp'] - $this->time();
 		return set_transient( $key, $info, $expires );
 	}
 }

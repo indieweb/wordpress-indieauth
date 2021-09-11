@@ -37,11 +37,15 @@ abstract class Token_Generic {
 			return;
 		}
 		if ( array_key_exists( 'expiration', $token ) ) {
-			$token['expiration'] = $token['expiration'] + $expires;
-		} else {
-			$token['expiration'] = time() + $expires;
+			$token['exp'] = $token['expiration'];
+			unset( $token['expiration'] );
 		}
-		$token['expires_in'] = $token['expiration'] - time();
+
+		if ( array_key_exists( 'exp', $token ) ) {
+			$token['exp'] = $token['exp'] + $expires;
+		} else {
+			$token['exp'] = time() + $expires;
+		}
 		$this->update( $key, $token, true );
 	}
 
@@ -56,10 +60,10 @@ abstract class Token_Generic {
 		if ( ! $token ) {
 			return;
 		}
-		if ( array_key_exists( 'expiration', $token ) ) {
-			unset( $token['expiration'] );
-			unset( $token['expires_in'] );
-		}
+
+		unset( $token['exp'] );
+		unset( $token['expiration'] );
+		unset( $token['expires_in'] );
 		$this->update( $key, $token, true );
 	}
 

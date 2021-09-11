@@ -288,11 +288,11 @@ class IndieAuth_Authorization_Endpoint {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
 		$user = get_user_by( 'id', $token['user'] );
-		if ( $token['expiration'] <= time() ) {
+		if ( $token['exp'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
 			return new WP_OAuth_Response( 'invalid_grant', __( 'The authorization code expired', 'indieauth' ), 400 );
 		}
-		unset( $token['expiration'] );
+		unset( $token['exp'] );
 		// If there is a code challenge
 		if ( isset( $token['code_challenge'] ) ) {
 			$code_verifier = $request->get_param( 'code_verifier' );

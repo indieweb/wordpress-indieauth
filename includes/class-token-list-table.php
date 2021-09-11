@@ -12,9 +12,9 @@ class Token_List_Table extends WP_List_Table {
 			'client_icon'   => __( 'Client Icon', 'indieauth' ),
 			'client_id'     => __( 'Client ID', 'indieauth' ),
 			'scope'         => __( 'Scope', 'indieauth' ),
-			'issued_at'     => __( 'Issue Date', 'indieauth' ),
+			'iat'           => __( 'Issue Date', 'indieauth' ),
 			'last_accessed' => __( 'Last Accessed', 'indieauth' ),
-			'expiration'    => __( 'Expires', 'indieauth' ),
+			'exp'           => __( 'Expires', 'indieauth' ),
 		);
 	}
 
@@ -176,11 +176,16 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 
-	public function column_expiration( $item ) {
-		if ( ! isset( $item['expiration'] ) ) {
+	public function column_exp( $item ) {
+		// Check for old property.
+		if ( isset( $item['expiration'] ) ) {
+			$item['exp'] = $item['expiration'];
+		}
+
+		if ( ! isset( $item['exp'] ) ) {
 			return __( 'Never', 'indieauth' );
 		}
-		$time      = (int) $item['expiration'];
+		$time      = (int) $item['exp'];
 		$time_diff = time() - $time;
 		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
 			// translators: Human time difference ago
@@ -190,8 +195,12 @@ class Token_List_Table extends WP_List_Table {
 	}
 
 
-	public function column_issued_at( $item ) {
-		return wp_date( get_option( 'date_format' ), $item['issued_at'] );
+	public function column_iat( $item ) {
+		// Check for old property.
+		if ( isset( $item['issued_at'] ) ) {
+			$item['iat'] = $item['issued_at'];
+		}
+		return wp_date( get_option( 'date_format' ), $item['iat'] );
 	}
 
 	public function column_client_id( $item ) {
