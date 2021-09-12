@@ -284,6 +284,8 @@ class IndieAuth_Authorization_Endpoint {
 		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
+		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
+
 		if ( ! $token ) {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
@@ -312,6 +314,10 @@ class IndieAuth_Authorization_Endpoint {
 			$this->delete_code( $code, $token['user'] );
 
 			$return = array( 'me' => $token['me'] );
+
+			if ( in_array( 'profile', $scopes, true ) ) {
+				$return['profile'] = indieauth_get_user( $user, in_array( 'email', $scopes, true ) );
+			}
 
 			return $return;
 		}

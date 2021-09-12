@@ -96,6 +96,33 @@ class AuthEndpointTest extends WP_UnitTestCase {
 		// Reset Just in Case.
 		unset( static::$test_auth_code['scope'] );
 	}
+
+	// Tests to Make Sure the Auth Endpoint Returns a Profile
+	public function test_auth_code_redemption_with_profile() {
+		static::$test_auth_code['scope'] = 'profile';
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'authorization_code',
+					'code' => $code,
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayNotHasKey( 'access_token', $data );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+				'profile' => indieauth_get_user( static::$author_id )
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
+		// Reset Just in Case.
+		unset( static::$test_auth_code['scope'] );
+	}
 	 
 	public function test_pkce_verifier_true() {
 	 	$code_challenge = "OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo";   
