@@ -11,7 +11,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 		'me'         => 'http://example.org',
 		'issued_by'  => 'http://example.org/wp-json/indieauth/1.0/token',
 		'client_id'  => 'https://quill.p3k.io/',
-		'issued_at'  => 1532569712,
+		'iat'  => 1532569712,
 	);
 
 	public function setUp() {
@@ -54,6 +54,7 @@ class AuthenticateTest extends WP_UnitTestCase {
 		$response       = rest_get_server()->dispatch( $request );
 		$response_token = $response->get_data();
 		unset( $response_token['user'] );
+		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );
 	}
 
