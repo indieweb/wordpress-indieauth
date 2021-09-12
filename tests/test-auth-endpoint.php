@@ -1,6 +1,26 @@
 <?php
 class AuthEndpointTest extends WP_UnitTestCase {
 
+	protected static $author_id;
+
+	protected static $test_auth_code = array(
+		 'client_id' => 'https://app.example.com',
+		 'redirect_uri' => 'https://app.example.com/redirect',
+	);
+
+	public static function wpSetUpBeforeClass( $factory ) {
+		static::$author_id = $factory->user->create(
+			array(
+				'role' => 'author',
+			)
+		);
+		static::$test_auth_code['me'] = get_author_posts_url( static::$author_id );
+	}
+
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$author_id );
+	}
+
 	// Form Encoded Request
 	public function create_form( $method, $params = array(), $headers = array() ) {
 		$request = new WP_REST_Request( $method, '/indieauth/1.0/auth' );
@@ -15,6 +35,67 @@ class AuthEndpointTest extends WP_UnitTestCase {
 		return rest_get_server()->dispatch( $request );
 	}
 
+	// Sets a test auth code
+	public function set_auth_code() {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		return $tokens->set( static::$test_auth_code, 600 );
+	}
+
+	// Gets a test access token
+	public function get_auth_code( $code ) {
+		$tokens    = new Token_User( '_indieauth_code_' );
+		return $tokens->get( $code );
+	}
+
+	// Sets an Auth Code and Redeems it at the Auth Endpoint
+	public function test_auth_code_redemption() {
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'authorization_code',
+					'code' => $code,
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayNotHasKey( 'access_token', $data );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
+	}
+
+	// Tests to Make Sure the Auth Endpoint Does Not Return a Token
+	public function test_auth_code_redemption_with_scope() {
+		static::$test_auth_code['scope'] = 'create update';
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'authorization_code',
+					'code' => $code,
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayNotHasKey( 'access_token', $data );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
+		// Reset Just in Case.
+		unset( static::$test_auth_code['scope'] );
+	}
 	 
 	public function test_pkce_verifier_true() {
 	 	$code_challenge = "OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo";   

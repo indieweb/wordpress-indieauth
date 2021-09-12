@@ -14,6 +14,13 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		'iat'  => 1532569712,
 	);
 
+
+	protected static $test_auth_code = array(
+		 'client_id' => 'https://app.example.com',
+		 'redirect_uri' => 'https://app.example.com/redirect',
+		 'scope' => 'create',
+	);
+
 	public function setUp() {
 		global $wp_rest_server;
 		$wp_rest_server = new Spy_REST_Server;
@@ -27,6 +34,7 @@ class TokenEndpointTest extends WP_UnitTestCase {
 				'role' => 'author',
 			)
 		);
+		static::$test_auth_code['me'] = get_author_posts_url( static::$author_id );
 		static::$subscriber_id = $factory->user->create(
 			array(
 				'role' => 'subscriber',
@@ -44,6 +52,19 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		$tokens    = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
+	}
+
+	// Sets a test auth code
+	public function set_auth_code() {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		return $tokens->set( static::$test_auth_code, 600 );
+	}
+
+	// Gets a test access token
+	public function get_auth_code( $code ) {
+		$tokens    = new Token_User( '_indieauth_code_' );
+		return $tokens->get( $code );
 	}
 
 	// Gets a test access token
@@ -64,6 +85,34 @@ class TokenEndpointTest extends WP_UnitTestCase {
 			$request->set_headers( $headers );
 		}
 		return rest_get_server()->dispatch( $request );
+	}
+
+	// Sets an Auth Code and Redeems it at the Token Endpoint
+	public function test_auth_code_redemption() {
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'authorization_code',
+					'code' => $code,
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'access_token', $data );
+		$this->assertNotFalse( $data['access_token'] );
+		unset( $data['access_token'] );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+				'token_type' => 'Bearer',
+				'scope' => 'create',
+				'expires_in' => 1209600
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
 	}
 
 	// Sets a token and verifies it using Access Token Verification

@@ -313,9 +313,6 @@ class IndieAuth_Authorization_Endpoint {
 
 			$return = array( 'me' => $token['me'] );
 
-			if ( isset( $token['scope'] ) ) {
-				$return['scope'] = $token['scope'];
-			}
 			return $return;
 		}
 		return new WP_OAuth_Response( 'invalid_grant', __( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
