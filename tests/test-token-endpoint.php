@@ -52,12 +52,30 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		return $tokens->get( $token );
 	}
 
+	// Form Encoded Request
+	public function create_form( $method, $params = array(), $headers = array() ) {
+		$request = new WP_REST_Request( $method, '/indieauth/1.0/token' );
+		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		if ( ! empty( $params ) ) {
+			$request->set_body_params( $params );
+		}
+
+		if ( ! empty( $headers ) ) {
+			$request->set_headers( $headers );
+		}
+		return rest_get_server()->dispatch( $request );
+	}
+
 	// Sets a token and verifies it using Access Token Verification
 	public function test_token_verification() {
 		$token   = self::set_access_token();
-		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/token' );
-		$request->set_header( 'Authorization', 'Bearer ' . $token );
-		$response       = rest_get_server()->dispatch( $request );
+		$response = $this->create_form( 
+				'GET', 
+				array(), 
+				array(
+					'Authorization' => 'Bearer ' . $token
+				)
+			);
 		$response_token = $response->get_data();
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
@@ -67,14 +85,11 @@ class TokenEndpointTest extends WP_UnitTestCase {
 	// Sets a token and verifies it using Access Token Introspection
 	public function test_token_introspection() {
 		$token   = self::set_access_token();
-		$request = new WP_REST_Request( 'POST', '/indieauth/1.0/token' );
-		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
-		$request->set_body_params( 
-			array( 
-				'token' => $token 
-			) 
-		);
-		$response       = rest_get_server()->dispatch( $request );
+		$response = $this->create_form( 'POST',
+				array( 
+					'token' => $token
+				)
+			);
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$response_token = $response->get_data();
 		unset( $response_token['user'] );
@@ -94,15 +109,12 @@ class TokenEndpointTest extends WP_UnitTestCase {
 	// Sets a token, revokes it, then verifies it is not there.
 	public function test_token_revokation() {
 		$token   = self::set_access_token();
-		$request = new WP_REST_Request( 'POST', '/indieauth/1.0/token' );
-		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
-		$request->set_body_params( 
+		$response = $this->create_form( 'POST', 
 			array( 
 				'action' => 'revoke',
 				'token' => $token 
 			) 
 		);
-		$response       = rest_get_server()->dispatch( $request );
 		$response_token = $response->get_data();
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$check = self::get_access_token( $token );
