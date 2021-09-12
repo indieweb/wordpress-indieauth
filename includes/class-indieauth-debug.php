@@ -31,7 +31,7 @@ class IndieAuth_Debug {
 	public function log_rest_api_errors( $result, $server, $request ) {
 		$request_route = $request->get_route();
 		$result_route  = $result->get_matched_route();
-		$routes        = array( 'indieauth/1.0/auth', '/indieauth/1.0/token' );
+		$routes        = array( 'indieauth/1.0/auth', '/indieauth/1.0/token', 'indieauth/1.0/ticket' );
 		if ( in_array( $request_route, $routes, true ) || in_array( $result_route, $routes, true ) ) {
 			return $result;
 		}
@@ -40,6 +40,10 @@ class IndieAuth_Debug {
 			if ( isset( $params['code'] ) ) {
 				// Remove actual code from logs
 				$params['code'] = 'XXXX';
+			}
+			if ( isset( $params['ticket'] ) ) {
+				// Remove actual token from logs
+				$params['ticket'] = 'XXXX';
 			}
 			$headers = $request->get_headers();
 			$token   = isset( $headers['authorization'] ) ? 'Present' : 'Absent';

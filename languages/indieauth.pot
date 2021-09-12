@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 4.0.0\n"
+"Project-Id-Version: IndieAuth 4.0.1\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2021-06-16 04:09:00+00:00\n"
+"POT-Creation-Date: 2021-07-10 20:33:16+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,6 +13,63 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
+
+#: includes/class-external-token-page.php:32
+#: includes/class-external-token-page.php:53
+msgid "Manage External Tokens"
+msgstr ""
+
+#: includes/class-external-token-table.php:11
+msgid "Resource"
+msgstr ""
+
+#: includes/class-external-token-table.php:12
+msgid "Refresh Token"
+msgstr ""
+
+#: includes/class-external-token-table.php:13
+#: includes/class-token-list-table.php:15
+msgid "Issue Date"
+msgstr ""
+
+#: includes/class-external-token-table.php:14
+#: includes/class-token-list-table.php:17
+msgid "Expires"
+msgstr ""
+
+#: includes/class-external-token-table.php:20
+#: includes/class-token-list-table.php:23
+msgid "Revoke"
+msgstr ""
+
+#: includes/class-external-token-table.php:21
+msgid "Verify"
+msgstr ""
+
+#: includes/class-external-token-table.php:53
+#: includes/class-external-token-table.php:92
+#: includes/class-external-token-table.php:100
+#: includes/class-external-token-table.php:108
+#: templates/indieauth-settings.php:45
+msgid "None"
+msgstr ""
+
+#: includes/class-external-token-table.php:79
+#: includes/class-token-list-table.php:167
+#: includes/class-token-list-table.php:181
+msgid "Never"
+msgstr ""
+
+#: includes/class-external-token-table.php:85
+#: includes/class-token-list-table.php:173
+#: includes/class-token-list-table.php:187
+#. translators: Human time difference ago
+msgid "%s ago"
+msgstr ""
+
+#: includes/class-external-token-table.php:103
+msgid "Set"
+msgstr ""
 
 #: includes/class-indieauth-admin.php:19
 msgid "IndieAuth Test"
@@ -273,7 +330,7 @@ msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:241
-#: includes/class-indieauth-local-authorize.php:52 includes/functions.php:529
+#: includes/class-indieauth-local-authorize.php:52 includes/functions.php:528
 msgid "Invalid authorization code"
 msgstr ""
 
@@ -283,7 +340,7 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:254
 #: includes/class-indieauth-authorization-endpoint.php:258
-#: includes/functions.php:534 includes/functions.php:538
+#: includes/functions.php:533 includes/functions.php:537
 msgid "Failed PKCE Validation"
 msgstr ""
 
@@ -301,19 +358,19 @@ msgstr ""
 msgid "Failed to Retrieve IndieAuth Client Details "
 msgstr ""
 
-#: includes/class-indieauth-debug.php:92
+#: includes/class-indieauth-debug.php:96
 msgid "Could Not Find Token"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:98
+#: includes/class-indieauth-debug.php:102
 msgid "No User is Currently Set"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:105
+#: includes/class-indieauth-debug.php:109
 msgid "A Successful Auth Response was Given yet No User is Currently Set"
 msgstr ""
 
-#: includes/class-indieauth-debug.php:113
+#: includes/class-indieauth-debug.php:117
 msgid ""
 "You have passed a permissions test but somehow the system is still not "
 "showing you as logged in"
@@ -391,6 +448,35 @@ msgid ""
 "response. Without this only a display name, avatar, and url will be returned"
 msgstr ""
 
+#: includes/class-indieauth-ticket-endpoint.php:77
+msgid "Cannot Find Token Endpoint"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:103
+msgid "Your Ticket Has Been Redeemed. Thank you for your trust!"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:110
+#: includes/class-indieauth-token-endpoint.php:151
+msgid "Invalid Request"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:116
+msgid "Me Property Missing From Response"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:122
+msgid "Unable to Identify User Associated with Me Property"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:155
+msgid "On Trying to Redeem a Token the Response was Invalid"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:168
+msgid "Unable to Redeem Ticket for Unknown Reasons."
+msgstr ""
+
 #: includes/class-indieauth-token-endpoint.php:104
 msgid ""
 "Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run "
@@ -400,10 +486,6 @@ msgstr ""
 
 #: includes/class-indieauth-token-endpoint.php:142
 msgid "The Token Provided is No Longer Valid"
-msgstr ""
-
-#: includes/class-indieauth-token-endpoint.php:151
-msgid "Invalid Request"
 msgstr ""
 
 #: includes/class-indieauth-token-endpoint.php:158
@@ -477,20 +559,8 @@ msgstr ""
 msgid "Scope"
 msgstr ""
 
-#: includes/class-token-list-table.php:15
-msgid "Issue Date"
-msgstr ""
-
 #: includes/class-token-list-table.php:16
 msgid "Last Accessed"
-msgstr ""
-
-#: includes/class-token-list-table.php:17
-msgid "Expires"
-msgstr ""
-
-#: includes/class-token-list-table.php:23
-msgid "Revoke"
 msgstr ""
 
 #: includes/class-token-list-table.php:24
@@ -507,17 +577,6 @@ msgstr ""
 
 #: includes/class-token-list-table.php:152
 msgid "Not Provided"
-msgstr ""
-
-#: includes/class-token-list-table.php:167
-#: includes/class-token-list-table.php:181
-msgid "Never"
-msgstr ""
-
-#: includes/class-token-list-table.php:173
-#: includes/class-token-list-table.php:187
-#. translators: Human time difference ago
-msgid "%s ago"
 msgstr ""
 
 #: includes/class-web-signin.php:28
@@ -585,7 +644,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:151
+#: indieauth.php:170
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""
@@ -730,10 +789,6 @@ msgstr ""
 
 #: templates/indieauth-settings.php:38
 msgid "Set User to Represent Site URL"
-msgstr ""
-
-#: templates/indieauth-settings.php:45
-msgid "None"
 msgstr ""
 
 #: templates/indieauth-settings.php:53

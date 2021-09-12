@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 4.0.0
+ * Version: 4.0.1
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -16,6 +16,12 @@
 /* If this is set then it will activate the remote mode for delegating your login to a remote endpoint */
 if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 	define( 'INDIEAUTH_REMOTE_MODE', 0 );
+}
+
+
+/* If this is set then it will enable the experimental Ticket Endpoint */
+if ( ! defined( 'INDIEAUTH_TICKET_ENDPOINT' ) ) {
+	define( 'INDIEAUTH_TICKET_ENDPOINT', 0 );
 }
 
 register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'activation' ) );
@@ -73,6 +79,8 @@ class IndieAuth_Plugin {
 		$t = new Token_User( '_indieauth_token_', $user_id );
 		$t->get_all();
 		$t = new Token_User( '_indieauth_code_', $user_id );
+		$t = new External_User_Token();
+		$t->expire_all_tokens();
 	}
 
 	public static function plugins_loaded() {
@@ -128,6 +136,17 @@ class IndieAuth_Plugin {
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
 			new IndieAuth_Debug();
+		}
+
+		if ( INDIEAUTH_TICKET_ENDPOINT ) {
+			$ticket_load = array(
+				'class-external-token.php', // External Token Class
+				'class-external-token-table.php', // Token Management UI
+				'class-external-token-page.php',
+				'class-indieauth-ticket-endpoint.php',
+			);
+			self::load( $ticket_load );
+			new IndieAuth_Ticket_Endpoint();
 		}
 
 	}
