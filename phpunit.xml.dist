@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <phpunit
 	bootstrap="tests/bootstrap.php"
 	backupGlobals="false"
@@ -9,6 +10,7 @@
 	<testsuites>
 		<testsuite name="IndieAuth">
 			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<exclude>./tests/test-sample.php</exclude>
 		</testsuite>
 	</testsuites>
 </phpunit>
