@@ -1,5 +1,5 @@
 <?php
-class AuthenticateTest extends WP_UnitTestCase {
+class AuthorizeTest extends WP_UnitTestCase {
 
 	protected static $author_id;
 	protected static $subscriber_id;
@@ -44,18 +44,6 @@ class AuthenticateTest extends WP_UnitTestCase {
 		$tokens    = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
-	}
-
-	// Sets a token and verifies it
-	public function test_verify_token() {
-		$token   = self::set_token();
-		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/token' );
-		$request->set_header( 'Authorization', 'Bearer ' . $token );
-		$response       = rest_get_server()->dispatch( $request );
-		$response_token = $response->get_data();
-		unset( $response_token['user'] );
-		unset( $response_token['active'] );
-		$this->assertEquals( static::$test_token, $response_token );
 	}
 
 	public function test_authorize() {
