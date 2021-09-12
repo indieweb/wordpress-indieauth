@@ -21,13 +21,13 @@
     "composer/installers": "~2.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5.0 || ^7.0",
+    "phpunit/phpunit": "^5.0 || ^6.0 || ^7.5",
     "squizlabs/php_codesniffer": "^2.2 || ^3.5",
     "phpcompatibility/php-compatibility": "^9.3",
     "wp-coding-standards/wpcs": "*",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
-    "sebastian/phpcpd": "^3.5 || ^5.0 || ^6.0"
+    "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0"
   },
   "scripts": {
     "install-codestandards": [
