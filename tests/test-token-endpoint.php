@@ -39,16 +39,22 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		self::delete_user( self::$subscriber_id );
 	}
 
-	// Sets a test token
-	public function set_token() {
+	// Sets a test access token
+	public function set_access_token() {
 		$tokens    = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
 	}
 
+	// Gets a test access token
+	public function get_access_token( $token ) {
+		$tokens    = new Token_User( '_indieauth_token_' );
+		return $tokens->get( $token );
+	}
+
 	// Sets a token and verifies it using Access Token Verification
 	public function test_token_verification() {
-		$token   = self::set_token();
+		$token   = self::set_access_token();
 		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/token' );
 		$request->set_header( 'Authorization', 'Bearer ' . $token );
 		$response       = rest_get_server()->dispatch( $request );
@@ -60,7 +66,7 @@ class TokenEndpointTest extends WP_UnitTestCase {
 
 	// Sets a token and verifies it using Access Token Introspection
 	public function test_token_introspection() {
-		$token   = self::set_token();
+		$token   = self::set_access_token();
 		$request = new WP_REST_Request( 'POST', '/indieauth/1.0/token' );
 		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
 		$request->set_body_params( 
@@ -69,9 +75,37 @@ class TokenEndpointTest extends WP_UnitTestCase {
 			) 
 		);
 		$response       = rest_get_server()->dispatch( $request );
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$response_token = $response->get_data();
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );
+	}
+
+
+	// To Make Sure that Revokation Works, Test the Helper Function First.
+	public function test_test_get_access_token() {
+		$token   = self::set_access_token();
+		$check = self::get_access_token( $token );
+		unset( $check['user'] );
+		$this->assertEquals( static::$test_token, $check );
+	}
+
+	// Sets a token, revokes it, then verifies it is not there.
+	public function test_token_revokation() {
+		$token   = self::set_access_token();
+		$request = new WP_REST_Request( 'POST', '/indieauth/1.0/token' );
+		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		$request->set_body_params( 
+			array( 
+				'action' => 'revoke',
+				'token' => $token 
+			) 
+		);
+		$response       = rest_get_server()->dispatch( $request );
+		$response_token = $response->get_data();
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$check = self::get_access_token( $token );
+		$this->assertFalse( $check, $check );
 	}
 }
