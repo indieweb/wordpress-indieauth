@@ -141,10 +141,10 @@ class IndieAuth_Admin {
 				'type'         => 'int',
 				'description'  => __( 'User Who is Represented by the Site URL', 'indieauth' ),
 				'show_in_rest' => true,
-				'default'      => get_option( 'iw_default_author', 0 ),
 			)
 		);
 	}
+
 
 	public function admin_init() {
 		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
