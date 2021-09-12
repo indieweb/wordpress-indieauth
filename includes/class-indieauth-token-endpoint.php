@@ -39,10 +39,7 @@ class IndieAuth_Token_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						/* grant_type=authorization_code is the only one currently supported.
-						 */
 						'grant_type'    => array(
-							'default' => 'authorization_code',
 						),
 						/* The authorization code received from the authorization endpoint in the redirect.
 						 */
