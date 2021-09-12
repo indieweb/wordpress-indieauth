@@ -1,5 +1,20 @@
 <?php
 class AuthEndpointTest extends WP_UnitTestCase {
+
+	// Form Encoded Request
+	public function create_form( $method, $params = array(), $headers = array() ) {
+		$request = new WP_REST_Request( $method, '/indieauth/1.0/auth' );
+		$request->set_header( 'Content-Type', 'application/x-www-form-urlencoded' );
+		if ( ! empty( $params ) ) {
+			$request->set_body_params( $params );
+		}
+
+		if ( ! empty( $headers ) ) {
+			$request->set_headers( $headers );
+		}
+		return rest_get_server()->dispatch( $request );
+	}
+
 	 
 	public function test_pkce_verifier_true() {
 	 	$code_challenge = "OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo";   
