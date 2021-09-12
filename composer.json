@@ -18,21 +18,24 @@
   },
   "require": {
     "php": ">=5.6.0",
-    "composer/installers": "~2.0"
+    "composer/installers": "~1.0 || ~2.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5.0 || ^7.0",
     "squizlabs/php_codesniffer": "^2.2 || ^3.5",
     "phpcompatibility/php-compatibility": "^9.3",
     "wp-coding-standards/wpcs": "*",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
-    "sebastian/phpcpd": "^3.5 || ^5.0 || ^6.0"
+    "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
+    "phpunit/phpunit": "^5.0 || ^6.0 || ^7.5",
+    "yoast/phpunit-polyfills": "^1.0"
   },
   "scripts": {
     "install-codestandards": [
       "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin::run"
     ],
+    "setup-local-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
+    "phpunit": "./vendor/bin/phpunit",
     "test": [
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
