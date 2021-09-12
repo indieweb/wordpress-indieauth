@@ -180,19 +180,8 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		// Try to save the expense of a search query if the URL is the site URL
 		if ( home_url( '/' ) === $identifier ) {
 			// Use the settings to set the root user
-			if ( 0 !== (int) get_option( 'indieauth_root_user' ) ) {
+			if ( 0 !== indieauth_get_root_user() ) {
 				return get_user_by( 'id', (int) get_option( 'indieauth_root_user' ) );
-			}
-			$author = get_single_author();
-			//  If there is only a single author then they will get the root url
-			if ( $author ) {
-				return get_user_by( 'id', $author );
-			} else {
-				$users = get_users( array( 'fields' => 'ID' ) );
-				if ( 1 === count( $users ) ) {
-					return get_user_by( 'id', $users[0] );
-				}
-				return null;
 			}
 		}
 
@@ -222,7 +211,7 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
  */
 if ( ! function_exists( 'get_url_from_user' ) ) {
 	function get_url_from_user( $user_id ) {
-		if ( (int) get_option( 'indieauth_root_user' ) === $user_id ) {
+		if ( (int) indieauth_get_root_user() === $user_id ) {
 			return home_url( '/' );
 		}
 		if ( ! $user_id ) {
@@ -520,6 +509,37 @@ function indieauth_get_user( $user, $email = false ) {
 		'email' => $email ? $user->user_email : false,
 	);
 	return array_filter( $return );
+}
+
+
+function indieauth_get_root_user() {
+	$default = get_option( 'indieauth_root_user', null );
+	// Null is only returned if the setting does not exist.
+	if ( ! is_null( $default ) ) {
+		return $default;
+	}
+	$default = get_option( 'iw_default_author', null );
+	if ( $default ) {
+		return $default;
+	}
+	$users = get_users(
+		array(
+			'fields' => 'ID',
+		)
+	);
+
+	// If the setting is not set then default it to a single user. This can be overridden if it is set to None in the settings.
+	if ( 1 === count( $users ) ) {
+		update_option( 'indieauth_root_user', $users[0] );
+	}
+	// If there is more than one user, but multiple authors you cannot tell who the prime user is.
+	$single = get_single_author();
+	if ( ! $single ) {
+		return 0;
+	}
+
+	update_option( 'indieauth_root_user', $single );
+	return $single;
 }
 
 function indieauth_verify_local_authorization_code( $args ) {

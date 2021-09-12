@@ -5,6 +5,8 @@
 class Web_Signin {
 
 	public function __construct() {
+		add_action( 'init', array( $this, 'settings' ) );
+
 		add_action( 'login_form', array( $this, 'login_form' ) );
 		add_filter( 'login_form_defaults', array( $this, 'login_form_defaults' ), 10, 1 );
 		add_filter( 'gettext', array( $this, 'register_text' ), 10, 3 );
@@ -12,6 +14,20 @@ class Web_Signin {
 
 		add_action( 'authenticate', array( $this, 'authenticate' ), 20, 2 );
 		add_action( 'authenticate', array( $this, 'authenticate_url_password' ), 10, 3 );
+	}
+
+	public function settings() {
+
+		register_setting(
+			'indieauth',
+			'indieauth_show_login_form',
+			array(
+				'type'         => 'boolean',
+				'description'  => __( 'Offer IndieAuth on Login Form', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 0,
+			)
+		);
 	}
 
 	/**

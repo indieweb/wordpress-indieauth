@@ -78,17 +78,6 @@
 						</label>
 					</td>
 				</tr>
-				<tr>
-					<th>
-						<?php esc_html_e( 'Set Default Expiration', 'indieauth' ); ?>
-					</th>
-					<td>
-						<label for="indieauth_expires_in">
-							<input type="number" min="0" name="indieauth_expires_in" id="indieauth_expires_in" value="<?php echo intval( get_option( 'indieauth_expires_in' ) ); ?>" />
-							<?php esc_html_e( 'Set the Number of Seconds An IndieAuth Tokens Will Expire In (Default is Two Weeks). 0 to Disable', 'indieauth' ); ?>
-						</label>
-					</td>
-				</tr>
 			</tbody>
 		</table>
 
