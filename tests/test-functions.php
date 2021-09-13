@@ -1,5 +1,5 @@
 <?php
-class UsersTest extends WP_UnitTestCase {
+class IndieAuthFunctionsTest extends WP_UnitTestCase {
 
 	protected static $author_id;
 
@@ -26,4 +26,33 @@ class UsersTest extends WP_UnitTestCase {
 		$result = url_to_author( get_author_posts_url( static::$author_id ) );
 		$this->assertSame( $result->ID, static::$author_id );
 	}
+
+	// Test that Profile Return Function is Compliant with IndieAuth Return Spec.
+	public function test_profile_return() {
+
+		$author = get_user_by( 'ID', static::$author_id );
+		
+		$expected = array(
+			'name'  => $author->display_name,
+			'url'   => empty( $author->user_url ) ? get_author_posts_url( $author->ID ) : $author->user_url,
+			'photo' => get_avatar_url(
+				$author->ID,
+				array(
+					'size'    => 125,
+					'default' => '404',
+				)
+			),
+		);
+
+		$profile = indieauth_get_user( static::$author_id );
+		$this->assertEquals( $profile, $expected );
+
+		$expected['email'] = $author->user_email;
+
+		$profile = indieauth_get_user( static::$author_id, true );
+		$this->assertEquals( $profile, $expected );
+
+
+	}
+
 }
