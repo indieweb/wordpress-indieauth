@@ -39,8 +39,7 @@ class IndieAuth_Token_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						'grant_type'    => array(
-						),
+						'grant_type'    => array(),
 						/* The authorization code received from the authorization endpoint in the redirect.
 						 */
 						'code'          => array(),
