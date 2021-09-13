@@ -39,7 +39,7 @@ if ( ! $user_website ) {
 	<?php require plugin_dir_path( __FILE__ ) . 'indieauth-notices.php'; ?>
 	<?php if ( ! empty( $scopes ) ) { ?>
 			<div class="scope-info">
-			<?php esc_html_e( 'The app will have no access to your site, but is requesting access to the following information:', 'indieauth' ); ?>
+			<?php esc_html_e( 'The app will have no access to your site, but is requesting access to the following information and may request a token to refresh this information in future, which you can revoke at any time:', 'indieauth' ); ?>
 			<ul>
 			<?php self::scope_list( $scopes ); ?>
 			</ul>

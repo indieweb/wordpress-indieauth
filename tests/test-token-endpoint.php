@@ -146,6 +146,38 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		static::$test_auth_code['scope'] = 'create';
 	}
 
+
+	// Sets an Auth Code and Redeems it at the Token Endpoint with Profile
+		public function test_auth_code_redemption_with_just_profile() {
+		static::$test_auth_code['scope'] = 'profile';
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'authorization_code',
+					'code' => $code,
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'access_token', $data );
+		$this->assertNotFalse( $data['access_token'] );
+		unset( $data['access_token'] );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+				'token_type' => 'Bearer',
+				'scope' => 'profile',
+				'expires_in' => 1209600,
+				'profile' => indieauth_get_user( static::$author_id )
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
+		static::$test_auth_code['scope'] = 'create';
+	}
+
 	// Sets a token and verifies it using Access Token Verification
 	public function test_token_verification() {
 		$token   = self::set_access_token();
