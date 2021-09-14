@@ -39,11 +39,7 @@ class IndieAuth_Token_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						/* grant_type=authorization_code is the only one currently supported.
-						 */
-						'grant_type'    => array(
-							'default' => 'authorization_code',
-						),
+						'grant_type'    => array(),
 						/* The authorization code received from the authorization endpoint in the redirect.
 						 */
 						'code'          => array(),
@@ -209,13 +205,15 @@ class IndieAuth_Token_Endpoint {
 			if ( ! array_key_exists( 'user', $response ) ) {
 				$user = get_user_by_identifier( $response['me'] );
 				$user = $user->ID;
+			} else {
+				$user = $response['user'];
 			}
 			if ( in_array( 'profile', $scopes, true ) ) {
 				$return['profile'] = indieauth_get_user( $user, in_array( 'email', $scopes, true ) );
 			}
 
 			// Issue a token
-			if ( ! empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
+			if ( ! empty( $scopes ) ) {
 				$info                 = new IndieAuth_Client_Discovery( $params['client_id'] );
 				$return['token_type'] = 'Bearer';
 

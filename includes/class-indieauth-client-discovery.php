@@ -9,7 +9,12 @@ class IndieAuth_Client_Discovery {
 
 	public function __construct( $client_id ) {
 		$this->client_id = $client_id;
-		$this->html      = self::parse( $client_id );
+
+		if ( defined( 'INDIEAUTH_UNIT_TESTS' ) ) {
+			return;
+		}
+
+		$this->html = self::parse( $client_id );
 		if ( is_wp_error( $this->html ) ) {
 			error_log( __( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . wp_json_encode( $this->html ) ); // phpcs:ignore
 			return;

@@ -3,8 +3,8 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
-**Tested up to:** 5.7.2  
-**Stable tag:** 4.0.1  
+**Tested up to:** 5.8  
+**Stable tag:** 4.1.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -143,7 +143,7 @@ Since the extension is developing, there is currently not a specified way to tra
 
 ## Upgrade Notice ##
 
-### 4.0.1 ###
+### 4.1.0 ###
 
 Introduces experimental Ticket Auth Endpoint, which allows the receipt of tickets and the storage of external tokens. This is disabled by default and can only be enabled through a flag.
 
@@ -173,10 +173,15 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
-### 4.0.1 ###
+### 4.1.0 ###
 
 * Add experimental ticket auth endpoint
 * Bug fix on endpoint discovery discovered during ticket auth development
+* Introduce Token Introspection Endpoint as per proposal to integrate RFC7662. For now, will exist concurrently with the older token verification response until it is deprecated.
+* Ensure profile responses are returned when appropriate.
+* Misc Bug Fixes discovered in unit testing
+* Updating of settings configuration
+* Improved default for user who gets to identify as root of site.
 
 ### 4.0.0 ###
 
