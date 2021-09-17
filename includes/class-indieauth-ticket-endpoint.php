@@ -51,14 +51,14 @@ class IndieAuth_Ticket_Endpoint {
 						'resource' => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
-							'required' => true
+							'required'          => true,
 						),
 						/* The access token is used when acting on behalf of this URL
 						 */
 						'subject'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
-							'required' => true
+							'required'          => true,
 						),
 					),
 					'permission_callback' => '__return_true',
