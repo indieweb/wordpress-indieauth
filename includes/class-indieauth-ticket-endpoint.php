@@ -51,12 +51,14 @@ class IndieAuth_Ticket_Endpoint {
 						'resource' => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
+							'required'          => true,
 						),
 						/* The access token is used when acting on behalf of this URL
 						 */
 						'subject'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
+							'required'          => true,
 						),
 					),
 					'permission_callback' => '__return_true',
@@ -93,7 +95,7 @@ class IndieAuth_Ticket_Endpoint {
 			}
 
 			// Add time this token was issued.
-			$return['issued_at'] = time();
+			$return['iat'] = time();
 
 			// Store the Token Endpoint so it does not have to be discovered again.
 			$return['token_endpoint'] = $token_endpoint;

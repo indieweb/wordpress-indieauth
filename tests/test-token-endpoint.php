@@ -87,6 +87,19 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		return rest_get_server()->dispatch( $request );
 	}
 
+	// Check For an Unsupported Grant Type
+	public function test_unsupported_grant_type() {
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'foo',
+				)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'unsupported_grant_type', $data['error'], wp_json_encode( $data ) );
+	}
+
 	// Sets an Auth Code and Redeems it at the Token Endpoint
 	public function test_auth_code_redemption() {
 		$code = $this->set_auth_code();
@@ -217,6 +230,22 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		unset( $check['user'] );
 		$this->assertEquals( static::$test_token, $check );
 	}
+
+	// Test Unsupported Action
+	public function test_unsupported_action() {
+		$token   = self::set_access_token();
+		$response = $this->create_form( 'POST', 
+			array( 
+				'action' => 'foo',
+			) 
+		);
+		$data = $response->get_data();
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'unsupported_action', $data['error'], wp_json_encode( $data ) );
+	}
+
+
 
 	// Sets a token, revokes it, then verifies it is not there.
 	public function test_token_revokation() {

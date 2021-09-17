@@ -24,7 +24,7 @@ class IndieAuth_Authorization_Endpoint {
 			array(
 				array(
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'request' ),
+					'callback'            => array( $this, 'get' ),
 					'args'                => array(
 						/* Code is currently the only type as of IndieAuth 1.1 and a response_type is now required, but not requiring it here yet.
 						 * Indicates to the authorization server that an authorization code should be returned as the response.
@@ -75,10 +75,10 @@ class IndieAuth_Authorization_Endpoint {
 				),
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'verify' ),
+					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						/* grant_type=authorization_code is the only one supported right now. This remains optional as not required in
-						 * the original IndieAuth spec, but will eventually be mandatory.
+						/* grant_type=authorization_code is the only POST option supported right now. This remains optional as not required in
+						 * the original but will eventually be required.
 						 */
 						'grant_type'    => array(
 							'default' => 'authorization_code',
@@ -209,14 +209,32 @@ class IndieAuth_Authorization_Endpoint {
 		}
 	}
 
-	public function request( $request ) {
+	/*
+	 * Authorization Endpoint GET request handler.
+	 *
+	 * @param WP_REST_Request $request The Request Object.
+	 * @return Response to Return to the REST Server.
+	 */
+	public function get( $request ) {
 		$params = $request->get_params();
 		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
 			$params['response_type'] = 'code';
 		}
 		if ( 'code' !== $params['response_type'] ) {
-			return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
+			return $this->code( $params );
 		}
+
+		return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
+
+	}
+
+	/*
+	 * Handler for Response Type Code.
+	 *
+	 * @param array $params The Parameters Passed to the REST Server.
+	 * @return Response to Return to the REST Server.
+	 */
+	public function code( $params ) {
 		$required = array( 'redirect_uri', 'client_id', 'state' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
@@ -238,16 +256,17 @@ class IndieAuth_Authorization_Endpoint {
 			)
 		);
 
-		if ( 'code' === $params['response_type'] ) {
-			$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : '';
-			if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
-				return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
-			}
-			$scopes = explode( ' ', $args['scope'] );
-			if ( in_array( 'email', $scopes, true ) && ! in_array( 'profile', $scopes, true ) ) {
-				return new WP_OAuth_Response( 'invalid_grant', __( 'Cannot request email scope without profile scope', 'indieauth' ), 400 );
-			}
+		$args['scope'] = isset( $params['scope'] ) ? $params['scope'] : '';
+		if ( ! preg_match( '@^([\x21\x23-\x5B\x5D-\x7E]+( [\x21\x23-\x5B\x5D-\x7E]+)*)?$@', $args['scope'] ) ) {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid scope request', 'indieauth' ), 400 );
 		}
+
+		$scopes = explode( ' ', $args['scope'] );
+
+		if ( in_array( 'email', $scopes, true ) && ! in_array( 'profile', $scopes, true ) ) {
+			return new WP_OAuth_Response( 'invalid_grant', __( 'Cannot request email scope without profile scope', 'indieauth' ), 400 );
+		}
+
 		$url = add_query_params_to_url( $args, $url );
 
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
@@ -268,9 +287,30 @@ class IndieAuth_Authorization_Endpoint {
 		return $this->tokens->destroy( $code );
 	}
 
-	public function verify( $request ) {
+	/*
+	 * Authorization Endpoint POST request handler.
+	 *
+	 * @param WP_REST_Request $request The Request Object.
+	 * @return Response to Return to the REST Server.
+	 */
+
+	public function post( $request ) {
 		$params = $request->get_params();
 
+		if ( 'authorization_code' === $params['grant_type'] ) {
+			return $this->authorization_code( $params );
+		}
+
+		return new WP_OAuth_Response( 'unsupported_grant_type', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
+	}
+
+	/*
+	 * Grant Type Authorization Code Request Handler.
+	 *
+	 * @param array $params Parameters.
+	 * @return Response to Return to the REST Server.
+	 */
+	public function authorization_code( $params ) {
 		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
@@ -278,11 +318,9 @@ class IndieAuth_Authorization_Endpoint {
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
-		if ( 'authorization_code' !== $params['grant_type'] ) {
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
-		}
+
+		$code   = $params['code'];
 		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
-		$code   = $request->get_param( 'code' );
 		$token  = $this->get_code( $code );
 		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
@@ -323,7 +361,6 @@ class IndieAuth_Authorization_Endpoint {
 		}
 		return new WP_OAuth_Response( 'invalid_grant', __( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
 	}
-
 
 	public function login_form_indieauth() {
 		if ( ! is_user_logged_in() ) {
