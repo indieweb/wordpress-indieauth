@@ -87,6 +87,12 @@ class IndieAuth_Token_Endpoint {
 		return $this->tokens->get( $token, $hash );
 	}
 
+	/*
+	 * Token Endpoint GET Handler.
+	 *
+	 * @param WP_REST_Request $request The Request Object.
+	 * @return Response to Return to the REST Server.
+	 */
 	public function get( $request ) {
 		$params = $request->get_params();
 		$header = $request->get_header( 'Authorization' );
@@ -130,9 +136,19 @@ class IndieAuth_Token_Endpoint {
 		return $this->tokens->destroy( $id );
 	}
 
-	// Request or revoke a token
+	/*
+	 * Token Endpoint POST Handler.
+	 *
+	 * @param WP_REST_Request $request The Request Object.
+	 * @return Response to Return to the REST Server.
+	 */
 	public function post( $request ) {
 		$params = $request->get_params();
+
+		// You cannot have both an action and a grant_type parameter.
+		if ( isset( $params['action'] ) && isset( $params['grant_type'] ) ) {
+			return WP_OAuth_Response( 'invalid_request', __( 'Please choose either an action or a grant_type', 'indieauth' ) );
+		}
 
 		// Action Handler
 		if ( isset( $params['action'] ) ) {
@@ -142,10 +158,11 @@ class IndieAuth_Token_Endpoint {
 					if ( isset( $params['token'] ) ) {
 						$this->delete_token( $params['token'] );
 						return __( 'The Token Provided is No Longer Valid', 'indieauth' );
+					} else {
+						return new WP_OAuth_Response( 'invalid_request', __( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
 					}
-					// In the event the token parameter is not set, fall through to the default.
 				default:
-					return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+					return new WP_OAuth_Response( 'unsupported_action', __( 'Unsupported Action', 'indieauth' ), 400 );
 			}
 		}
 
@@ -156,7 +173,7 @@ class IndieAuth_Token_Endpoint {
 				case 'authorization_code':
 					return $this->authorization_code( $params );
 				default:
-					return new WP_OAuth_Response( 'invalid_grant', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
+					return new WP_OAuth_Response( 'unsupported_grant_type', __( 'Unsupported grant_type.', 'indieauth' ), 400 );
 			}
 		}
 

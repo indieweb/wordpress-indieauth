@@ -48,6 +48,23 @@ class AuthEndpointTest extends WP_UnitTestCase {
 		return $tokens->get( $code );
 	}
 
+
+	// Check For an Invalid Grant Type.
+	public function test_invalid_grant_type() {
+		$code = $this->set_auth_code();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'foo',
+					'code' => 'foo',
+					'client_id' => 'https://app.example.com',
+					'redirect_uri' => 'https://app.example.com/redirect',
+				)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'unsupported_grant_type', $data['error'], wp_json_encode( $data ) );
+	}
+
 	// Sets an Auth Code and Redeems it at the Auth Endpoint
 	public function test_auth_code_redemption() {
 		$code = $this->set_auth_code();
