@@ -183,6 +183,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Updating of settings configuration
 * Improved default for user who gets to identify as root of site.
 * Introduce Refresh Token Functionality
+* Create was not pre-checked in new selections when offered as an option.
 
 = 4.0.0 = 
 
