@@ -154,14 +154,15 @@ class IndieAuth_Authorization_Endpoint {
 				$scopes = array_values( $scopes );
 				echo '<div class="create_scope">';
 				echo wp_kses(
-					sprintf( '<li><input type="radio" name="scope[]" value="create"><strong>create</strong> - %1$s</li>', esc_html( self::scopes( 'create' ) ) ),
+					sprintf( '<li><input type="radio" name="scope[]" value="create" %1$s><strong>create</strong> - %2$s</li>', esc_attr( 'checked' ), esc_html( self::scopes( 'create' ) ) ),
 					array(
 						'li'     => array(),
 						'strong' => array(),
 						'input'  => array(
-							'type'  => array(),
-							'name'  => array(),
-							'value' => array(),
+							'type'    => array(),
+							'name'    => array(),
+							'value'   => array(),
+							'checked' => array(),
 						),
 					)
 				);
