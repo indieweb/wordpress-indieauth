@@ -246,20 +246,20 @@ class Token_User extends Token_Generic {
 		return $user_ids;
 	}
 
-	/** 
+	/**
 	 * Find tokens by UUID.
 	 *
 	 * @param string $uuid UUID.
 	 * @return array Results.
 	 */
-	 public function find_by_uuid( $uuid, $user = null ) {
-	 	$tokens = $this->get_all( $user );
+	public function find_by_uuid( $uuid, $user = null ) {
+		$tokens = $this->get_all( $user );
 		$return = array();
-		foreach( $tokens as $key => $token ) {
+		foreach ( $tokens as $key => $token ) {
 			if ( array_key_exists( 'uuid', $token ) && ( $uuid === $token['uuid'] ) ) {
 				$return[ $key ] = $token;
 			}
 		}
 		return $return;
-	 }
+	}
 }

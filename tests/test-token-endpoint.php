@@ -8,11 +8,18 @@ class TokenEndpointTest extends WP_UnitTestCase {
 	protected static $test_token = array(
 		'token_type' => 'Bearer',
 		'scope'      => 'create update media',
-		'me'         => 'http://example.org',
-		'issued_by'  => 'http://example.org/wp-json/indieauth/1.0/token',
+		'issued_by'  => 'https://example.org/wp-json/indieauth/1.0/token',
 		'client_id'  => 'https://quill.p3k.io/',
+	        'uuid' => '5e97048d-460c-4fb8-af0e-74db61d4b419',
 		'iat'  => 1532569712,
 	);
+
+	protected static $refresh_token = array (
+	    'scope' => 'create update media',
+	    'client_id' => 'https://quill.p3k.io/',
+	    'uuid' => '5e97048d-460c-4fb8-af0e-74db61d4b419',
+	    'iat' => 1632019982,
+	 );
 
 
 	protected static $test_auth_code = array(
@@ -35,6 +42,8 @@ class TokenEndpointTest extends WP_UnitTestCase {
 			)
 		);
 		static::$test_auth_code['me'] = get_author_posts_url( static::$author_id );
+		static::$test_token['me'] = get_author_posts_url( static::$author_id );
+		static::$refresh_token['me'] = get_author_posts_url( static::$author_id );
 		static::$subscriber_id = $factory->user->create(
 			array(
 				'role' => 'subscriber',
@@ -54,6 +63,14 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		return $tokens->set( static::$test_token );
 	}
 
+	// Sets a test access token
+	public function set_refresh_token() {
+		$tokens    = new Token_User( '_indieauth_refresh_' );
+		$tokens->set_user( self::$author_id );
+		return $tokens->set( static::$refresh_token );
+	}
+
+
 	// Sets a test auth code
 	public function set_auth_code() {
 		$tokens = new Token_User( '_indieauth_code_' );
@@ -70,6 +87,12 @@ class TokenEndpointTest extends WP_UnitTestCase {
 	// Gets a test access token
 	public function get_access_token( $token ) {
 		$tokens    = new Token_User( '_indieauth_token_' );
+		return $tokens->get( $token );
+	}
+
+	// Gets a test refresh  token
+	public function get_refresh_token( $token ) {
+		$tokens    = new Token_User( '_indieauth_refresh_' );
 		return $tokens->get( $token );
 	}
 
@@ -116,6 +139,9 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'access_token', $data );
 		$this->assertNotFalse( $data['access_token'] );
 		unset( $data['access_token'] );
+		$this->assertArrayHasKey( 'refresh_token', $data );
+		$this->assertNotFalse( $data['refresh_token'] );
+		unset( $data['refresh_token'] );
 		$this->assertEquals( 
 			array( 
 				'me' => get_author_posts_url( static::$author_id ),
@@ -145,6 +171,9 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'access_token', $data );
 		$this->assertNotFalse( $data['access_token'] );
 		unset( $data['access_token'] );
+		$this->assertArrayHasKey( 'refresh_token', $data );
+		$this->assertNotFalse( $data['refresh_token'] );
+		unset( $data['refresh_token'] );
 		$this->assertEquals( 
 			array( 
 				'me' => get_author_posts_url( static::$author_id ),
@@ -177,6 +206,9 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'access_token', $data );
 		$this->assertNotFalse( $data['access_token'] );
 		unset( $data['access_token'] );
+		$this->assertArrayHasKey( 'refresh_token', $data );
+		$this->assertNotFalse( $data['refresh_token'] );
+		unset( $data['refresh_token'] );
 		$this->assertEquals( 
 			array( 
 				'me' => get_author_posts_url( static::$author_id ),
@@ -190,6 +222,36 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		);
 		static::$test_auth_code['scope'] = 'create';
 	}
+
+	// Sets a Refresh Token Then Redeems it Using the Grant Type.
+		public function test_refresh_token_grant_type() {
+		$refresh_token = $this->set_refresh_token();
+		$response = $this->create_form( 'POST', 
+				array(
+					'grant_type' => 'refresh_token',
+					'refresh_token' => $refresh_token,
+				)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'access_token', $data, wp_json_encode( $data ) );
+		$this->assertNotFalse( $data['access_token'], wp_json_encode( $data ) );
+		unset( $data['access_token'] );
+		$this->assertArrayHasKey( 'refresh_token', $data, wp_json_encode( $data ) );
+		$this->assertNotFalse( $data['refresh_token'] );
+		unset( $data['refresh_token'] );
+		$this->assertEquals( 
+			array( 
+				'me' => get_author_posts_url( static::$author_id ),
+				'token_type' => 'Bearer',
+				'scope' => 'create update media',
+				'expires_in' => 1209600
+			), 
+			$data, 
+			'Response: ' . wp_json_encode( $data ) 
+		);
+	}
+
 
 	// Sets a token and verifies it using Access Token Verification
 	public function test_token_verification() {
