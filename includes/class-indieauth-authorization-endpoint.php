@@ -220,7 +220,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
 			$params['response_type'] = 'code';
 		}
-		if ( 'code' !== $params['response_type'] ) {
+		if ( 'code' === $params['response_type'] ) {
 			return $this->code( $params );
 		}
 
@@ -447,8 +447,14 @@ class IndieAuth_Authorization_Endpoint {
 
 
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
+
+
+		/* Add UUID for reference.  
+		 */
+		$uuid = wp_generate_uuid4();
+
 		/// phpcs:enable
-		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user' );
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid' );
 		$token = array_filter( $token );
 		$code  = self::set_code( $current_user->ID, $token );
 		$url   = add_query_params_to_url(
