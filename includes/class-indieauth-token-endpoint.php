@@ -157,7 +157,7 @@ class IndieAuth_Token_Endpoint {
 		$this->refresh_tokens->set_user( $user );
 		$expires_in = array_key_exists( 'expires_in', $token ) ? $token['expires_in'] : null;
 
-		return $this->refresh_tokens->set( $refresh, $expires_in );
+		return $this->refresh_tokens->set( $refresh, $expires_in + 300 );
 	}
 
 	public function delete_refresh_token( $id, $user_id = null ) {
@@ -324,7 +324,6 @@ class IndieAuth_Token_Endpoint {
 				// Do Not Add Expires In for the Return Until After It is Saved to the Database
 				if ( 0 !== $expires ) {
 					$return['expires_in'] = $expires;
-					// For now, the refresh token will only last 1.5x the expiry of the access token.
 					$return['refresh_token'] = $this->set_refresh_token( $return, $response['user'] );
 				}
 			}
