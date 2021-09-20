@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: IndieAuth 4.1.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2021-09-13 02:58:46+00:00\n"
+"POT-Creation-Date: 2021-09-19 04:08:37+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -298,49 +298,48 @@ msgstr ""
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:181
+#: includes/class-indieauth-authorization-endpoint.php:182
 msgid "Token will have no privileges to create posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:218
+#: includes/class-indieauth-authorization-endpoint.php:228
 msgid "Unsupported Response Type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:224
-#: includes/class-indieauth-authorization-endpoint.php:278
+#: includes/class-indieauth-authorization-endpoint.php:243
+#: includes/class-indieauth-authorization-endpoint.php:319
 #. translators: Name of missing parameter
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:244
+#: includes/class-indieauth-authorization-endpoint.php:262
 msgid "Invalid scope request"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:248
+#: includes/class-indieauth-authorization-endpoint.php:268
 msgid "Cannot request email scope without profile scope"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:282
-#: includes/class-indieauth-token-endpoint.php:160
+#: includes/class-indieauth-authorization-endpoint.php:305
 msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:290
+#: includes/class-indieauth-authorization-endpoint.php:329
 #: includes/class-indieauth-local-authorize.php:117 includes/functions.php:548
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:295
+#: includes/class-indieauth-authorization-endpoint.php:334
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:303
-#: includes/class-indieauth-authorization-endpoint.php:307
+#: includes/class-indieauth-authorization-endpoint.php:342
+#: includes/class-indieauth-authorization-endpoint.php:346
 #: includes/functions.php:553 includes/functions.php:557
 msgid "Failed PKCE Validation"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:324
+#: includes/class-indieauth-authorization-endpoint.php:363
 msgid ""
 "There was an error verifying the authorization code. Check that the "
 "client_id and redirect_uri match the original request."
@@ -391,7 +390,7 @@ msgid "These settings control the behavior of the endpoints"
 msgstr ""
 
 #: includes/class-indieauth-local-authorize.php:95
-#: includes/class-indieauth-token-endpoint.php:111
+#: includes/class-indieauth-token-endpoint.php:119
 msgid "Invalid access token"
 msgstr ""
 
@@ -462,52 +461,76 @@ msgid ""
 "response. Without this only a display name, avatar, and url will be returned"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:81
+#: includes/class-indieauth-ticket-endpoint.php:83
 msgid "Cannot Find Token Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:107
+#: includes/class-indieauth-ticket-endpoint.php:109
 msgid "Your Ticket Has Been Redeemed. Thank you for your trust!"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:114
-#: includes/class-indieauth-token-endpoint.php:149
-#: includes/class-indieauth-token-endpoint.php:176
+#: includes/class-indieauth-ticket-endpoint.php:116
+#: includes/class-indieauth-token-endpoint.php:228
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:120
+#: includes/class-indieauth-ticket-endpoint.php:122
 msgid "Me Property Missing From Response"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:126
+#: includes/class-indieauth-ticket-endpoint.php:128
 msgid "Unable to Identify User Associated with Me Property"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:159
+#: includes/class-indieauth-ticket-endpoint.php:161
 msgid "On Trying to Redeem a Token the Response was Invalid"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:172
+#: includes/class-indieauth-ticket-endpoint.php:174
 msgid "Unable to Redeem Ticket for Unknown Reasons."
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:101
+#: includes/class-indieauth-token-endpoint.php:109
 msgid ""
 "Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run "
 "diagnostic script in WordPress Admin\n"
 "\t\t\t\tIndieAuth Settings Page"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:145
+#: includes/class-indieauth-token-endpoint.php:184
+msgid "Please choose either an action or a grant_type"
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:194
 msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:183
+#: includes/class-indieauth-token-endpoint.php:196
+msgid "Revoke is Missing Required Parameter token"
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:199
+msgid "Unsupported Action"
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:212
+msgid "Unsupported grant_type."
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:237
+#: includes/class-indieauth-token-endpoint.php:259
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:267
+#: includes/class-indieauth-token-endpoint.php:241
+msgid "Invalid Token"
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:248
+msgid "Client ID does not match"
+msgstr ""
+
+#: includes/class-indieauth-token-endpoint.php:354
 msgid "There was an error in response."
 msgstr ""
 
@@ -663,7 +686,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:170
+#: indieauth.php:173
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""

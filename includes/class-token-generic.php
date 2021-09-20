@@ -91,7 +91,7 @@ abstract class Token_Generic {
 	 * @return int Timestamp when this will expire.
 	 */
 	public function expires( $expiration ) {
-		return time() + $expiration;
+		return round( time() + $expiration );
 	}
 
 	/**

@@ -154,14 +154,15 @@ class IndieAuth_Authorization_Endpoint {
 				$scopes = array_values( $scopes );
 				echo '<div class="create_scope">';
 				echo wp_kses(
-					sprintf( '<li><input type="radio" name="scope[]" value="create"><strong>create</strong> - %1$s</li>', esc_html( self::scopes( 'create' ) ) ),
+					sprintf( '<li><input type="radio" name="scope[]" value="create" %1$s><strong>create</strong> - %2$s</li>', esc_attr( 'checked' ), esc_html( self::scopes( 'create' ) ) ),
 					array(
 						'li'     => array(),
 						'strong' => array(),
 						'input'  => array(
-							'type'  => array(),
-							'name'  => array(),
-							'value' => array(),
+							'type'    => array(),
+							'name'    => array(),
+							'value'   => array(),
+							'checked' => array(),
 						),
 					)
 				);
@@ -220,7 +221,7 @@ class IndieAuth_Authorization_Endpoint {
 		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
 			$params['response_type'] = 'code';
 		}
-		if ( 'code' !== $params['response_type'] ) {
+		if ( 'code' === $params['response_type'] ) {
 			return $this->code( $params );
 		}
 
@@ -447,8 +448,14 @@ class IndieAuth_Authorization_Endpoint {
 
 
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
+
+
+		/* Add UUID for reference.  
+		 */
+		$uuid = wp_generate_uuid4();
+
 		/// phpcs:enable
-		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user' );
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid' );
 		$token = array_filter( $token );
 		$code  = self::set_code( $current_user->ID, $token );
 		$url   = add_query_params_to_url(

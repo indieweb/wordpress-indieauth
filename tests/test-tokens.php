@@ -23,6 +23,17 @@ class TokensTest extends WP_UnitTestCase {
 		$this->assertEquals( $users, array( $user_id_1, $user_id_2 ) );
 	}
 
+	public function test_find_by_uuid() {
+		$user_id_1 = self::factory()->user->create();
+		$tokens = new Token_User( '_indieauth_code_', $user_id_1 );
+		$uuid = wp_generate_uuid4();
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'uuid' => $uuid );
+		$access_token = $tokens->set( $token );
+		$return = $tokens->find_by_field( 'uuid', $uuid, $user_id_1 );
+		$first = reset( $return );
+		$this->assertEquals( $uuid, $first['uuid'], wp_json_encode( $return ) );
+	}
+
 
 
 	public function test_expired_token() {

@@ -245,4 +245,22 @@ class Token_User extends Token_Generic {
 		}
 		return $user_ids;
 	}
+
+	/**
+	 * Find tokens by field.
+	 *
+	 * @param string $field Field.
+	 * @param string $value Value.
+	 * @return array Results.
+	 */
+	public function find_by_field( $field, $value, $user = null ) {
+		$tokens = $this->get_all( $user );
+		$return = array();
+		foreach ( $tokens as $key => $token ) {
+			if ( array_key_exists( $field, $token ) && ( $value === $token[ $field ] ) ) {
+				$return[ $key ] = $token;
+			}
+		}
+		return $return;
+	}
 }
