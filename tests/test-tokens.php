@@ -29,7 +29,7 @@ class TokensTest extends WP_UnitTestCase {
 		$uuid = wp_generate_uuid4();
 		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'uuid' => $uuid );
 		$access_token = $tokens->set( $token );
-		$return = $tokens->find_by_uuid( $uuid, $user_id_1 );
+		$return = $tokens->find_by_field( 'uuid', $uuid, $user_id_1 );
 		$first = reset( $return );
 		$this->assertEquals( $uuid, $first['uuid'], wp_json_encode( $return ) );
 	}

@@ -244,10 +244,6 @@ class IndieAuth_Token_Endpoint {
 		// Destroy the refresh token.
 		$this->refresh_tokens->destroy( $params['refresh_token'] );
 
-		if ( array_key_exists( 'client_id', $params ) && ( $refresh['client_id'] !== $params['client_id'] ) ) {
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Client ID does not match', 'indieauth' ), 400 );
-		}
-
 		return $this->generate_token_response( $refresh );
 
 	}
@@ -267,7 +263,6 @@ class IndieAuth_Token_Endpoint {
 			)
 		);
 		$response              = indieauth_verify_local_authorization_code( $args );
-		$response['client_id'] = $params['client_id'];
 
 		$error = get_oauth_error( $response );
 		if ( $error ) {
