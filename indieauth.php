@@ -82,8 +82,10 @@ class IndieAuth_Plugin {
 		$t->get_all();
 		$t = new Token_User( '_indieauth_refresh_token_', $user_id );
 		$t->get_all();
-		$t = new External_User_Token();
-		$t->expire_all_tokens();
+		if ( class_exists( 'External_User_Token' ) ) {
+			$t = new External_User_Token();
+			$t->expire_all_tokens();
+		}
 	}
 
 	public static function plugins_loaded() {
