@@ -4,7 +4,7 @@ Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
 Tested up to: 5.8
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -172,6 +172,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 4.1.1 =
+
+* Fix issue where class from ticket auth was being called even though ticket auth was not enabled.
 
 = 4.1.0 =
 
