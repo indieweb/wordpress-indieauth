@@ -4,7 +4,7 @@
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
 **Tested up to:** 5.8  
-**Stable tag:** 4.1.1  
+**Stable tag:** 4.2.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -70,7 +70,7 @@ We recommend your site uses HTTPS to ensure your credentials are not sent in cle
 
 ### What is a token endpoint? ###
 
-Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site. The plugin supports you using an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
+Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site. The plugin does offer an expert mode to allow you to use an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
 
 You can manage and revoke tokens under User->Manage Tokens if you are using the local configuration only. You will only see tokens for the currently logged in user.
 
@@ -143,6 +143,11 @@ Since the extension is developing, there is currently not a specified way to tra
 
 ## Upgrade Notice ##
 
+- 4.2.0 =
+
+Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard
+to take advantage of the latest opportunities.
+
 ### 4.1.0 ###
 
 Introduces experimental Ticket Auth Endpoint, which allows the receipt of tickets and the storage of external tokens. This is disabled by default and can only be enabled through a flag.
@@ -172,6 +177,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog ##
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.2.0 ###
+
+* Add Server Metadata Endpoint
+* Add Issuer Property to Authorization Response
 
 ### 4.1.1 ###
 
