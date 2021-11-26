@@ -145,8 +145,7 @@ Since the extension is developing, there is currently not a specified way to tra
 
 - 4.2.0 =
 
-Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard
-to take advantage of the latest opportunities.
+Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard to take advantage of the latest opportunities.
 
 ### 4.1.0 ###
 

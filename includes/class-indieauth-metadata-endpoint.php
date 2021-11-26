@@ -11,9 +11,9 @@ class IndieAuth_Metadata_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 	}
 
-	/**
+	/*
 	 * Returns the URL for the metadata endpoint.
-	 **/
+	 */
 	public static function get_metadata_endpoint() {
 		return rest_url( '/indieauth/1.0/metadata' );
 	}
@@ -81,12 +81,12 @@ class IndieAuth_Metadata_Endpoint {
 		);
 	}
 
-	/*
+	/**
 	 * Metadata Endpoint GET request handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
 	 * @return Response to Return to the REST Server.
-	 */
+	 **/
 	public function metadata( $request ) {
 		$grants = array( 'authorization_code', 'refresh_token' );
 		if ( class_exists( 'IndieAuth_Ticket_Endpoint' ) ) {
