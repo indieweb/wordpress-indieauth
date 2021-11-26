@@ -462,6 +462,7 @@ class IndieAuth_Authorization_Endpoint {
 			array(
 				'code'  => $code,
 				'state' => $state,
+				'iss'   => indieauth_get_issuer(),
 			),
 			$redirect_uri
 		);

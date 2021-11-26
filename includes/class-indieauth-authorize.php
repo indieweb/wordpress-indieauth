@@ -14,7 +14,6 @@ abstract class IndieAuth_Authorize {
 		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
-		add_filter( 'rest_index', array( $this, 'register_index' ) );
 
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
@@ -60,30 +59,6 @@ abstract class IndieAuth_Authorize {
 			$current_user = null; // phpcs:ignore
 		}
 		return $class;
-	}
-
-	/**
-	 * Add authentication information into the REST API Index
-	 *
-	 * @param WP_REST_Response $response REST API Response Object
-	 *
-	 * @return WP_REST_Response Response object with endpoint info added
-	 **/
-	public function register_index( WP_REST_Response $response ) {
-		$data      = $response->get_data();
-		$endpoints = array(
-			'authorization' => $this->get_authorization_endpoint(),
-			'token'         => $this->get_token_endpoint(),
-		);
-		$endpoints = array_filter( $endpoints );
-		if ( empty( $endpoints ) ) {
-			return $response;
-		}
-		$data['authentication']['indieauth'] = array(
-			'endpoints' => $endpoints,
-		);
-		$response->set_data( $data );
-		return $response;
 	}
 
 	public function get_indieauth_scopes( $scopes ) {

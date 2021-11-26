@@ -271,4 +271,3 @@ class IndieAuth_Scopes {
 	}
 }
 
-new IndieAuth_Scopes();

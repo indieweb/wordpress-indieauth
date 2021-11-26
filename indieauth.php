@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 4.1.1
+ * Version: 4.2.0
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -33,6 +33,8 @@ add_action( 'indieauth_cleanup', array( 'IndieAuth_Plugin', 'expires' ) );
 
 class IndieAuth_Plugin {
 	public static $indieauth = null; // Loaded instance of authorize class
+	public static $metadata  = null; // Loaded instance of metadata class
+	public static $scopes    = null; // Loaded instance of scopes class
 
 	/*
 	 * Process to Trigger on Plugin Update.
@@ -104,6 +106,8 @@ class IndieAuth_Plugin {
 			)
 		);
 
+		static::$scopes = new IndieAuth_Scopes();
+
 		new IndieAuth_Admin();
 
 		// Classes Required for the Local Endpoint
@@ -112,6 +116,7 @@ class IndieAuth_Plugin {
 			'class-token-user.php',
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
+			'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
 			'class-token-list-table.php', // Token Management UI
 			'class-indieauth-token-ui.php',
 			'class-indieauth-local-authorize.php',
@@ -135,6 +140,7 @@ class IndieAuth_Plugin {
 				new IndieAuth_Authorization_Endpoint();
 				new IndieAuth_Token_Endpoint();
 				static::$indieauth = new IndieAuth_Local_Authorize();
+				static::$metadata  = new IndieAuth_Metadata_Endpoint();
 				break;
 		}
 
