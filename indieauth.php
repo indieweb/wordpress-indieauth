@@ -114,6 +114,7 @@ class IndieAuth_Plugin {
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
 			'class-token-user.php',
+			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
 			'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
