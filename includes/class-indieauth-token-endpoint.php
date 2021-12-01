@@ -184,7 +184,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$args                  = array_filter(
+		$args     = array_filter(
 			array(
 				'code'          => $params['code'],
 				'redirect_uri'  => $params['redirect_uri'],
@@ -192,7 +192,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
-		$response              = indieauth_verify_local_authorization_code( $args );
+		$response = indieauth_verify_local_authorization_code( $args );
 
 		$error = get_oauth_error( $response );
 		if ( $error ) {
@@ -248,7 +248,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 
 				// Do Not Add Expires In for the Return Until After It is Saved to the Database
 				if ( 0 !== $expires ) {
-					$return['expires_in'] = $expires;
+					$return['expires_in']    = $expires;
 					$return['refresh_token'] = $this->set_refresh_token( $return, $response['user'] );
 				}
 			}
