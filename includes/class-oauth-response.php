@@ -10,7 +10,7 @@ class WP_OAuth_Response extends WP_REST_Response {
 				'error_description' => $error_description,
 			)
 		);
-		if ( is_array( $debug ) ) {
+		if ( is_array( $debug ) && ! empty( $debug ) ) {
 			$this->set_debug( $debug );
 		}
 		if ( WP_DEBUG ) {
@@ -24,11 +24,15 @@ class WP_OAuth_Response extends WP_REST_Response {
 	}
 
 	public function to_wp_error() {
-		$data   = $this->get_data();
+		$data              = $this->get_data();
+		$error             = $data['error'];
+		$error_description = $data['error_description'];
+		unset( $data['error'] );
+		unset( $data['error_description'] );
 		$status = $this->get_status();
 		return new WP_Error(
-			$data['error'],
-			$data['error_description'],
+			$error,
+			$error_description,
 			array(
 				'status' => $status,
 				'data'   => $data,
