@@ -21,7 +21,7 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'userinfo' ),
 					'args'                => array(),
-					'permission_callback' => array( $this, 'permission_callback' ),
+					'permission_callback' => '__return_true',
 				),
 			)
 		);
@@ -35,7 +35,29 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 	 * @return Response to Return to the REST Server.
 	 */
 	public function userinfo( $request ) {
-		if ( ! indieauth_check_scope( 'profile' ) ) {
+		$params = $request->get_params();
+		$header = $request->get_header( 'Authorization' );
+		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
+			$header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		}
+		$access_token = $this->get_token_from_bearer_header( $header );
+		if ( ! $access_token ) {
+			return new WP_OAuth_Response(
+				'parameter_absent',
+				__(
+					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
+				IndieAuth Settings Page',
+					'indieauth'
+				),
+				400
+			);
+		}
+		$token = $this->get_token( $access_token );
+		if ( ! $token ) {
+			return new WP_OAuth_Response( 'invalid_token', __( 'Invalid access token', 'indieauth' ), 401 );
+		}
+		$scopes = explode( ' ', $token['scope'] );
+		if ( ! in_array( 'profile', $scopes, true ) ) {
 			return new WP_OAuth_Response(
 				'insufficient_scope',
 				__(
@@ -46,7 +68,7 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 			);
 		}
 
-		return indieauth_get_user( wp_get_current_user(), indieauth_check_scope( 'email' ) );
+		return indieauth_get_user( $token['user'], in_array( 'email', $scopes, true ) );
 	}
 
 }

@@ -28,22 +28,6 @@ class IndieAuth_Endpoint {
 		return null;
 	}
 
-	public function permission_callback( $request ) {
-		if ( defined( 'INDIEAUTH_TOKEN' ) && INDIEAUTH_TOKEN ) {
-			return true;
-		}
-
-		$error = new WP_OAuth_Response(
-			'invalid_token',
-			__(
-				'The access token provided is expired, revoked, or invalid',
-				'indieauth'
-			),
-			401
-		);
-		return $error->to_wp_error();
-	}
-
 	public function get_token( $token, $hash = true, $type = null ) {
 		switch ( $type ) {
 			case 'access_token':

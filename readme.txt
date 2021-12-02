@@ -145,7 +145,7 @@ Since the extension is developing, there is currently not a specified way to tra
 
 - 4.2.0 =
 
-Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard to take advantage of the latest opportunities.
+Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard to take advantage of the latest opportunities. Old methods will remain until adoption of the metadata endpoint is sufficient.
 
 = 4.1.0 =
 
@@ -181,6 +181,9 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 * Add Server Metadata Endpoint
 * Add Issuer Property to Authorization Response
+* In 4.1.0, introspection endpoint was introduced and shared an endpoint with the token endpoint. This approach was abandoned with the metadata endpoint and the introspection endpoint no longer shares. As this was only in for a short time deprecation is immediate.
+* Revocation endpoint added. Old revocation method will remain until metadata endpoint adoption is sufficient.
+* User Info Endpoint added. This returns the user profile offered during the authorization flow.
 
 = 4.1.1 =
 
