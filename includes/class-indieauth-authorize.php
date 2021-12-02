@@ -162,6 +162,9 @@ abstract class IndieAuth_Authorize {
 			return 0;
 		}
 		if ( is_array( $params ) ) {
+			// If this is a token auth response, add this constant.
+			define( 'INDIEAUTH_TOKEN', true );
+
 			$this->response = $params;
 			$this->scopes   = explode( ' ', $params['scope'] );
 			// The User ID must be passed in the request
