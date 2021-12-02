@@ -30,10 +30,10 @@ abstract class IndieAuth_Authorize {
 	 * Ensures responses to any IndieAuth endpoints are always OAuth Responses rather than WP_Error.
 	 */
 	public static function return_oauth_error( $response, $handler, $request ) {
-		if( 0 !== strpos( $request->get_route(), '/indieauth/1.0/' ) ) {
+		if ( 0 !== strpos( $request->get_route(), '/indieauth/1.0/' ) ) {
 			return $response;
 		}
-		
+
 		if ( is_wp_error( $response ) ) {
 			return wp_error_to_oauth_response( $response );
 		}

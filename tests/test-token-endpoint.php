@@ -269,22 +269,6 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( static::$test_token, $response_token );
 	}
 
-	// Sets a token and verifies it using Access Token Introspection
-	public function test_token_introspection() {
-		$token   = self::set_access_token();
-		$response = $this->create_form( 'POST',
-				array( 
-					'token' => $token
-				)
-			);
-		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
-		$response_token = $response->get_data();
-		unset( $response_token['user'] );
-		unset( $response_token['active'] );
-		$this->assertEquals( static::$test_token, $response_token );
-	}
-
-
 	// To Make Sure that Revokation Works, Test the Helper Function First.
 	public function test_test_get_access_token() {
 		$token   = self::set_access_token();

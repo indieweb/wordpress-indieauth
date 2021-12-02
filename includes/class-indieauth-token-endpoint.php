@@ -143,17 +143,6 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 			}
 		}
 
-		// If there is no action or grant_type, that means this is a token introspection request.
-		if ( isset( $params['token'] ) ) {
-			$token = $this->get_token( $params['token'] );
-			if ( $token ) {
-				$token['active'] = 'true';
-				return rest_ensure_response( $token );
-			} else {
-				return rest_ensure_response( array( 'active' => 'false' ) );
-			}
-		}
-
 		// Everything Failed
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
