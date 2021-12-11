@@ -31,6 +31,8 @@ class IndieAuth_Metadata_Endpoint {
 			'authorization' => indieauth_get_authorization_endpoint(),
 			'token'         => indieauth_get_token_endpoint(),
 			'metadata'      => indieauth_get_metadata_endpoint(),
+			'revocation'    => rest_url( 'indieauth/1.0/revocation' ),
+			'introspection' => rest_url( 'indieauth/1.0/introspection' ),
 		);
 		$endpoints = array_filter( $endpoints );
 		if ( empty( $endpoints ) ) {
@@ -94,16 +96,24 @@ class IndieAuth_Metadata_Endpoint {
 		}
 
 		$metadata = array(
-			'issuer'                           => indieauth_get_issuer(),
-			'authorization_endpoint'           => indieauth_get_authorization_endpoint(),
-			'scopes_supported'                 => IndieAuth_Plugin::$scopes->get_names(),
-			'response_types_supported'         => array( 'code' ),
-			'grant_types_supported'            => $grants,
-			'service_documentation'            => 'https://indieauth.spec.indieweb.org',
-			'token_endpoint'                   => indieauth_get_token_endpoint(),
-			'code_challenge_methods_supported' => array( 'S256' ),
+			'issuer'                                     => indieauth_get_issuer(),
+			'authorization_endpoint'                     => indieauth_get_authorization_endpoint(),
+			'scopes_supported'                           => IndieAuth_Plugin::$scopes->get_names(),
+			'response_types_supported'                   => array( 'code' ),
+			'grant_types_supported'                      => $grants,
+			'service_documentation'                      => 'https://indieauth.spec.indieweb.org',
+			'token_endpoint'                             => indieauth_get_token_endpoint(),
+			'revocation_endpoint'                        => rest_url( '/indieauth/1.0/revocation' ),
+			'revocation_endpoint_auth_methods_supported' => array( 'none' ),
+			'introspection_endpoint'                     => rest_url( '/indieauth/1.0/introspection' ),
+			'introspection_endpoint_auth_methods_supported' => array( 'none' ),
+			'code_challenge_methods_supported'           => array( 'S256' ),
 			'authorization_response_iss_parameter_supported' => true,
 		);
+
+		if ( class_exists( 'IndieAuth_Ticket_Endpoint' ) ) {
+			$metadata['ticket_endpoint'] = rest_url( 'indieauth/1.0/ticket' );
+		}
 
 		$metadata = apply_filters( 'indieauth_metadata', $metadata );
 		return new WP_REST_Response(

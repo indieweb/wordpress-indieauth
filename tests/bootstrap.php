@@ -5,6 +5,8 @@
  * @package Wordpress_Indieauth
  */
 
+define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', __DIR__ . '/../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php' );
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 define( 'INDIEAUTH_UNIT_TESTS', 1 );

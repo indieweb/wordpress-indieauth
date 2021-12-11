@@ -114,9 +114,13 @@ class IndieAuth_Plugin {
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
 			'class-token-user.php',
+			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
 			'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
+			'class-indieauth-revocation-endpoint.php', // Revocation Endpoint
+			'class-indieauth-introspection-endpoint.php', // Introspection Endpoint
+			'class-indieauth-userinfo-endpoint.php', // User Info Endpoint
 			'class-token-list-table.php', // Token Management UI
 			'class-indieauth-token-ui.php',
 			'class-indieauth-local-authorize.php',
@@ -141,6 +145,9 @@ class IndieAuth_Plugin {
 				new IndieAuth_Token_Endpoint();
 				static::$indieauth = new IndieAuth_Local_Authorize();
 				static::$metadata  = new IndieAuth_Metadata_Endpoint();
+				new IndieAuth_Revocation_Endpoint();
+				new IndieAuth_Introspection_Endpoint();
+				new IndieAuth_Userinfo_Endpoint();
 				break;
 		}
 

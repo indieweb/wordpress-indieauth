@@ -21,8 +21,25 @@ abstract class IndieAuth_Authorize {
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
 		add_filter( 'wp_rest_server_class', array( $this, 'wp_rest_server_class' ) );
+		add_filter( 'rest_request_after_callbacks', array( $this, 'return_oauth_error' ), 10, 3 );
 
 	}
+
+
+	/*
+	 * Ensures responses to any IndieAuth endpoints are always OAuth Responses rather than WP_Error.
+	 */
+	public static function return_oauth_error( $response, $handler, $request ) {
+		if ( 0 !== strpos( $request->get_route(), '/indieauth/1.0/' ) ) {
+			return $response;
+		}
+
+		if ( is_wp_error( $response ) ) {
+			return wp_error_to_oauth_response( $response );
+		}
+		return $response;
+	}
+
 
 	/**
 	 * Returns the URL for the authorization endpoint.
@@ -145,6 +162,9 @@ abstract class IndieAuth_Authorize {
 			return 0;
 		}
 		if ( is_array( $params ) ) {
+			// If this is a token auth response, add this constant.
+			define( 'INDIEAUTH_TOKEN', true );
+
 			$this->response = $params;
 			$this->scopes   = explode( ' ', $params['scope'] );
 			// The User ID must be passed in the request

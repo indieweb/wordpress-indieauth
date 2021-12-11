@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 4.1.1\n"
+"Project-Id-Version: IndieAuth 4.2.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2021-10-07 17:19:26+00:00\n"
+"POT-Creation-Date: 2021-12-02 14:38:26+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -345,7 +345,7 @@ msgid ""
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:183
+#: includes/class-indieauth-authorize.php:178
 msgid "User Not Found on this Site"
 msgstr ""
 
@@ -390,7 +390,8 @@ msgid "These settings control the behavior of the endpoints"
 msgstr ""
 
 #: includes/class-indieauth-local-authorize.php:95
-#: includes/class-indieauth-token-endpoint.php:119
+#: includes/class-indieauth-token-endpoint.php:97
+#: includes/class-indieauth-userinfo-endpoint.php:57
 msgid "Invalid access token"
 msgstr ""
 
@@ -416,6 +417,11 @@ msgstr ""
 
 #: includes/class-indieauth-remote-authorize.php:163
 msgid "Supplied Token is Invalid"
+msgstr ""
+
+#: includes/class-indieauth-revocation-endpoint.php:47
+#: includes/class-indieauth-token-endpoint.php:124
+msgid "The Token Provided is No Longer Valid"
 msgstr ""
 
 #: includes/class-indieauth-scopes.php:45
@@ -470,7 +476,7 @@ msgid "Your Ticket Has Been Redeemed. Thank you for your trust!"
 msgstr ""
 
 #: includes/class-indieauth-ticket-endpoint.php:116
-#: includes/class-indieauth-token-endpoint.php:228
+#: includes/class-indieauth-token-endpoint.php:147
 msgid "Invalid Request"
 msgstr ""
 
@@ -490,43 +496,40 @@ msgstr ""
 msgid "Unable to Redeem Ticket for Unknown Reasons."
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:109
+#: includes/class-indieauth-token-endpoint.php:87
+#: includes/class-indieauth-userinfo-endpoint.php:47
 msgid ""
 "Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run "
 "diagnostic script in WordPress Admin\n"
 "\t\t\t\tIndieAuth Settings Page"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:184
+#: includes/class-indieauth-token-endpoint.php:114
 msgid "Please choose either an action or a grant_type"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:194
-msgid "The Token Provided is No Longer Valid"
-msgstr ""
-
-#: includes/class-indieauth-token-endpoint.php:196
+#: includes/class-indieauth-token-endpoint.php:126
 msgid "Revoke is Missing Required Parameter token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:199
+#: includes/class-indieauth-token-endpoint.php:129
 msgid "Unsupported Action"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:212
+#: includes/class-indieauth-token-endpoint.php:142
 msgid "Unsupported grant_type."
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:237
-#: includes/class-indieauth-token-endpoint.php:255
+#: includes/class-indieauth-token-endpoint.php:156
+#: includes/class-indieauth-token-endpoint.php:174
 msgid "The request is missing one or more required parameters"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:241
+#: includes/class-indieauth-token-endpoint.php:160
 msgid "Invalid Token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:349
+#: includes/class-indieauth-token-endpoint.php:268
 msgid "There was an error in response."
 msgstr ""
 
@@ -575,6 +578,10 @@ msgstr ""
 
 #: includes/class-indieauth-token-ui.php:131
 msgid "Add New Token"
+msgstr ""
+
+#: includes/class-indieauth-userinfo-endpoint.php:63
+msgid "Bearer Token does not have profile scope"
 msgstr ""
 
 #: includes/class-token-list-table.php:11
@@ -682,7 +689,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:175
+#: indieauth.php:188
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""

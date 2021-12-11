@@ -5,29 +5,11 @@
  * Implements IndieAuth Token Endpoint
  */
 
-class IndieAuth_Token_Endpoint {
-	private $tokens;
-	private $refresh_tokens;
+class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
+
 	public function __construct() {
-		$this->tokens         = new Token_User( '_indieauth_token_' );
-		$this->refresh_tokens = new Token_User( '_indieauth_refresh_' );
-
+		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-	}
-
-
-	/**
-	 * Extracts the token from the given authorization header.
-	 *
-	 * @param string $header Authorization header.
-	 *
-	 * @return string|null Token on success, null on failure.
-	 */
-	public function get_token_from_bearer_header( $header ) {
-		if ( is_string( $header ) && preg_match( '/Bearer ([\x20-\x7E]+)/', trim( $header ), $matches ) ) {
-			return $matches[1];
-		}
-		return null;
 	}
 
 	/**
@@ -86,10 +68,6 @@ class IndieAuth_Token_Endpoint {
 		);
 	}
 
-	public function get_token( $token, $hash = true ) {
-		return $this->tokens->get( $token, $hash );
-	}
-
 	/*
 	 * Token Endpoint GET Handler.
 	 *
@@ -120,54 +98,6 @@ class IndieAuth_Token_Endpoint {
 		}
 		$token['active'] = 'true';
 		return rest_ensure_response( $token );
-	}
-
-	public function set_token( $token, $expiration = null, $user_id = null ) {
-		if ( ! isset( $token['me'] ) ) {
-			return false;
-		}
-		if ( ! $user_id ) {
-			$user_id = get_user_by_identifier( $token['me'] );
-			if ( $user instanceof WP_User ) {
-				$user_id = $user_id->ID;
-			} else {
-				return false;
-			}
-		}
-
-		$this->tokens->set_user( $user_id );
-
-		return $this->tokens->set( $token, $expiration );
-	}
-
-	/*
-	 * Sets a refresh token based on an access token.
-	 * @param array $token Access Token Return.
-	 * @param int $user User ID.
-	 * @return string Refresh Token.
-	 */
-	public function set_refresh_token( $token, $user ) {
-		$refresh = array(
-			'scope'     => $token['scope'],
-			'client_id' => $token['client_id'],
-			'iat'       => time(),
-			'me'        => $token['me'],
-			'uuid'      => $token['uuid'], // Uses the token UUID from the access token and adds it to the refresh token allowing them to be associated.
-		);
-		$this->refresh_tokens->set_user( $user );
-		$expires_in = array_key_exists( 'expires_in', $token ) ? $token['expires_in'] : null;
-
-		return $this->refresh_tokens->set( $refresh, $expires_in + 300 );
-	}
-
-	public function delete_refresh_token( $id, $user_id = null ) {
-		$this->refresh_tokens->set_user( $user_id );
-		return $this->refresh_tokens->destroy( $id );
-	}
-
-	public function delete_token( $id, $user_id = null ) {
-		$this->tokens->set_user( $user_id );
-		return $this->tokens->destroy( $id );
 	}
 
 	/*
@@ -213,17 +143,6 @@ class IndieAuth_Token_Endpoint {
 			}
 		}
 
-		// If there is no action or grant_type, that means this is a token introspection request.
-		if ( isset( $params['token'] ) ) {
-			$token = $this->get_token( $params['token'] );
-			if ( $token ) {
-				$token['active'] = 'true';
-				return rest_ensure_response( $token );
-			} else {
-				return rest_ensure_response( array( 'active' => 'false' ) );
-			}
-		}
-
 		// Everything Failed
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
@@ -254,7 +173,7 @@ class IndieAuth_Token_Endpoint {
 		if ( ! empty( $diff ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
-		$args                  = array_filter(
+		$args     = array_filter(
 			array(
 				'code'          => $params['code'],
 				'redirect_uri'  => $params['redirect_uri'],
@@ -262,7 +181,7 @@ class IndieAuth_Token_Endpoint {
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
-		$response              = indieauth_verify_local_authorization_code( $args );
+		$response = indieauth_verify_local_authorization_code( $args );
 
 		$error = get_oauth_error( $response );
 		if ( $error ) {
@@ -318,7 +237,7 @@ class IndieAuth_Token_Endpoint {
 
 				// Do Not Add Expires In for the Return Until After It is Saved to the Database
 				if ( 0 !== $expires ) {
-					$return['expires_in'] = $expires;
+					$return['expires_in']    = $expires;
 					$return['refresh_token'] = $this->set_refresh_token( $return, $response['user'] );
 				}
 			}
