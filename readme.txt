@@ -4,7 +4,7 @@ Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
 Tested up to: 5.8
-Stable tag: 4.2.0
+Stable tag: 4.3.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -143,7 +143,11 @@ Since the extension is developing, there is currently not a specified way to tra
 
 == Upgrade Notice ==
 
-- 4.2.0 =
+= 4.3.0 = 
+
+4.3.0 changes the storage of client application data from being embedded in every token to being stored in a hidden taxonomy. Older tokens will not be automatically updated. It also sideloads the application icon
+
+= 4.2.0 =
 
 Changes in the 4.2.0 branch implement future breaking changes to IndieAuth. Backward compatibility will be maintained for the foreseeable future, but clients are advised to update to the latest version of the standard to take advantage of the latest opportunities. Old methods will remain until adoption of the metadata endpoint is sufficient.
 
@@ -176,6 +180,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 4.3.0 =
+
+* Introduce Client Taxonomy to store client data so it is not stored individually
+* Sideload Client Application icons
 
 = 4.2.0 =
 

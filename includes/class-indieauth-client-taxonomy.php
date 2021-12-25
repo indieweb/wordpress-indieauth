@@ -35,18 +35,18 @@ final class IndieAuth_Client_Taxonomy {
 	 */
 	public static function register() {
 		$labels = array(
-			'name'                       => _x( 'IndieAuth Applications', 'taxonomy general name', 'indieauth' ),
-			'singular_name'              => _x( 'IndieAuth Applications', 'taxonomy singular name', 'indieauth' ),
-			'search_items'               => _x( 'Search IndieAuth Applications', 'search locations', 'indieauth' ),
-			'popular_items'              => _x( 'Popular Applications', 'popular locations', 'indieauth' ),
-			'all_items'                  => _x( 'All Applications', 'all taxonomy items', 'indieauth' ),
-			'edit_item'                  => _x( 'Edit Application', 'edit taxonomy item', 'indieauth' ),
-			'view_item'                  => _x( 'View Application Archive', 'view taxonomy item', 'indieauth' ),
-			'update_item'                => _x( 'Update Application', 'update taxonomy item', 'indieauth' ),
-			'add_new_item'               => _x( 'Add New Application', 'add taxonomy item', 'indieauth' ),
-			'new_item_name'              => _x( 'New Application', 'new taxonomy item', 'indieauth' ),
-			'not found'                  => _x( 'No applications found', 'no clients found', 'indieauth' ),
-			'no_terms'                   => _x( 'No applications', 'no locations', 'indieauth' ),
+			'name'          => _x( 'IndieAuth Applications', 'taxonomy general name', 'indieauth' ),
+			'singular_name' => _x( 'IndieAuth Applications', 'taxonomy singular name', 'indieauth' ),
+			'search_items'  => _x( 'Search IndieAuth Applications', 'search locations', 'indieauth' ),
+			'popular_items' => _x( 'Popular Applications', 'popular locations', 'indieauth' ),
+			'all_items'     => _x( 'All Applications', 'all taxonomy items', 'indieauth' ),
+			'edit_item'     => _x( 'Edit Application', 'edit taxonomy item', 'indieauth' ),
+			'view_item'     => _x( 'View Application Archive', 'view taxonomy item', 'indieauth' ),
+			'update_item'   => _x( 'Update Application', 'update taxonomy item', 'indieauth' ),
+			'add_new_item'  => _x( 'Add New Application', 'add taxonomy item', 'indieauth' ),
+			'new_item_name' => _x( 'New Application', 'new taxonomy item', 'indieauth' ),
+			'not found'     => _x( 'No applications found', 'no clients found', 'indieauth' ),
+			'no_terms'      => _x( 'No applications', 'no locations', 'indieauth' ),
 		);
 
 		$args = array(
@@ -61,7 +61,7 @@ final class IndieAuth_Client_Taxonomy {
 			'show_tagcloud'      => false,
 			'show_in_quick_edit' => false,
 			'show_admin_column'  => false,
-			'description' => __( 'Stores information in IndieAuth Client Applications', 'indieauth' )
+			'description'        => __( 'Stores information in IndieAuth Client Applications', 'indieauth' ),
 		);
 
 		$object_types = apply_filters( 'indieauth_client_taxonomy_object_types', array( 'post', 'page', 'attachment' ) );
@@ -113,12 +113,17 @@ final class IndieAuth_Client_Taxonomy {
 	/**
 	 * Add a client as a term and return.
 	 */
-	public static function add_client( $url, $name, $icon = null ) {
+	public static function add_client( $url, $name = null, $icon = null ) {
 		$exists = self::get_client( $url );
 
 		// Do Not Overwrite if Already Exists.
 		if ( ! is_wp_error( $exists ) ) {
 			return $exists;
+		}
+
+		if ( empty( $name ) ) {
+			$client = new IndieAuth_Client_Discovery( $url );
+			return self::add_client( $url, $client->get_name(), $client->get_icon() );
 		}
 
 		$icon = self::sideload_icon( $icon, $url );
@@ -135,28 +140,30 @@ final class IndieAuth_Client_Taxonomy {
 			return $term;
 		}
 		add_term_meta( $term['term_id'], 'icon', $icon );
-		return array(
-			'url'  => $url,
-			'name' => $name,
-			'id'   => $term['term_id'],
-			'icon' => $icon,
+		return array_filter(
+			array(
+				'url'  => $url,
+				'name' => $name,
+				'id'   => $term['term_id'],
+				'icon' => $icon,
+			)
 		);
 	}
 
 	 /**
-	  * Get Client by URL
+	  * Get Client
 	  */
 	public static function get_client( $url = null ) {
-		// If url is empty retrieve all clients.
-		if ( ! $url ) {
-			$terms = get_terms(
-				array( 
-					'taxonomy' => 'indieauth_client',
-					'hide_empty' => false
+		// If url is null retrieve all clients.
+		if ( is_null( $url ) ) {
+			$terms   = get_terms(
+				array(
+					'taxonomy'   => 'indieauth_client',
+					'hide_empty' => false,
 				)
 			);
 			$clients = array();
-			foreach( $terms as $term ) {
+			foreach ( $terms as $term ) {
 				$clients[] = array(
 					'url'  => $term->description,
 					'name' => $term->name,
@@ -166,13 +173,19 @@ final class IndieAuth_Client_Taxonomy {
 			}
 			return $clients;
 		}
-		$terms = get_terms(
-			array(
-				'taxonomy'    => 'indieauth_client',
-				'description' => $url,
-				'hide_empty'  => false,
-			)
-		);
+
+		if ( is_numeric( $url ) ) {
+			$terms = array( get_term( $url, 'indieauth_client' ) );
+			return $terms;
+		} else {
+			$terms = get_terms(
+				array(
+					'taxonomy'    => 'indieauth_client',
+					'description' => $url,
+					'hide_empty'  => false,
+				)
+			);
+		}
 		if ( empty( $terms ) ) {
 			return new WP_Error( 'not_found', __( 'No Term Found', 'indieauth' ) );
 		}
