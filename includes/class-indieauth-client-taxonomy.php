@@ -35,26 +35,23 @@ final class IndieAuth_Client_Taxonomy {
 	 */
 	public static function register() {
 		$labels = array(
-			'name'                       => _x( 'IndieAuth Clients', 'taxonomy general name', 'indieauth' ),
-			'singular_name'              => _x( 'IndieAuth Client', 'taxonomy singular name', 'indieauth' ),
-			'search_items'               => _x( 'Search IndieAuth Client', 'search locations', 'indieauth' ),
-			'popular_items'              => _x( 'Popular Clients', 'popular locations', 'indieauth' ),
-			'all_items'                  => _x( 'All Clients', 'all taxonomy items', 'indieauth' ),
-			'edit_item'                  => _x( 'Edit Client', 'edit taxonomy item', 'indieauth' ),
-			'view_item'                  => _x( 'View Client Archive', 'view taxonomy item', 'indieauth' ),
-			'update_item'                => _x( 'Update Client', 'update taxonomy item', 'indieauth' ),
-			'add_new_item'               => _x( 'Add New Client', 'add taxonomy item', 'indieauth' ),
-			'new_item_name'              => _x( 'New Client', 'new taxonomy item', 'indieauth' ),
-			'separate_items_with_commas' => _x( 'Separate client with commas', 'separate kinds with commas', 'indieauth' ),
-			'add_or_remove_items'        => _x( 'Add or remove client', 'add or remove items', 'indieauth' ),
-			'choose_from_most_used'      => _x( 'Choose from the most used client', 'choose most used', 'indieauth' ),
-			'not found'                  => _x( 'No clients found', 'no clients found', 'indieauth' ),
-			'no_terms'                   => _x( 'No clients', 'no locations', 'indieauth' ),
+			'name'                       => _x( 'IndieAuth Applications', 'taxonomy general name', 'indieauth' ),
+			'singular_name'              => _x( 'IndieAuth Applications', 'taxonomy singular name', 'indieauth' ),
+			'search_items'               => _x( 'Search IndieAuth Applications', 'search locations', 'indieauth' ),
+			'popular_items'              => _x( 'Popular Applications', 'popular locations', 'indieauth' ),
+			'all_items'                  => _x( 'All Applications', 'all taxonomy items', 'indieauth' ),
+			'edit_item'                  => _x( 'Edit Application', 'edit taxonomy item', 'indieauth' ),
+			'view_item'                  => _x( 'View Application Archive', 'view taxonomy item', 'indieauth' ),
+			'update_item'                => _x( 'Update Application', 'update taxonomy item', 'indieauth' ),
+			'add_new_item'               => _x( 'Add New Application', 'add taxonomy item', 'indieauth' ),
+			'new_item_name'              => _x( 'New Application', 'new taxonomy item', 'indieauth' ),
+			'not found'                  => _x( 'No applications found', 'no clients found', 'indieauth' ),
+			'no_terms'                   => _x( 'No applications', 'no locations', 'indieauth' ),
 		);
 
 		$args = array(
 			'labels'             => $labels,
-			'public'             => false,
+			'public'             => true,
 			'publicly_queryable' => true,
 			'hierarchical'       => false,
 			'show_ui'            => false,
@@ -64,8 +61,12 @@ final class IndieAuth_Client_Taxonomy {
 			'show_tagcloud'      => false,
 			'show_in_quick_edit' => false,
 			'show_admin_column'  => false,
+			'description' => __( 'Stores information in IndieAuth Client Applications', 'indieauth' )
 		);
-		register_taxonomy( 'indieauth_client', array( 'post', 'page', 'attachment' ), $args );
+
+		$object_types = apply_filters( 'indieauth_client_taxonomy_object_types', array( 'post', 'page', 'attachment' ) );
+
+		register_taxonomy( 'indieauth_client', $object_types, $args );
 
 		register_meta(
 			'term',

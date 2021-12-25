@@ -454,6 +454,19 @@ function indieauth_get_client_id() {
 }
 
 /**
+ * Get Client Data
+ *
+ * @return string Client ID.
+ */
+function indieauth_get_client_data() {
+	$response = indieauth_get_response();
+	if ( is_null( $response ) || ! isset( $response['client_id'] ) ) {
+		return null;
+	}
+	return IndieAuth_Client_Taxonomy::get_client( $response['client_id'] );
+}
+
+/**
  * Get Me
  *
  * @return string|null The Me property for the current session
