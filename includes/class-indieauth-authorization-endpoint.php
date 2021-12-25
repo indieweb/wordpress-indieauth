@@ -380,9 +380,14 @@ class IndieAuth_Authorization_Endpoint {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
 		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) ); // WPCS: CSRF OK
-		$info = new IndieAuth_Client_Discovery( $client_id );
-		$client_name = $info->get_name();
-		$client_icon = $info->get_icon();
+		$client_term                 = IndieAuth_Client_Taxonomy::add_client_with_discovery( $client_id );
+		if ( ! is_wp_error( $client_term ) ) {
+			$client_name = $client_term['name'];
+			$client_icon = $client_term['icon'];
+		} else {
+			$client_name = $client_term->get_error_message();
+			$client_icon = null;
+		}
 		if ( ! empty( $client_name ) ) {
 			$client = sprintf( '<a href="%1$s">%2$s</a>', $client_id, $client_name );
 		} else {

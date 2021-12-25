@@ -149,7 +149,12 @@ class Token_List_Table extends WP_List_Table {
 			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s">%3$s</a>', $item['token'], $uri, __( 'Retrieve Information', 'indieauth' ) ),
 		);
 		if ( ! isset( $item['client_name'] ) ) {
-			$item['client_name'] = __( 'Not Provided', 'indieauth' );
+			if ( isset( $item['client_id'] ) ) {
+				$client              = IndieAuth_Client_Taxonomy::get_client( $item['client_id'] );
+				$item['client_name'] = $client['name'];
+			} else {
+				$item['client_name'] = __( 'Not Provided', 'indieauth' );
+			}
 		}
 		return sprintf( '%1$s  %2$s', $item['client_name'], $this->row_actions( $actions ) );
 
@@ -157,7 +162,15 @@ class Token_List_Table extends WP_List_Table {
 
 	public function column_client_icon( $item ) {
 		if ( empty( $item['client_icon'] ) ) {
-			return 'None';
+			if ( isset( $item['client_id'] ) ) {
+				$client = IndieAuth_Client_Taxonomy::get_client( $item['client_id'] );
+				if ( is_wp_error( $client ) ) {
+					return __( 'None', 'indieauth' );
+				}
+				$item['client_icon'] = $client['icon'];
+			} else {
+				return __( 'None', 'indieauth' );
+			}
 		}
 		return sprintf( '<img src="%1$s" height="48" width="48" />', $item['client_icon'] );
 	}
