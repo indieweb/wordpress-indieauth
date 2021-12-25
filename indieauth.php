@@ -78,11 +78,11 @@ class IndieAuth_Plugin {
 	 */
 	public static function expires() {
 		// The get_all function retrieves all tokens and destroys any expired token.
-		$t = new Token_User( '_indieauth_token_', $user_id );
+		$t = new Token_User( '_indieauth_token_' );
 		$t->get_all();
-		$t = new Token_User( '_indieauth_code_', $user_id );
+		$t = new Token_User( '_indieauth_code_' );
 		$t->get_all();
-		$t = new Token_User( '_indieauth_refresh_token_', $user_id );
+		$t = new Token_User( '_indieauth_refresh_token_' );
 		$t->get_all();
 		if ( class_exists( 'External_User_Token' ) ) {
 			$t = new External_User_Token();
