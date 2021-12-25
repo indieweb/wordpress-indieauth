@@ -125,7 +125,7 @@ final class IndieAuth_Client_Taxonomy {
 			$client = new IndieAuth_Client_Discovery( $url );
 			if ( defined( 'INDIEAUTH_UNIT_TESTS' ) ) {
 				return array(
-					'client_id' => $url
+					'client_id' => $url,
 				);
 			}
 			return self::add_client( $url, $client->get_name(), $client->get_icon() );
