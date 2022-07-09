@@ -14,11 +14,11 @@ class UserInfoEndpointTest extends WP_UnitTestCase {
 		'iat'  => 1532569712,
 	);
 
-	public function setUp() {
+	public function set_up() {
 		global $wp_rest_server;
 		$wp_rest_server = new Spy_REST_Server;
 		do_action( 'rest_api_init', $wp_rest_server );
-		parent::setUp();
+		parent::set_up();
 	}
 
 	public static function wpSetUpBeforeClass( $factory ) {
