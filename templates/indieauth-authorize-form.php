@@ -12,7 +12,7 @@ login_header(
 		<?php if ( ! empty( $client_icon ) ) { ?>
 			<img src="<?php echo esc_url( $client_icon ); ?>" />
 		<?php } ?>
-		<strong> 
+		<strong>
 		<?php
 			echo wp_kses(
 				/* translators: 1. Client */
@@ -32,7 +32,7 @@ login_header(
 			echo get_avatar( $current_user->ID, '48' );
 			printf(
 				/* translators: 1. User Display Name 2. User Nice Name */
-				esc_html__( 'The app will use credentials of %1$s(%2$s). You can revoke access at any time.', 'indieauth' ),
+				esc_html__( 'The app will use credentials of %1$s (%2$s). You can revoke access at any time.', 'indieauth' ),
 				'<strong>' . esc_html( $current_user->display_name ) . '</strong>',
 				esc_html( $current_user->user_nicename )
 			);
