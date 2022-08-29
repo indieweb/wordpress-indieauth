@@ -734,7 +734,7 @@ msgstr ""
 #: templates/indieauth-authenticate-form.php:23
 #. translators: 1. Client with link 2. User ID 3. User Display Name 4. User
 #. Nicename
-msgid "The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s)."
+msgid "The app %1$s would like to identify you as %2$s, which is user %3$s (%4$s)."
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:42
@@ -771,7 +771,7 @@ msgstr ""
 #: templates/indieauth-authorize-form.php:35
 #. translators: 1. User Display Name 2. User Nice Name
 msgid ""
-"The app will use credentials of %1$s(%2$s). You can revoke access at any "
+"The app will use credentials of %1$s (%2$s). You can revoke access at any "
 "time."
 msgstr ""
 

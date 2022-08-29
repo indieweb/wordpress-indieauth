@@ -20,7 +20,7 @@ if ( ! $user_website ) {
 			echo wp_kses(
 				sprintf(
 					/* translators: 1. Client with link 2. User ID 3. User Display Name 4. User Nicename */
-					'<p>' . esc_html__( 'The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s).', 'indieauth' ) . '</p>',
+					'<p>' . esc_html__( 'The app %1$s would like to identify you as %2$s, which is user %3$s (%4$s).', 'indieauth' ) . '</p>',
 					$client,
 					'<strong>' . esc_url( $user_website ) . '</strong>',
 					'<strong>' . esc_html( $current_user->display_name ) . '</strong>',
