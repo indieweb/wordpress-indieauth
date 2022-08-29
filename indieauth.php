@@ -97,6 +97,7 @@ class IndieAuth_Plugin {
 				'functions.php', // Global Functions
 				'class-oauth-response.php', // OAuth REST Error Class
 				'class-token-generic.php', // Token Base Class
+				'class-token-user.php',
 				'class-indieauth-scope.php', // Scope Class
 				'class-indieauth-scopes.php', // Scopes Class
 				'class-indieauth-authorize.php', // IndieAuth Authorization Base Class
@@ -113,7 +114,6 @@ class IndieAuth_Plugin {
 		// Classes Required for the Local Endpoint
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
-			'class-token-user.php',
 			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
