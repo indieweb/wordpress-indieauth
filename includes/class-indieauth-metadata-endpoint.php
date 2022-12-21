@@ -57,9 +57,6 @@ class IndieAuth_Metadata_Endpoint {
 				'rel'  => array(),
 			),
 		);
-		if ( empty( $auth ) || empty( $token ) ) {
-			return;
-		}
 		if ( is_author() || is_front_page() ) {
 			echo wp_kses( sprintf( '<link rel="indieauth-metadata" href="%s" />' . PHP_EOL, static::get_metadata_endpoint() ), $kses );
 		}
