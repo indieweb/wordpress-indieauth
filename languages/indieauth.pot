@@ -1,4 +1,4 @@
-# Copyright (C) 2021 IndieWebCamp WordPress Outreach Club
+# Copyright (C) 2022 IndieWebCamp WordPress Outreach Club
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2022-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
@@ -751,7 +751,7 @@ msgstr ""
 #: templates/indieauth-authenticate-form.php:23
 #. translators: 1. Client with link 2. User ID 3. User Display Name 4. User
 #. Nicename
-msgid "The app %1$s would like to identify you as %2$s, which is user %3$s(%4$s)."
+msgid "The app %1$s would like to identify you as %2$s, which is user %3$s (%4$s)."
 msgstr ""
 
 #: templates/indieauth-authenticate-form.php:42
@@ -788,7 +788,7 @@ msgstr ""
 #: templates/indieauth-authorize-form.php:35
 #. translators: 1. User Display Name 2. User Nice Name
 msgid ""
-"The app will use credentials of %1$s(%2$s). You can revoke access at any "
+"The app will use credentials of %1$s (%2$s). You can revoke access at any "
 "time."
 msgstr ""
 

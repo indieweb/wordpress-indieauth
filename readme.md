@@ -3,7 +3,7 @@
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
-**Tested up to:** 5.8  
+**Tested up to:** 6.1  
 **Stable tag:** 4.3.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
@@ -185,6 +185,10 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 * Introduce Client Taxonomy to store client data so it is not stored individually
 * Sideload Client Application icons
+
+### 4.2.1 ###
+* Fix issue with not loading User Token library with old remote endpoint code
+* Fix issue with not loading metadata endpoint when not logging in
 
 ### 4.2.0 ###
 

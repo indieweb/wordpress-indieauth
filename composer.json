@@ -13,6 +13,12 @@
       "homepage": "https://david.shanske.com"
     }
   ],
+   "config": {
+     "allow-plugins": {
+       "composer/installers": true,
+       "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
   "extra": {
     "installer-name": "indieauth"
   },
@@ -27,7 +33,6 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
     "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
-    "phpunit/phpunit": "^5.0 || ^6.0 || ^7.5",
     "yoast/phpunit-polyfills": "^1.0"
   },
   "scripts": {

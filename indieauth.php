@@ -81,11 +81,11 @@ class IndieAuth_Plugin {
 	 */
 	public static function expires() {
 		// The get_all function retrieves all tokens and destroys any expired token.
-		$t = new Token_User( '_indieauth_token_', $user_id );
+		$t = new Token_User( '_indieauth_token_' );
 		$t->get_all();
-		$t = new Token_User( '_indieauth_code_', $user_id );
+		$t = new Token_User( '_indieauth_code_' );
 		$t->get_all();
-		$t = new Token_User( '_indieauth_refresh_token_', $user_id );
+		$t = new Token_User( '_indieauth_refresh_token_' );
 		$t->get_all();
 		if ( class_exists( 'External_User_Token' ) ) {
 			$t = new External_User_Token();
@@ -100,6 +100,7 @@ class IndieAuth_Plugin {
 				'functions.php', // Global Functions
 				'class-oauth-response.php', // OAuth REST Error Class
 				'class-token-generic.php', // Token Base Class
+				'class-token-user.php',
 				'class-indieauth-scope.php', // Scope Class
 				'class-indieauth-scopes.php', // Scopes Class
 				'class-indieauth-authorize.php', // IndieAuth Authorization Base Class
@@ -117,7 +118,6 @@ class IndieAuth_Plugin {
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
 			'class-indieauth-client-taxonomy.php', // Client Taxonomy
-			'class-token-user.php',
 			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
