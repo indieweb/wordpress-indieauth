@@ -2,24 +2,53 @@
 <ruleset name="WordPress Indieauth">
 	<description>WordPress Indieauth Standards</description>
 
-	<file>./indieauth.php</file>
-	<file>./includes/</file>
-	<file>./templates/</file>
+	<file>.</file>
 	<exclude-pattern>*/includes/*\.(inc|css|js|svg)</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<rule ref="PHPCompatibility"/>
+	<!-- Exclude the Composer Vendor directory. -->
+	<exclude-pattern>/vendor/*</exclude-pattern>
+
+	<!-- Exclude the Node Modules directory. -->
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+
+	<!-- Exclude the Test directory. -->
+	<exclude-pattern>/test/*</exclude-pattern>
+
+	<!-- Exclude the Bin directory. -->
+	<exclude-pattern>/bin/*</exclude-pattern>
+
+	<!-- Strip the filepaths down to the relevant bit. -->
+	<arg name="basepath" value="."/>
+
+	<!-- Check up to 8 files simultaneously. -->
+	<arg name="parallel" value="8"/>
+
+	
+	<!-- PHP/WordPress Compatibility Check -->
 	<config name="testVersion" value="5.6-"/>
 	<rule ref="PHPCompatibilityWP"/>
-	<config name="minimum_supported_wp_version" value="4.7"/>
+
+	<config name="minimum_supported_wp_version" value="4.9"/>
+
+
+        <rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="indieauth"/>
+				<element value="default"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="WordPress.WP.DeprecatedFunctions" />
+	<rule ref="WordPress.WP.DeprecatedParameters" />
+	<rule ref="WordPress.WP.AlternativeFunctions" />
+
 	<rule ref="WordPress-Core" />	
 	<rule ref="WordPress.Files.FileName">
-	<properties>
-	<property name="strict_class_file_names" value="false" />
-	</properties>
+		<properties>
+			<property name="strict_class_file_names" value="false" />
+		</properties>
 	</rule>
 
 	<rule ref="WordPress-Extra" />
-        <rule ref="WordPress.WP.I18n"/>
-	<config name="text_domain" value="indieauth,default"/>
 </ruleset>
