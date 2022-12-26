@@ -226,14 +226,14 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 					$return['uuid'] = $response['uuid'];
 				}
 
-				$return['scope']      = $response['scope'];
-				$return['issued_by']  = rest_url( 'indieauth/1.0/token' );
-				$return['client_id']  = $response['client_id'];
+				$return['scope']     = $response['scope'];
+				$return['issued_by'] = rest_url( 'indieauth/1.0/token' );
+				$return['client_id'] = $response['client_id'];
 				if ( array_key_exists( 'id', $client ) ) {
 					$return['client_uid'] = $client['id'];
 				}
 
-				$return['iat']        = time();
+				$return['iat'] = time();
 
 				$expires = (int) get_option( 'indieauth_expires_in' );
 
