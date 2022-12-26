@@ -209,7 +209,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 
 			// Issue a token
 			if ( ! empty( $scopes ) ) {
-				$info                 = new IndieAuth_Client_Discovery( $response['client_id'] );
+				$client = IndieAuth_Client_Taxonomy::add_client_with_discovery( $response['client_id'] );
+				if ( is_wp_error( $client ) ) {
+					$client = array( 'id' => $client->get_error_message() );
+				}
+
 				$return['token_type'] = 'Bearer';
 
 				if ( ! array_key_exists( 'uuid', $response ) ) {
@@ -222,12 +226,14 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 					$return['uuid'] = $response['uuid'];
 				}
 
-				$return['scope']       = $response['scope'];
-				$return['issued_by']   = rest_url( 'indieauth/1.0/token' );
-				$return['client_id']   = $response['client_id'];
-				$return['client_name'] = $info->get_name();
-				$return['client_icon'] = $info->get_icon();
-				$return['iat']         = time();
+				$return['scope']      = $response['scope'];
+				$return['issued_by']  = rest_url( 'indieauth/1.0/token' );
+				$return['client_id']  = $response['client_id'];
+				if ( array_key_exists( 'id', $client ) ) {
+					$return['client_uid'] = $client['id'];
+				}
+
+				$return['iat']        = time();
 
 				$expires = (int) get_option( 'indieauth_expires_in' );
 

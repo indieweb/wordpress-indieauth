@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 4.2.1
+ * Version: 4.3.0
  * Author: IndieWebCamp WordPress Outreach Club
  * Author URI: https://indieweb.org/WordPress_Outreach_Club
  * License: MIT
@@ -23,6 +23,9 @@ if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
 if ( ! defined( 'INDIEAUTH_TICKET_ENDPOINT' ) ) {
 	define( 'INDIEAUTH_TICKET_ENDPOINT', 0 );
 }
+
+defined( 'INDIEAUTH_ICON_QUALITY' ) || define( 'INDIEAUTH_ICON_QUALITY', null );
+defined( 'INDIEAUTH_ICON_SIZE' ) || define( 'INDIEAUTH_ICON_SIZE', 256 );
 
 register_activation_hook( __FILE__, array( 'IndieAuth_Plugin', 'activation' ) );
 register_deactivation_hook( __FILE__, array( 'IndieAuth_Plugin', 'deactivation' ) );
@@ -114,6 +117,7 @@ class IndieAuth_Plugin {
 		// Classes Required for the Local Endpoint
 		$localfiles = array(
 			'class-indieauth-client-discovery.php', // Client Discovery
+			'class-indieauth-client-taxonomy.php', // Client Taxonomy
 			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint

@@ -2,10 +2,10 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 4.2.1\n"
+"Project-Id-Version: IndieAuth 4.3.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2022-12-21 15:18:26+00:00\n"
+"POT-Creation-Date: 2021-12-25 19:54:42+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -50,19 +50,20 @@ msgstr ""
 #: includes/class-external-token-table.php:95
 #: includes/class-external-token-table.php:103
 #: includes/class-external-token-table.php:111
-#: templates/indieauth-settings.php:45
+#: includes/class-token-list-table.php:168
+#: includes/class-token-list-table.php:172 templates/indieauth-settings.php:45
 msgid "None"
 msgstr ""
 
 #: includes/class-external-token-table.php:82
-#: includes/class-token-list-table.php:167
-#: includes/class-token-list-table.php:186
+#: includes/class-token-list-table.php:180
+#: includes/class-token-list-table.php:199
 msgid "Never"
 msgstr ""
 
 #: includes/class-external-token-table.php:88
-#: includes/class-token-list-table.php:173
-#: includes/class-token-list-table.php:192
+#: includes/class-token-list-table.php:186
+#: includes/class-token-list-table.php:205
 #. translators: Human time difference ago
 msgid "%s ago"
 msgstr ""
@@ -325,7 +326,7 @@ msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:329
-#: includes/class-indieauth-local-authorize.php:117 includes/functions.php:548
+#: includes/class-indieauth-local-authorize.php:117 includes/functions.php:561
 msgid "Invalid authorization code"
 msgstr ""
 
@@ -335,7 +336,7 @@ msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:342
 #: includes/class-indieauth-authorization-endpoint.php:346
-#: includes/functions.php:553 includes/functions.php:557
+#: includes/functions.php:566 includes/functions.php:570
 msgid "Failed PKCE Validation"
 msgstr ""
 
@@ -351,6 +352,22 @@ msgstr ""
 
 #: includes/class-indieauth-client-discovery.php:19
 msgid "Failed to Retrieve IndieAuth Client Details "
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:64
+msgid "Stores information in IndieAuth Client Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:77
+msgid "IndieAuth Client Application Icon"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:190
+msgid "No Term Found"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:194
+msgid "Multiple Terms Found"
 msgstr ""
 
 #: includes/class-indieauth-debug.php:96
@@ -529,7 +546,7 @@ msgstr ""
 msgid "Invalid Token"
 msgstr ""
 
-#: includes/class-indieauth-token-endpoint.php:268
+#: includes/class-indieauth-token-endpoint.php:271
 msgid "There was an error in response."
 msgstr ""
 
@@ -616,7 +633,7 @@ msgstr ""
 msgid "Retrieve Information"
 msgstr ""
 
-#: includes/class-token-list-table.php:152
+#: includes/class-token-list-table.php:156
 msgid "Not Provided"
 msgstr ""
 
@@ -689,7 +706,7 @@ msgstr ""
 msgid "Invalid User Profile URL"
 msgstr ""
 
-#: indieauth.php:188
+#: indieauth.php:192
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""
@@ -891,4 +908,64 @@ msgstr ""
 
 #. Author URI of the plugin/theme
 msgid "https://indieweb.org/WordPress_Outreach_Club"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:38
+msgctxt "taxonomy general name"
+msgid "IndieAuth Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:39
+msgctxt "taxonomy singular name"
+msgid "IndieAuth Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:40
+msgctxt "search locations"
+msgid "Search IndieAuth Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:41
+msgctxt "popular locations"
+msgid "Popular Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:42
+msgctxt "all taxonomy items"
+msgid "All Applications"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:43
+msgctxt "edit taxonomy item"
+msgid "Edit Application"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:44
+msgctxt "view taxonomy item"
+msgid "View Application Archive"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:45
+msgctxt "update taxonomy item"
+msgid "Update Application"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:46
+msgctxt "add taxonomy item"
+msgid "Add New Application"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:47
+msgctxt "new taxonomy item"
+msgid "New Application"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:48
+msgctxt "no clients found"
+msgid "No applications found"
+msgstr ""
+
+#: includes/class-indieauth-client-taxonomy.php:49
+msgctxt "no locations"
+msgid "No applications"
 msgstr ""
