@@ -3,7 +3,7 @@
 	<description>WordPress Indieauth Standards</description>
 
 	<file>.</file>
-	<exclude-pattern>*/includes/*\.(inc|css|js|svg)</exclude-pattern>
+	<exclude-pattern>*\.(inc|css|js|svg)</exclude-pattern>
 	<!-- Exclude the Composer Vendor directory. -->
 	<exclude-pattern>/vendor/*</exclude-pattern>
 
@@ -11,7 +11,7 @@
 	<exclude-pattern>/node_modules/*</exclude-pattern>
 
 	<!-- Exclude the Test directory. -->
-	<exclude-pattern>/test/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
 
 	<!-- Exclude the Bin directory. -->
 	<exclude-pattern>/bin/*</exclude-pattern>
