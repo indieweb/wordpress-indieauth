@@ -158,6 +158,7 @@ abstract class IndieAuth_Authorize {
 			return $user_id;
 		}
 		if ( is_oauth_error( $params ) ) {
+			$this->error = $params;
 			return $user_id;
 		}
 		if ( is_array( $params ) ) {
@@ -182,7 +183,7 @@ abstract class IndieAuth_Authorize {
 				'response' => $me,
 			)
 		);
-		return 0;
+		return $user_id;
 
 	}
 

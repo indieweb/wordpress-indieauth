@@ -81,6 +81,22 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$this->assertEquals( $user_id, self::$author_id );
 	}
 
+	public function test_authorize_bearer_no_other_provider() {
+		$self_author_id = self::$author_id;
+		add_filter( 'determine_current_user', function( $user_id ) use ( $self_author_id ) {
+			if ( 'Bearer other-valid-token' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+				return $self_author_id;
+			}
+			return $user_id;
+		} );
+		$_REQUEST['micropub']       = 'endpoint';
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer other-invalid-token';
+		$authorize = new Indieauth_Local_Authorize();
+		$authorize->load();
+		$user_id = apply_filters( 'determine_current_user', false );
+		$this->assertFalse( $user_id );
+	}
+
 	// Tests map_meta_cap for standard permissions
 	public function test_publish_posts_with_scopes() {				
 		add_filter( 'indieauth_scopes', 
