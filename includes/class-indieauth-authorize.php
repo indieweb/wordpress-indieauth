@@ -155,15 +155,17 @@ abstract class IndieAuth_Authorize {
 
 		$params = $this->verify_access_token( $token );
 		if ( ! isset( $params ) ) {
-			return 0;
+			return $user_id;
 		}
 		if ( is_oauth_error( $params ) ) {
 			$this->error = $params;
-			return 0;
+			return $user_id;
 		}
 		if ( is_array( $params ) ) {
-			// If this is a token auth response, add this constant.
-			define( 'INDIEAUTH_TOKEN', true );
+			// If this is a token auth response and not a test run, add this constant.
+			if ( ! function_exists( 'tests_add_filter' ) ) {
+				define( 'INDIEAUTH_TOKEN', true );
+			}
 
 			$this->response = $params;
 			$this->scopes   = explode( ' ', $params['scope'] );
@@ -181,7 +183,7 @@ abstract class IndieAuth_Authorize {
 				'response' => $me,
 			)
 		);
-		return 0;
+		return $user_id;
 
 	}
 
