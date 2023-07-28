@@ -10,6 +10,11 @@ abstract class IndieAuth_Authorize {
 	public $response = array();
 
 	public function load() {
+		// do not call in CLI environment
+		if ( defined( 'WP_CLI' ) ) {
+			return;
+		}
+
 		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority
 		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
