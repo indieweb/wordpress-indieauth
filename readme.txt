@@ -3,7 +3,7 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
-Tested up to: 6.1
+Tested up to: 6.3
 Stable tag: 4.3.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
