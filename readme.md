@@ -1,9 +1,9 @@
 # IndieAuth #
-**Contributors:** [indieweb](https://profiles.wordpress.org/indieweb), [pfefferle](https://profiles.wordpress.org/pfefferle), [dshanske](https://profiles.wordpress.org/dshanske)  
+**Contributors:** [indieweb](https://profiles.wordpress.org/indieweb/), [pfefferle](https://profiles.wordpress.org/pfefferle/), [dshanske](https://profiles.wordpress.org/dshanske/)  
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login  
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
-**Tested up to:** 6.1  
+**Tested up to:** 6.3  
 **Stable tag:** 4.3.0  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
@@ -131,13 +131,13 @@ Some hosting providers filter this out using mod_security. For one user, they ne
 ### What is Ticket Auth and how do I enable it? ###
 
 [Ticket Auth](https://indieweb.org/IndieAuth_Ticket_Auth) is a developing extension to OAuth2/IndieAuth. It creates a ticket endpoint on your site where other sites can send you a ticket, which can be redeemed
-for a token to access private resources on that other site. You can enable the experimental endpoint functionality by adding the below to your wp-config.php. If this becomes more established, it will be added 
+for a token to access private resources on that other site. You can enable the experimental endpoint functionality by adding the below to your wp-config.php. If this becomes more established, it will be added
 in the settings page.
 
    define( 'INDIEAUTH_TICKET_ENDPOINT', true );
 
 At this time, the functionality is limited to the receiving of tickets, not the sending of same. It enables a new tab under the User called Manage External Tokens, which allows you to see which external tokens
-are stored. Tokens are stored per user. 
+are stored. Tokens are stored per user.
 
 Since the extension is developing, there is currently not a specified way to transfer this token to a client to be used.
 
@@ -166,7 +166,7 @@ Until such a time as more IndieAuth clients adopt the changes, some elements of 
 
 ### 3.4.0 ###
 
-Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts. If you already set two accounts to the 
+Due to the possibility of someone setting the url in their user profile to the same as another account, you will no longer be able to save the exact same url into two accounts. If you already set two accounts to the
 same URL one will be wiped the next time you save a conflicting user profile.
 
 ### 3.3.2 ###
@@ -233,7 +233,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Adopt changes to the living spec as of the November 26, 2020 version.
 * Drop explicit support for response_type=id. Endpoint will convert to type code for backcompat until further notice.
 * Change experimental profile return behavior to match newly documented behavior in spec.
-* Support profile and email scopes, to be handled within this plugin. 
+* Support profile and email scopes, to be handled within this plugin.
 * Add additional code comments
 * Remove unique URL code as looking for user URLs is no longer supported
 * Add UUID to tokens as used in the WP5.6 Application Password feature.
@@ -260,7 +260,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 ### 3.4.0 ###
 * Enforce unique URLs for user accounts
 * Add user url to user table
-* Redo association for URL to user account. At this time, only the root path and the author archive URLs are allowed as a return. Hoping to add more options in future 
+* Redo association for URL to user account. At this time, only the root path and the author archive URLs are allowed as a return. Hoping to add more options in future
 * Add Site Health Check
 * Improve text and links for authorization failure
 
@@ -271,7 +271,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Add header check to settings page
 * Add option to generate tokens on the backend with any scope
 * Add option to bulk expire tokens
-* Add cleanup option 
+* Add cleanup option
 
 ### 3.3.1 ###
 

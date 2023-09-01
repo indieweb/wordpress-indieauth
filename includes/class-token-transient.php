@@ -34,7 +34,6 @@ class Token_Transient extends Token_Generic {
 			return $key;
 		}
 		return false;
-
 	}
 
 	public function set_with_cookie( $info, $expiration = 120 ) {

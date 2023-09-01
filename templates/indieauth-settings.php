@@ -73,7 +73,7 @@
 							<?php
 								echo checked( true, get_option( 'indieauth_show_login_form' ) );
 							?>
-								 />
+								/>
 							<?php esc_html_e( 'Add a link to the login form to authenticate using an IndieAuth endpoint.', 'indieauth' ); ?>
 						</label>
 					</td>

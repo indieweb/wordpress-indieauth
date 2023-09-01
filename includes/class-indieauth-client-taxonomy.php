@@ -17,7 +17,6 @@ final class IndieAuth_Client_Taxonomy {
 		self::register();
 
 		add_filter( 'terms_clauses', array( __CLASS__, 'terms_clauses' ), 11, 3 );
-
 	}
 
 	public static function terms_clauses( $clauses, $taxonomies, $args ) {
@@ -105,7 +104,6 @@ final class IndieAuth_Client_Taxonomy {
 		}
 
 		return self::sideload_icon( $client->get_icon(), $url );
-
 	}
 
 
@@ -155,9 +153,9 @@ final class IndieAuth_Client_Taxonomy {
 		);
 	}
 
-	 /**
-	  * Get Client
-	  */
+	/**
+	 * Get Client
+	 */
 	public static function get_client( $url = null ) {
 		// If url is null retrieve all clients.
 		if ( is_null( $url ) ) {
@@ -209,9 +207,9 @@ final class IndieAuth_Client_Taxonomy {
 		);
 	}
 
-	 /**
-	  * Delete a client
-	  */
+	/**
+	 * Delete a client
+	 */
 	public static function delete_client( $url ) {
 		$client = self::get_client( $url );
 		if ( ! $client ) {
@@ -318,9 +316,4 @@ final class IndieAuth_Client_Taxonomy {
 
 		return self::upload_directory( $filehandle, true );
 	}
-
-
-
 } // End Class
-
-

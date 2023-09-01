@@ -164,7 +164,6 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		$this->refresh_tokens->destroy( $params['refresh_token'] );
 
 		return $this->generate_token_response( $refresh );
-
 	}
 
 	// Authorization Code Grant Type.
@@ -189,7 +188,6 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 
 		return $this->generate_token_response( $response );
-
 	}
 
 	public function generate_token_response( $response ) {
@@ -273,6 +271,4 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error in response.', 'indieauth' ), 500 );
 	}
-
 }
-

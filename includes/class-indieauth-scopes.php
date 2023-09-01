@@ -270,4 +270,3 @@ class IndieAuth_Scopes {
 		return false;
 	}
 }
-

@@ -57,7 +57,6 @@ class Token_User extends Token_Generic {
 			return $key;
 		}
 		return false;
-
 	}
 
 	/**
@@ -192,7 +191,6 @@ class Token_User extends Token_Generic {
 
 		$value['user'] = $user_id;
 		return $value;
-
 	}
 
 	/**

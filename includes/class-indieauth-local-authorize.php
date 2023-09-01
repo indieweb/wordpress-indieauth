@@ -122,6 +122,4 @@ class IndieAuth_Local_Authorize extends IndieAuth_Authorize {
 		$tokens->destroy( $code );
 		return $return;
 	}
-
 }
-

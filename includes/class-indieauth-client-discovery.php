@@ -177,5 +177,4 @@ class IndieAuth_Client_Discovery {
 
 		return $return;
 	}
-
 }

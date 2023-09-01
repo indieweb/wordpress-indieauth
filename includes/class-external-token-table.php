@@ -48,7 +48,6 @@ class External_Token_Table extends WP_List_Table {
 		foreach ( $tokens as $value ) {
 			$this->items[] = $value;
 		}
-
 	}
 
 	public function column_default( $item, $column_name ) {

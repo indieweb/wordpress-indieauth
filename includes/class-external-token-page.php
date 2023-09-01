@@ -60,8 +60,6 @@ class External_Token_Page {
 		</div>
 		<?php
 	}
-
-
 } // End Class
 
 new External_Token_Page();

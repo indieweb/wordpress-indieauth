@@ -170,7 +170,6 @@ class IndieAuth_Plugin {
 			self::load( $ticket_load );
 			new IndieAuth_Ticket_Endpoint();
 		}
-
 	}
 
 	// Check that a file exists before loading it and if it does not print to the error log
@@ -194,7 +193,6 @@ class IndieAuth_Plugin {
 			}
 		}
 	}
-
 }
 
 add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 2 );

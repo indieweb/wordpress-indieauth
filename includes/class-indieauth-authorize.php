@@ -27,7 +27,6 @@ abstract class IndieAuth_Authorize {
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
 		add_filter( 'wp_rest_server_class', array( $this, 'wp_rest_server_class' ) );
 		add_filter( 'rest_request_after_callbacks', array( $this, 'return_oauth_error' ), 10, 3 );
-
 	}
 
 
@@ -189,7 +188,6 @@ abstract class IndieAuth_Authorize {
 			)
 		);
 		return $user_id;
-
 	}
 
 	/**

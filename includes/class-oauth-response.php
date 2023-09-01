@@ -45,7 +45,6 @@ class WP_OAuth_Response extends WP_REST_Response {
 		$status = $this->get_status();
 		return sprintf( 'IndieAuth Error: %1$s %2$s - %3$s %4$s', $status, $data['error'], $data['error_description'], wp_json_encode( $data ) );
 	}
-
 }
 
 function get_oauth_error( $obj ) {

@@ -106,6 +106,4 @@ class IndieAuth_Endpoint {
 		$this->refresh_tokens->set_user( $user_id );
 		return $this->refresh_tokens->destroy( $id );
 	}
-
 }
-
