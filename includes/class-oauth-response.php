@@ -1,5 +1,5 @@
 <?php
-
+//phpcs:ignore
 class WP_OAuth_Response extends WP_REST_Response {
 
 	public function __construct( $error, $error_description, $code = 200, $debug = null ) {

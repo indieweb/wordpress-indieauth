@@ -105,13 +105,10 @@ class IndieAuth_Client_Discovery {
 		}
 		if ( is_array( $icons ) && ! wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
 			return $icons['url'];
+		} elseif ( isset( $icons[0]['url'] ) ) {
+			return $icons[0]['url'];
 		} else {
-			// Return the first icon
-			if ( isset( $icons[0]['url'] ) ) {
-				return $icons[0]['url'];
-			} else {
-				return '';
-			}
+			return '';
 		}
 	}
 
