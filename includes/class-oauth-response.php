@@ -47,6 +47,7 @@ class WP_OAuth_Response extends WP_REST_Response {
 	}
 }
 
+//phpcs:ignore
 function get_oauth_error( $obj ) {
 	if ( is_array( $obj ) ) {
 		// When checking the result of wp_remote_post
@@ -69,11 +70,12 @@ function get_oauth_error( $obj ) {
 	return false;
 }
 
+//phpcs:ignore
 function is_oauth_error( $obj ) {
 	return ( $obj instanceof WP_OAuth_Response );
 }
 
-
+//phpcs:ignore
 function wp_error_to_oauth_response( $error ) {
 	if ( is_wp_error( $error ) ) {
 		$data   = $error->get_error_data();
