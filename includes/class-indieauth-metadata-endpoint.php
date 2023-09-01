@@ -121,5 +121,4 @@ class IndieAuth_Metadata_Endpoint {
 			)
 		);
 	}
-
 }

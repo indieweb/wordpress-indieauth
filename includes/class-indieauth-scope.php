@@ -57,4 +57,3 @@ class IndieAuth_Scope {
 		return in_array( $cap, $capabilities, true );
 	}
 }
-

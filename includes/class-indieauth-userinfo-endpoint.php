@@ -70,5 +70,4 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 
 		return indieauth_get_user( $token['user'], in_array( 'email', $scopes, true ) );
 	}
-
 }

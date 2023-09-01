@@ -114,7 +114,6 @@ class IndieAuth_Ticket_Endpoint {
 
 		// If nothing works, return an error.
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
-
 	}
 
 	public function save_token( $token ) {
@@ -176,4 +175,3 @@ class IndieAuth_Ticket_Endpoint {
 		);
 	}
 }
-

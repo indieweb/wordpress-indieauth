@@ -52,5 +52,4 @@ class IndieAuth_Introspection_Endpoint extends IndieAuth_Endpoint {
 
 		return rest_ensure_response( $token );
 	}
-
 }

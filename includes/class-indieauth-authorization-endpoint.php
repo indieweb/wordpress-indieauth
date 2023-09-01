@@ -226,7 +226,6 @@ class IndieAuth_Authorization_Endpoint {
 		}
 
 		return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
-
 	}
 
 	/*
@@ -474,4 +473,3 @@ class IndieAuth_Authorization_Endpoint {
 		wp_redirect( $url ); // phpcs:ignore
 	}
 }
-

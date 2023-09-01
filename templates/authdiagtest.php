@@ -19,4 +19,3 @@ $response = wp_remote_post(
 if ( ! is_wp_error( $response ) ) {
 	echo esc_html( $response['body'] );
 }
-

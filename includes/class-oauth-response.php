@@ -1,5 +1,5 @@
 <?php
-
+//phpcs:ignore
 class WP_OAuth_Response extends WP_REST_Response {
 
 	public function __construct( $error, $error_description, $code = 200, $debug = null ) {
@@ -45,9 +45,9 @@ class WP_OAuth_Response extends WP_REST_Response {
 		$status = $this->get_status();
 		return sprintf( 'IndieAuth Error: %1$s %2$s - %3$s %4$s', $status, $data['error'], $data['error_description'], wp_json_encode( $data ) );
 	}
-
 }
 
+//phpcs:ignore
 function get_oauth_error( $obj ) {
 	if ( is_array( $obj ) ) {
 		// When checking the result of wp_remote_post
@@ -70,11 +70,12 @@ function get_oauth_error( $obj ) {
 	return false;
 }
 
+//phpcs:ignore
 function is_oauth_error( $obj ) {
 	return ( $obj instanceof WP_OAuth_Response );
 }
 
-
+//phpcs:ignore
 function wp_error_to_oauth_response( $error ) {
 	if ( is_wp_error( $error ) ) {
 		$data   = $error->get_error_data();

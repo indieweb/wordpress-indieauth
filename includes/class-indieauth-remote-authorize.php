@@ -38,7 +38,6 @@ class IndieAuth_Remote_Authorize extends IndieAuth_Authorize {
 				'show_in_rest'      => true,
 			)
 		);
-
 	}
 
 	public static function admin_init() {

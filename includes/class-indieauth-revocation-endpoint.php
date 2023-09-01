@@ -48,6 +48,4 @@ class IndieAuth_Revocation_Endpoint extends IndieAuth_Endpoint {
 			200
 		);
 	}
-
-
 }

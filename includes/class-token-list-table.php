@@ -51,7 +51,6 @@ class Token_List_Table extends WP_List_Table {
 			$value['token'] = $key;
 			$this->items[]  = $value;
 		}
-
 	}
 
 	public function column_default( $item, $column_name ) {
@@ -157,7 +156,6 @@ class Token_List_Table extends WP_List_Table {
 			}
 		}
 		return sprintf( '%1$s  %2$s', $item['client_name'], $this->row_actions( $actions ) );
-
 	}
 
 	public function column_client_icon( $item ) {

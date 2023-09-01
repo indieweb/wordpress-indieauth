@@ -153,7 +153,6 @@ class IndieAuth_Token_UI {
 	public static function str_prefix( $source, $prefix ) {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
-
 } // End Class
 
 new IndieAuth_Token_UI();
