@@ -113,7 +113,7 @@ final class IndieAuth_Client_Taxonomy {
 	 * @param string URL
 	 * @return string|string[]|null
 	 */
-	function generate_slug( $url ) {
+	public static function generate_slug( $url ) {
 		$host = wp_parse_url( $url, PHP_URL_HOST );
 		// strip leading www, if any.
 		$host = preg_replace( '/^www\./', '', $host );
@@ -149,7 +149,7 @@ final class IndieAuth_Client_Taxonomy {
 			$name,
 			'indieauth_client',
 			array(
-				'slug'        => $this->generate_slug( $url ),
+				'slug'        => self::generate_slug( $url ),
 				'description' => esc_url_raw( $url ),
 			)
 		);
