@@ -107,6 +107,20 @@ final class IndieAuth_Client_Taxonomy {
 	}
 
 
+	/**
+	 * Generate a slug based on the URL of a client.
+	 *
+	 * @param string URL
+	 * @return string|string[]|null
+	 */
+	function generate_slug( $url ) {
+		$host = wp_parse_url( $url, PHP_URL_HOST );
+		// strip leading www, if any.
+		$host = preg_replace( '/^www\./', '', $host );
+		$path = wp_parse_url( $url, PHP_URL_PATH );
+		$path = str_replace( '/', '_', $title );
+		return sanitize_title( $host . $path );
+	}
 
 	/**
 	 * Add a client as a term and return.
@@ -135,7 +149,7 @@ final class IndieAuth_Client_Taxonomy {
 			$name,
 			'indieauth_client',
 			array(
-				'slug'        => sanitize_title( $name ),
+				'slug'        => $this->generate_slug( $url ),
 				'description' => esc_url_raw( $url ),
 			)
 		);
