@@ -33,7 +33,7 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
     "phpcompatibility/phpcompatibility-wp": "*",
     "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
-    "yoast/phpunit-polyfills": "^1.0"
+    "yoast/phpunit-polyfills": "^2.0"
   },
   "scripts": {
     "install-codestandards": [
