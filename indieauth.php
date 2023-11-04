@@ -12,13 +12,6 @@
  * Domain Path: /languages
  */
 
-
-/* If this is set then it will activate the remote mode for delegating your login to a remote endpoint */
-if ( ! defined( 'INDIEAUTH_REMOTE_MODE' ) ) {
-	define( 'INDIEAUTH_REMOTE_MODE', 0 );
-}
-
-
 /* If this is set then it will enable the experimental Ticket Endpoint */
 if ( ! defined( 'INDIEAUTH_TICKET_ENDPOINT' ) ) {
 	define( 'INDIEAUTH_TICKET_ENDPOINT', 0 );
@@ -130,30 +123,14 @@ class IndieAuth_Plugin {
 			'class-indieauth-local-authorize.php',
 		);
 
-		// Classes Require for using a Remote Endpoint
-		$remotefiles = array(
-			'class-indieauth-remote-authorize.php',
-		);
-
-		// $load        = get_option( 'indieauth_config', 'local' );
-		$load = INDIEAUTH_REMOTE_MODE ? 'remote' : 'local';
-
-		switch ( $load ) {
-			case 'remote':
-				self::load( $remotefiles );
-				static::$indieauth = new IndieAuth_Remote_Authorize();
-				break;
-			default:
-				self::load( $localfiles );
-				new IndieAuth_Authorization_Endpoint();
-				new IndieAuth_Token_Endpoint();
-				static::$indieauth = new IndieAuth_Local_Authorize();
-				static::$metadata  = new IndieAuth_Metadata_Endpoint();
-				new IndieAuth_Revocation_Endpoint();
-				new IndieAuth_Introspection_Endpoint();
-				new IndieAuth_Userinfo_Endpoint();
-				break;
-		}
+		self::load( $localfiles );
+		new IndieAuth_Authorization_Endpoint();
+		new IndieAuth_Token_Endpoint();
+		static::$indieauth = new IndieAuth_Local_Authorize();
+		static::$metadata  = new IndieAuth_Metadata_Endpoint();
+		new IndieAuth_Revocation_Endpoint();
+		new IndieAuth_Introspection_Endpoint();
+		new IndieAuth_Userinfo_Endpoint();
 
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
