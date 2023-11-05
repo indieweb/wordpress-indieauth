@@ -5,6 +5,7 @@
 class IndieAuth_Metadata_Endpoint {
 
 	public function __construct() {
+		add_filter( 'rest_pre_serve_request', array( $this, 'serve_request' ), 11, 4 );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
@@ -16,6 +17,34 @@ class IndieAuth_Metadata_Endpoint {
 	 */
 	public static function get_metadata_endpoint() {
 		return rest_url( '/indieauth/1.0/metadata' );
+	}
+
+
+	public static function get_issuer() {
+		return rest_url( '/indieauth/1.0' );
+	}
+
+	public static function set_http_header( $url, $rel, $replace = false ) {
+		header( sprintf( 'Link: <%s>; rel="%s"', $url, $rel ), $replace );
+	}
+
+	/**
+	 * Hooks into the REST API output to add a metadata header to the Issuer URL.
+ 	 *
+ 	 * @param bool                      $served  Whether the request has already been served.
+ 	 * @param WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
+ 	 * @param WP_REST_Request           $request Request used to generate the response.
+ 	 * @param WP_REST_Server            $server  Server instance.
+	 *
+	 * @return true
+	 */
+	public static function serve_request( $served, $result, $request, $server ) {
+		if ( '/indieauth/1.0' !== $request->get_route() ) {
+			return $served;
+		}
+		static::set_http_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
+
+		return $served;
 	}
 
 	/**
