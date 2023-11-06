@@ -92,6 +92,7 @@ class IndieAuth_Plugin {
 			array(
 				'functions.php', // Global Functions
 				'class-oauth-response.php', // OAuth REST Error Class
+				'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
 				'class-token-generic.php', // Token Base Class
 				'class-token-user.php',
 				'class-indieauth-scope.php', // Scope Class
@@ -114,7 +115,6 @@ class IndieAuth_Plugin {
 			'class-indieauth-endpoint.php', // Endpoint Base Class
 			'class-indieauth-token-endpoint.php', // Token Endpoint
 			'class-indieauth-authorization-endpoint.php', // Authorization Endpoint
-			'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
 			'class-indieauth-revocation-endpoint.php', // Revocation Endpoint
 			'class-indieauth-introspection-endpoint.php', // Introspection Endpoint
 			'class-indieauth-userinfo-endpoint.php', // User Info Endpoint

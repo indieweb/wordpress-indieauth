@@ -11,8 +11,25 @@ class IndieAuth_Authorization_Endpoint {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
+		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
 		$this->tokens = new Token_User( '_indieauth_code_' );
 	}
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/auth' );
+	}
+
+	public static function get_response_types() {
+		return array_unique( apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) );
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['authorization_endpoint'] = $this->get_endpoint();
+		$metadata['response_types_supported'] = $this->get_response_types();
+		$metadata['authorization_response_iss_parameter_supported'] = true;
+		return $metadata;
+	}
+
 
 	/**
 	 * Register the Route.

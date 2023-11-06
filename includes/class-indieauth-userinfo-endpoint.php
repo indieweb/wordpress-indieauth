@@ -7,6 +7,17 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+	}
+
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/userinfo' );
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['userinfo_endpoint'] = $this->get_endpoint();
+		return $metadata;
 	}
 
 	/**

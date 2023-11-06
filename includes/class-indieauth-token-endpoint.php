@@ -10,7 +10,23 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
 	}
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/token' );
+	}
+
+	public static function get_grant_types() {
+		return array_unique( apply_filters( 'indieauth_grant_types_supported', array( 'authorization_code', 'refresh_token' ) ) );
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['token_endpoint'] = $this->get_endpoint();
+		$metadata['grant_types_supported'] = $this->get_grant_types();
+		return $metadata;
+	}
+
 
 	/**
 	 * Register the Route.

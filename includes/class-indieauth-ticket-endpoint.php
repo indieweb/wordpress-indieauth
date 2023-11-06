@@ -10,14 +10,26 @@ class IndieAuth_Ticket_Endpoint {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
+		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'indieauth_grant_types_supported', array( $this, 'grant_types' ) );
 	}
 
-	public static function get_ticket_endpoint() {
+	public static function grant_types( $grants ) {
+		$grants[] = 'ticket';
+		return $grants;
+	}
+
+	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/ticket' );
 	}
 
+	public function metadata( $metadata ) {
+		$metadata['ticket_endpoint'] = $this->get_endpoint();
+		return $metadata;
+	}
+
 	public function http_header() {
-		header( sprintf( 'Link: <%s>; rel="ticket_endpoint"', static::get_ticket_endpoint() ), false );
+		header( sprintf( 'Link: <%s>; rel="ticket_endpoint"', static::get_endpoint() ), false );
 	}
 	public static function html_header() {
 		$kses = array(
@@ -26,7 +38,7 @@ class IndieAuth_Ticket_Endpoint {
 				'rel'  => array(),
 			),
 		);
-			echo wp_kses( sprintf( '<link rel="ticket_endpoint" href="%s" />' . PHP_EOL, static::get_ticket_endpoint() ), $kses );
+			echo wp_kses( sprintf( '<link rel="ticket_endpoint" href="%s" />' . PHP_EOL, static::get_endpoint() ), $kses );
 	}
 
 	/**
