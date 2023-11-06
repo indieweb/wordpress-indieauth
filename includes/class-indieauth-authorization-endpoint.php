@@ -5,14 +5,14 @@
  * Implements IndieAuth Authorization Endpoint
  */
 
-class IndieAuth_Authorization_Endpoint {
-	private $tokens;
-
+class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
+	private $codes;
+	
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
-		$this->tokens = new Token_User( '_indieauth_code_' );
+		$this->codes = new Token_User( '_indieauth_code_' );
 	}
 
 	public static function get_endpoint() {
@@ -289,19 +289,19 @@ class IndieAuth_Authorization_Endpoint {
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
 
-	public function set_code( $user_id, $token ) {
-		$this->tokens->set_user( $user_id );
-		return $this->tokens->set( $token, 600 );
+	public function set_code( $user_id, $code ) {
+		$this->codes->set_user( $user_id );
+		return $this->codes->set( $code, 600 );
 	}
 
 	public function get_code( $code, $hash = true ) {
-		$token = $this->tokens->get( $code, $hash );
-		return $token;
+		$code = $this->codes->get( $code, $hash );
+		return $code;
 	}
 
 	public function delete_code( $code, $user_id = null ) {
-		$this->tokens->set_user( $user_id );
-		return $this->tokens->destroy( $code );
+		$this->codes->set_user( $user_id );
+		return $this->codes->destroy( $code );
 	}
 
 	/*
