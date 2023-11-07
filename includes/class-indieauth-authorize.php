@@ -1,9 +1,8 @@
 <?php
 /**
- * Authorize base class
- * Helper functions for extracting tokens from the WP-API team Oauth2 plugin
+ * Authorize class
  */
-abstract class IndieAuth_Authorize {
+class IndieAuth_Authorize {
 
 	public $error    = null;
 	public $scopes   = array();
@@ -19,9 +18,6 @@ abstract class IndieAuth_Authorize {
 		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
-
-		add_action( 'template_redirect', array( $this, 'http_header' ) );
-		add_action( 'wp_head', array( $this, 'html_header' ) );
 
 		add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
@@ -43,22 +39,6 @@ abstract class IndieAuth_Authorize {
 		}
 		return $response;
 	}
-
-
-	/**
-	 * Returns the URL for the authorization endpoint.
-	 *
-	 * @return string Authorization Endpoint.
-	 **/
-	abstract public static function get_authorization_endpoint();
-
-	/**
-	 * Returns the URL for the token endpoint.
-	 *
-	 * @return string Token Endpoint.
-	 **/
-	abstract public static function get_token_endpoint();
-
 
 	/**
 	 * Prevent caching of unauthenticated status.  See comment below.
@@ -88,35 +68,6 @@ abstract class IndieAuth_Authorize {
 
 	public function get_indieauth_response( $response ) {
 		return $response ? $response : $this->response;
-	}
-
-	public function http_header() {
-		$auth  = static::get_authorization_endpoint();
-		$token = static::get_token_endpoint();
-		if ( empty( $auth ) || empty( $token ) ) {
-			return;
-		}
-		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="authorization_endpoint"', static::get_authorization_endpoint() ), false );
-			header( sprintf( 'Link: <%s>; rel="token_endpoint"', static::get_token_endpoint() ), false );
-		}
-	}
-	public static function html_header() {
-		$auth  = static::get_authorization_endpoint();
-		$token = static::get_token_endpoint();
-		$kses  = array(
-			'link' => array(
-				'href' => array(),
-				'rel'  => array(),
-			),
-		);
-		if ( empty( $auth ) || empty( $token ) ) {
-			return;
-		}
-		if ( is_author() || is_front_page() ) {
-			echo wp_kses( sprintf( '<link rel="authorization_endpoint" href="%s" />' . PHP_EOL, $auth ), $kses );
-			echo wp_kses( sprintf( '<link rel="token_endpoint" href="%s" />' . PHP_EOL, $token ), $kses );
-		}
 	}
 
 	/**
@@ -189,24 +140,6 @@ abstract class IndieAuth_Authorize {
 		);
 		return $user_id;
 	}
-
-	/**
-	 * Verifies Access Token
-	 *
-	 * @param string $token The token to verify
-	 *
-	 * @return array|WP_OAuth_Response Return either the token information or an OAuth Error Object
-	 **/
-	abstract public function verify_access_token( $token );
-
-	/**
-	 * Verifies authorixation code.
-	 *
-	 * @param string $code Authorization Code
-	 *
-	 * @return array|WP_OAuth_Response Return either the code information or an OAuth Error object
-	 **/
-	abstract public static function verify_authorization_code( $code );
 
 	/**
 	 * Get the authorization header
@@ -288,5 +221,56 @@ abstract class IndieAuth_Authorize {
 			return $token;
 		}
 		return null;
+	}
+
+	/**
+	 * Verifies Access Token
+	 *
+	 * @param string $token The token to verify
+	 *
+	 * @return array|WP_OAuth_Response Return either the token information or an OAuth Error Object
+	 **/
+	public function verify_access_token( $token ) {
+		$tokens = new Token_User( '_indieauth_token_' );
+		$return = $tokens->get( $token );
+		if ( empty( $return ) ) {
+			return new WP_OAuth_Response(
+				'invalid_token',
+				__( 'Invalid access token', 'indieauth' ),
+				401
+			);
+		}
+		if ( is_oauth_error( $return ) ) {
+			return $return;
+		}
+		$return['last_accessed'] = time();
+		$return['last_ip']       = $_SERVER['REMOTE_ADDR'];
+		$tokens->update( $token, $return );
+		if ( array_key_exists( 'exp', $return ) ) {
+			$return['expires_in'] = $return['exp'] - time();
+		}
+		return $return;
+	}
+
+	/**
+	 * Verifies authorixation code.
+	 *
+	 * @param string $code Authorization Code
+	 *
+	 * @return array|WP_OAuth_Response Return either the code information or an OAuth Error object
+	 **/
+	public static function verify_authorization_code( $code ) {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$return = $tokens->get( $code );
+		if ( empty( $return ) ) {
+			return new WP_OAuth_Response(
+				'invalid_code',
+				__( 'Invalid authorization code', 'indieauth' ),
+				401
+			);
+		}
+		// Once the code is verified destroy it
+		$tokens->destroy( $code );
+		return $return;
 	}
 }

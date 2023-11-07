@@ -120,13 +120,12 @@ class IndieAuth_Plugin {
 			'class-indieauth-userinfo-endpoint.php', // User Info Endpoint
 			'class-token-list-table.php', // Token Management UI
 			'class-indieauth-token-ui.php',
-			'class-indieauth-local-authorize.php',
 		);
 
 		self::load( $localfiles );
 		new IndieAuth_Authorization_Endpoint();
 		new IndieAuth_Token_Endpoint();
-		static::$indieauth = new IndieAuth_Local_Authorize();
+		static::$indieauth = new IndieAuth_Authorize();
 		static::$metadata  = new IndieAuth_Metadata_Endpoint();
 		new IndieAuth_Revocation_Endpoint();
 		new IndieAuth_Introspection_Endpoint();

@@ -5,7 +5,7 @@
  * Implements Endpoint Functionality
  */
 
-class IndieAuth_Endpoint {
+abstract class IndieAuth_Endpoint {
 	protected $tokens;
 	protected $refresh_tokens;
 	public function __construct() {
@@ -13,6 +13,27 @@ class IndieAuth_Endpoint {
 		$this->refresh_tokens = new Token_User( '_indieauth_refresh_' );
 	}
 
+	/*
+	 * Outputs a marked up Http link header.
+	 * 
+	 * @param string $url URL for the link
+	 * @param string $rel Rel property for the link
+	 * @param boolean $replace Passes the value of replace through to the header PHP
+	 */
+	public static function set_http_header( $url, $rel, $replace = false ) {
+		header( sprintf( 'Link: <%s>; rel="%s"', $url, $rel ), $replace );
+	}
+
+	/*
+	 * Returns a marked up HTML link header.
+	 * 
+	 * @param string $url URL for the link
+	 * @param string $rel Rel property for the link
+	 * @return string Marked up HTML link to add to head
+	 */
+	public static function get_html_header( $url, $rel ) {
+		return sprintf( '<link rel="%s" href="%s" />' . PHP_EOL, $rel, $url );
+	}
 
 	/**
 	 * Extracts the token from the given authorization header.

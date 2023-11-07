@@ -93,6 +93,7 @@ class IndieAuth_Metadata_Endpoint {
 		return $response;
 	}
 
+
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
 			header( sprintf( 'Link: <%s>; rel="indieauth-metadata"', static::get_metadata_endpoint() ), false );

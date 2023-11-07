@@ -577,15 +577,6 @@ function indieauth_verify_local_authorization_code( $args ) {
 	return $return;
 }
 
-function indieauth_get_authorization_endpoint() {
-	return IndieAuth_Plugin::$indieauth->get_authorization_endpoint();
-}
-
-
-function indieauth_get_token_endpoint() {
-	return IndieAuth_Plugin::$indieauth->get_token_endpoint();
-}
-
 function indieauth_get_metadata_endpoint() {
 	return IndieAuth_Plugin::$metadata->get_metadata_endpoint();
 }
