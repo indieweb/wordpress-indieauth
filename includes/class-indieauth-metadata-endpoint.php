@@ -96,18 +96,12 @@ class IndieAuth_Metadata_Endpoint {
 
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="indieauth-metadata"', static::get_metadata_endpoint() ), false );
+			$this->set_http_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
 		}
 	}
-	public static function html_header() {
-		$kses = array(
-			'link' => array(
-				'href' => array(),
-				'rel'  => array(),
-			),
-		);
+	public function html_header() {
 		if ( is_author() || is_front_page() ) {
-			echo wp_kses( sprintf( '<link rel="indieauth-metadata" href="%s" />' . PHP_EOL, static::get_metadata_endpoint() ), $kses );
+			echo $this->get_html_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
 		}
 	}
 
