@@ -345,5 +345,4 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		$codes->destroy( $args['code'] );
 		return $return;
 	}
-
 }
