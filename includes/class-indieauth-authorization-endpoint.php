@@ -12,7 +12,23 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		
+		add_action( 'wp_head', array( $this, 'html_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
+
 		$this->codes = new Token_User( '_indieauth_code_' );
+	}
+
+	public function http_header() {
+		if ( is_author() || is_front_page() ) {
+			$this->set_http_header( $this->get_endpoint(), 'authorization_endpoint' );
+		}
+	}
+
+	public function html_header() {
+		if ( is_author() || is_front_page() ) {
+			echo $this->get_html_header( $this->get_endpoint(), 'authorization_endpoint' );
+		}
 	}
 
 	public static function get_endpoint() {

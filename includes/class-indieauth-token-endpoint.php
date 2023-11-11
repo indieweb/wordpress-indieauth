@@ -11,10 +11,25 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+
+		add_action( 'wp_head', array( $this, 'html_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
 	}
 
 	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/token' );
+	}
+
+	public function http_header() {
+		if ( is_author() || is_front_page() ) {
+			$this->set_http_header( $this->get_endpoint(), 'token_endpoint' );
+		}
+	}
+
+	public function html_header() {
+		if ( is_author() || is_front_page() ) {
+			echo $this->get_html_header( $this->get_endpoint(), 'token_endpoint' );
+		}
 	}
 
 	public static function get_grant_types() {
