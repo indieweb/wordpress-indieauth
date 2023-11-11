@@ -231,7 +231,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
-		$response = indieauth_verify_local_authorization_code( $args );
+		$response = $this->verify_local_authorization_code( $args );
 
 		$error = get_oauth_error( $response );
 		if ( $error ) {
@@ -322,4 +322,28 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error in response.', 'indieauth' ), 500 );
 	}
+
+	public function verify_local_authorization_code( $args ) {
+		$codes = new Token_User( '_indieauth_code_' );
+		$return = $codes->get( $args['code'] );
+		if ( ! $return ) {
+			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		if ( isset( $return['code_challenge'] ) ) {
+			if ( ! isset( $args['code_verifier'] ) ) {
+				$tokens->destroy( $post_args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			if ( ! pkce_verifier( $return['code_challenge'], $args['code_verifier'], $return['code_challenge_method'] ) ) {
+				$tokens->destroy( $args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			unset( $return['code_challenge'] );
+			unset( $return['code_challenge_method'] );
+		}
+
+		$codes->destroy( $args['code'] );
+		return $return;
+	}
+
 }
