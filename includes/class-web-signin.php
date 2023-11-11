@@ -120,7 +120,7 @@ class Web_Signin {
 		if ( $user instanceof WP_User ) {
 			return $user;
 		}
-		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
 		$redirect_to = rawurldecode( $redirect_to );
 		$token       = new Token_Transient( 'indieauth_state' );
 		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
