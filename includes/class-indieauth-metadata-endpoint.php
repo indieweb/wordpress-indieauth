@@ -58,7 +58,7 @@ class IndieAuth_Metadata_Endpoint {
 	 * @return true
 	 */
 	public static function serve_request( $served, $result, $request, $server ) {
-		if ( '/indieauth/1.0' !== $request->get_route() ) {
+		if ( ! str_contains( $request->get_route(), '/indieauth/1.0' ) ) {
 			return $served;
 		}
 		static::set_http_header( static::get_endpoint(), 'indieauth-metadata' );
