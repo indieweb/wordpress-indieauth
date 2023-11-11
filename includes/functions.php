@@ -578,9 +578,9 @@ function indieauth_verify_local_authorization_code( $args ) {
 }
 
 function indieauth_get_metadata_endpoint() {
-	return IndieAuth_Plugin::$metadata->get_metadata_endpoint();
+	return IndieAuth_Plugin::$metadata->get_endpoint();
 }
 
 function indieauth_get_issuer() {
-	return rest_url( '/indieauth/1.0' );
+	return IndieAuth_Plugin::$metadata->get_issuer();
 }
