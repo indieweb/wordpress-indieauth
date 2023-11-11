@@ -11,12 +11,6 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
-		add_filter( 'indieauth_grant_types_supported', array( $this, 'grant_types' ) );
-	}
-
-	public static function grant_types( $grants ) {
-		$grants[] = 'ticket';
-		return $grants;
 	}
 
 	public static function get_endpoint() {
