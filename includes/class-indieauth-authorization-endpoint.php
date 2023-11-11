@@ -7,12 +7,12 @@
 
 class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	private $codes;
-	
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
-		
+
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 
@@ -26,8 +26,15 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function html_header() {
+		$kses = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
+
 		if ( is_author() || is_front_page() ) {
-			echo $this->get_html_header( $this->get_endpoint(), 'authorization_endpoint' );
+			echo wp_kses( $this->get_html_header( $this->get_endpoint(), 'authorization_endpoint' ), $kses );
 		}
 	}
 
@@ -40,8 +47,8 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function metadata( $metadata ) {
-		$metadata['authorization_endpoint'] = $this->get_endpoint();
-		$metadata['response_types_supported'] = $this->get_response_types();
+		$metadata['authorization_endpoint']                         = $this->get_endpoint();
+		$metadata['response_types_supported']                       = $this->get_response_types();
 		$metadata['authorization_response_iss_parameter_supported'] = true;
 		return $metadata;
 	}

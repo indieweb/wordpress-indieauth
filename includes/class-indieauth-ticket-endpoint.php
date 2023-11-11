@@ -5,7 +5,7 @@
  * Implements IndieAuth Ticket Endpoint
  */
 
-class IndieAuth_Ticket_Endpoint {
+class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
@@ -29,16 +29,16 @@ class IndieAuth_Ticket_Endpoint {
 	}
 
 	public function http_header() {
-		header( sprintf( 'Link: <%s>; rel="ticket_endpoint"', static::get_endpoint() ), false );
+		$this->set_http_header( static::get_endpoint(), 'ticket_endpoint' );
 	}
-	public static function html_header() {
+	public function html_header() {
 		$kses = array(
 			'link' => array(
 				'href' => array(),
 				'rel'  => array(),
 			),
 		);
-			echo wp_kses( sprintf( '<link rel="ticket_endpoint" href="%s" />' . PHP_EOL, static::get_endpoint() ), $kses );
+		echo wp_kses( $this->get_html_header( static::get_endpoint(), 'ticket_endpoint' ), $kses );
 	}
 
 	/**

@@ -27,8 +27,15 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function html_header() {
+		$kses = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
+
 		if ( is_author() || is_front_page() ) {
-			echo $this->get_html_header( $this->get_endpoint(), 'token_endpoint' );
+			echo wp_kses( $this->get_html_header( $this->get_endpoint(), 'token_endpoint' ), $kses );
 		}
 	}
 
@@ -37,7 +44,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function metadata( $metadata ) {
-		$metadata['token_endpoint'] = $this->get_endpoint();
+		$metadata['token_endpoint']        = $this->get_endpoint();
 		$metadata['grant_types_supported'] = $this->get_grant_types();
 		return $metadata;
 	}

@@ -100,8 +100,15 @@ class IndieAuth_Metadata_Endpoint {
 		}
 	}
 	public function html_header() {
+		$kses = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
+
 		if ( is_author() || is_front_page() ) {
-			echo $this->get_html_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
+			echo wp_kses( $this->get_html_header( static::get_metadata_endpoint(), 'indieauth-metadata' ), $kses );
 		}
 	}
 
