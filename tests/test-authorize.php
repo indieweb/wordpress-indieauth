@@ -50,7 +50,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$token = self::set_token();
 		$_REQUEST['micropub']       = 'endpoint';
 		$_POST['access_token'] = $token;
-		$authorize = new Indieauth_Local_Authorize();
+		$authorize = new Indieauth_Authorize();
 		$user_id = $authorize->determine_current_user( false );
 		$this->assertEquals( $user_id, self::$author_id );
 	}
@@ -76,7 +76,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		} );
 		$_REQUEST['micropub']       = 'endpoint';
 		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
-		$authorize = new Indieauth_Local_Authorize();
+		$authorize = new Indieauth_Authorize();
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertEquals( $user_id, self::$author_id );
@@ -92,7 +92,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		} );
 		$_REQUEST['micropub']       = 'endpoint';
 		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer other-valid-token';
-		$authorize = new Indieauth_Local_Authorize();
+		$authorize = new Indieauth_Authorize();
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertEquals( $user_id, self::$author_id );
@@ -108,7 +108,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		} );
 		$_REQUEST['micropub']       = 'endpoint';
 		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer other-invalid-token';
-		$authorize = new Indieauth_Local_Authorize();
+		$authorize = new Indieauth_Authorize();
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertFalse( $user_id );
