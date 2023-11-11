@@ -15,7 +15,7 @@ abstract class IndieAuth_Endpoint {
 
 	/*
 	 * Outputs a marked up Http link header.
-	 * 
+	 *
 	 * @param string $url URL for the link
 	 * @param string $rel Rel property for the link
 	 * @param boolean $replace Passes the value of replace through to the header PHP
@@ -26,7 +26,7 @@ abstract class IndieAuth_Endpoint {
 
 	/*
 	 * Returns a marked up HTML link header.
-	 * 
+	 *
 	 * @param string $url URL for the link
 	 * @param string $rel Rel property for the link
 	 * @return string Marked up HTML link to add to head

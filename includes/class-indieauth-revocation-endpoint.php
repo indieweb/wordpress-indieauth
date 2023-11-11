@@ -19,7 +19,7 @@ class IndieAuth_Revocation_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function metadata( $metadata ) {
-		$metadata['revocation_endpoint'] = $this->get_endpoint();
+		$metadata['revocation_endpoint']               = $this->get_endpoint();
 		$metadata['revocation_auth_methods_supported'] = $this->auth_methods_supported();
 		return $metadata;
 	}

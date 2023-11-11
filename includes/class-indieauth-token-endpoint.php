@@ -324,7 +324,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function verify_local_authorization_code( $args ) {
-		$codes = new Token_User( '_indieauth_code_' );
+		$codes  = new Token_User( '_indieauth_code_' );
 		$return = $codes->get( $args['code'] );
 		if ( ! $return ) {
 			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );

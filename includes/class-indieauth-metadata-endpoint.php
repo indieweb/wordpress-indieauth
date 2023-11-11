@@ -27,7 +27,7 @@ class IndieAuth_Metadata_Endpoint {
 
 	/*
 	 * Outputs a marked up Http link header.
-	 * 
+	 *
 	 * @param string $url URL for the link
 	 * @param string $rel Rel property for the link
 	 * @param boolean $replace Passes the value of replace through to the header PHP
@@ -38,7 +38,7 @@ class IndieAuth_Metadata_Endpoint {
 
 	/*
 	 * Returns a marked up HTML link header.
-	 * 
+	 *
 	 * @param string $url URL for the link
 	 * @param string $rel Rel property for the link
 	 * @return string Marked up HTML link to add to head
@@ -49,11 +49,11 @@ class IndieAuth_Metadata_Endpoint {
 
 	/**
 	 * Hooks into the REST API output to add a metadata header to the Issuer URL.
- 	 *
- 	 * @param bool                      $served  Whether the request has already been served.
- 	 * @param WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
- 	 * @param WP_REST_Request           $request Request used to generate the response.
- 	 * @param WP_REST_Server            $server  Server instance.
+	 *
+	 * @param bool                      $served  Whether the request has already been served.
+	 * @param WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
+	 * @param WP_REST_Request           $request Request used to generate the response.
+	 * @param WP_REST_Server            $server  Server instance.
 	 *
 	 * @return true
 	 */
@@ -76,14 +76,14 @@ class IndieAuth_Metadata_Endpoint {
 	public function register_index( WP_REST_Response $response ) {
 		$data      = $response->get_data();
 		$endpoints = array(
-			'metadata'      => $this->get_endpoint(),
+			'metadata' => $this->get_endpoint(),
 		);
 		$endpoints = array_filter( $endpoints );
 		if ( empty( $endpoints ) ) {
 			return $response;
 		}
 		$data['authentication']['indieauth'] = array(
-			'endpoints' => apply_filters( 'rest_index_indieauth_endpoints', $endpoints )
+			'endpoints' => apply_filters( 'rest_index_indieauth_endpoints', $endpoints ),
 		);
 		$response->set_data( $data );
 		return $response;
@@ -134,10 +134,10 @@ class IndieAuth_Metadata_Endpoint {
 	 **/
 	public function metadata( $request ) {
 		$metadata = array(
-			'issuer'                                     => indieauth_get_issuer(),
-			'scopes_supported'                           => IndieAuth_Plugin::$scopes->get_names(),
-			'service_documentation'                      => 'https://indieauth.spec.indieweb.org',
-			'code_challenge_methods_supported'           => array( 'S256' ),
+			'issuer'                           => indieauth_get_issuer(),
+			'scopes_supported'                 => IndieAuth_Plugin::$scopes->get_names(),
+			'service_documentation'            => 'https://indieauth.spec.indieweb.org',
+			'code_challenge_methods_supported' => array( 'S256' ),
 		);
 
 		$metadata = apply_filters( 'indieauth_metadata', $metadata );
