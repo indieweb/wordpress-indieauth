@@ -130,6 +130,8 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 			return WP_OAuth_Response( 'invalid_request', __( 'Please choose either an action or a grant_type', 'indieauth' ) );
 		}
 
+		$resp = new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+
 		// Action Handler
 		if ( isset( $params['action'] ) ) {
 			switch ( $params['action'] ) {
@@ -142,8 +144,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 						return new WP_OAuth_Response( 'invalid_request', __( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
 					}
 				default:
-					return new WP_OAuth_Response( 'unsupported_action', __( 'Unsupported Action', 'indieauth' ), 400 );
+					$resp = new WP_OAuth_Response( 'unsupported_action', __( 'Unsupported Action', 'indieauth' ), 400 );
 			}
+
+			// Allows for adding custom actions.
+			$resp = apply_filters( 'indieauth_token_action_handler', $resp, $params );
 		}
 
 		// Grant Type Handler.
@@ -155,12 +160,14 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				case 'refresh_token':
 					return $this->refresh_token( $params );
 				default:
-					return new WP_OAuth_Response( 'unsupported_grant_type', __( 'Unsupported grant_type.', 'indieauth' ), 400 );
+					$resp = new WP_OAuth_Response( 'unsupported_grant_type', __( 'Unsupported grant_type.', 'indieauth' ), 400 );
 			}
+			// Allows for adding custom grant type handling.
+			$resp = apply_filters( 'indieauth_token_grant_type_handler', $resp, $params );
 		}
 
 		// Everything Failed
-		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+		return $resp;
 	}
 
 
