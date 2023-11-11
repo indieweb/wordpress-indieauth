@@ -15,7 +15,7 @@ class IndieAuth_Metadata_Endpoint {
 	/*
 	 * Returns the URL for the metadata endpoint.
 	 */
-	public static function get_metadata_endpoint() {
+	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/metadata' );
 	}
 
@@ -61,7 +61,7 @@ class IndieAuth_Metadata_Endpoint {
 		if ( '/indieauth/1.0' !== $request->get_route() ) {
 			return $served;
 		}
-		static::set_http_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
+		static::set_http_header( static::get_endpoint(), 'indieauth-metadata' );
 
 		return $served;
 	}
@@ -76,18 +76,14 @@ class IndieAuth_Metadata_Endpoint {
 	public function register_index( WP_REST_Response $response ) {
 		$data      = $response->get_data();
 		$endpoints = array(
-			'authorization' => indieauth_get_authorization_endpoint(),
-			'token'         => indieauth_get_token_endpoint(),
-			'metadata'      => indieauth_get_metadata_endpoint(),
-			'revocation'    => rest_url( 'indieauth/1.0/revocation' ),
-			'introspection' => rest_url( 'indieauth/1.0/introspection' ),
+			'metadata'      => $this->get_endpoint(),
 		);
 		$endpoints = array_filter( $endpoints );
 		if ( empty( $endpoints ) ) {
 			return $response;
 		}
 		$data['authentication']['indieauth'] = array(
-			'endpoints' => $endpoints,
+			'endpoints' => apply_filters( 'rest_index_indieauth_endpoints', $endpoints )
 		);
 		$response->set_data( $data );
 		return $response;
@@ -96,7 +92,7 @@ class IndieAuth_Metadata_Endpoint {
 
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
-			$this->set_http_header( static::get_metadata_endpoint(), 'indieauth-metadata' );
+			$this->set_http_header( static::get_endpoint(), 'indieauth-metadata' );
 		}
 	}
 	public function html_header() {
@@ -108,7 +104,7 @@ class IndieAuth_Metadata_Endpoint {
 		);
 
 		if ( is_author() || is_front_page() ) {
-			echo wp_kses( $this->get_html_header( static::get_metadata_endpoint(), 'indieauth-metadata' ), $kses );
+			echo wp_kses( $this->get_html_header( static::get_endpoint(), 'indieauth-metadata' ), $kses );
 		}
 	}
 

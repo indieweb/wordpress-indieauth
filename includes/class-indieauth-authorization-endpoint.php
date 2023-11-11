@@ -11,7 +11,8 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
-		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'rest_index_indieauth_endpoints', array( $this, 'rest_index' ) );
 
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
@@ -44,6 +45,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 
 	public static function get_response_types() {
 		return array_unique( apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) );
+	}
+
+	public function rest_index( $index ) {
+		$index['authorization'] = $this->get_endpoint();
+		return $index;
 	}
 
 	public function metadata( $metadata ) {

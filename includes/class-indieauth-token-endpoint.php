@@ -10,7 +10,8 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'rest_index_indieauth_endpoints', array( $this, 'rest_index' ) );
 
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
@@ -37,6 +38,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		if ( is_author() || is_front_page() ) {
 			echo wp_kses( $this->get_html_header( $this->get_endpoint(), 'token_endpoint' ), $kses );
 		}
+	}
+
+	public function rest_index( $index ) {
+		$index['token'] = $this->get_endpoint();
+		return $index;
 	}
 
 	public static function get_grant_types() {
