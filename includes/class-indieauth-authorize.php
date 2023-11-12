@@ -12,7 +12,6 @@ class IndieAuth_Authorize {
 	public function __construct( $load = true ) {
 		// Load the hooks for this class only if true. This allows for debugging of the functions
 		if ( true === $load ) {
-			add_action( 'admin_init', array( get_called_class(), 'admin_init' ) );
 			$this->load();
 		}
 	}
