@@ -55,6 +55,9 @@ if ( ! $user_website ) {
 		<input type="hidden" name="me" value="<?php echo esc_url( $me ); ?>" />
 		<input type="hidden" name="response_type" value="<?php echo esc_attr( $response_type ); ?>" />
 		<input type="hidden" name="state" value="<?php echo esc_attr( $state ); ?>" />
+		<input type="hidden" name="code_challenge" value="<?php echo esc_attr( $code_challenge ); ?>" />
+		<input type="hidden" name="code_challenge_method" value="<?php echo esc_attr( $code_challenge_method ); ?>" />
+
 		<button name="wp-submit" value="authorize" class="button button-primary button-large"><?php esc_html_e( 'Allow', 'indieauth' ); ?></button>
 		<a name="wp-submit" value="cancel" class="button button-large" href="<?php echo esc_url( home_url() ); ?>"><?php esc_html_e( 'Cancel', 'indieauth' ); ?></a>
 	</p>
