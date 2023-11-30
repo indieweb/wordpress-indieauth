@@ -7,14 +7,14 @@
 	</p>
 		<?php
 	}
-	if ( ! is_null( $code_challenge ) && 'S256' === $code_challenge_method ) {
+	if ( is_null( $code_challenge ) && 'S256' !== $code_challenge_method ) {
 		?>
-	<p class="pkce">
-		<strong> 🔒 
+	<p class="pkce notice notice-error">
+		<strong> 🛡️ 
 		<?php
 			echo wp_kses(
 				/* translators: PKCE specification link */
-				sprintf( __( 'This app is using %s for security.', 'indieauth' ), '<a href="https://indieweb.org/PKCE">PKCE</a>' ),
+				sprintf( __( 'This app is not using %s for security which is now required for IndieAuth', 'indieauth' ), '<a href="https://indieweb.org/PKCE">PKCE</a>' ),
 				array(
 					'a' => array(
 						'href' => array(),

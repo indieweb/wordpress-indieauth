@@ -320,6 +320,7 @@ class IndieAuth_Authorization_Endpoint {
 		}
 
 		$code   = $params['code'];
+		$code_verifier        = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
 		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$token  = $this->get_code( $code );
 		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
@@ -335,7 +336,6 @@ class IndieAuth_Authorization_Endpoint {
 		unset( $token['exp'] );
 		// If there is a code challenge
 		if ( isset( $token['code_challenge'] ) ) {
-			$code_verifier = $request->get_param( 'code_verifier' );
 			if ( ! $code_verifier ) {
 				$this->delete_code( $code, $token['user'] );
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
