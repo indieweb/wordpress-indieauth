@@ -17,22 +17,6 @@
 
 		<table class="form-table">
 			<tbody>
-
-				<tr>
-					<th>
-						<?php esc_html_e( 'Endpoints', 'indieauth' ); ?>
-					</th>
-					<td>
-						<p>
-							<?php esc_html_e( 'Authorization Endpoint:', 'indieauth' ); ?><br />
-							<code><?php echo esc_url( indieauth_get_authorization_endpoint() ); ?></code>
-						</p>
-						<p>
-							<?php esc_html_e( 'Token Endpoint:', 'indieauth' ); ?><br />
-							<code><?php echo esc_url( indieauth_get_token_endpoint() ); ?></code>
-						</p>
-					</td>
-				</tr>
 				<tr>
 					<th>
 						<?php esc_html_e( 'Set User to Represent Site URL', 'indieauth' ); ?>

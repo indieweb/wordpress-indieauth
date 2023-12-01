@@ -10,7 +10,51 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_filter( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'rest_index_indieauth_endpoints', array( $this, 'rest_index' ) );
+
+		add_action( 'wp_head', array( $this, 'html_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
 	}
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/token' );
+	}
+
+	public function http_header() {
+		if ( is_author() || is_front_page() ) {
+			$this->set_http_header( $this->get_endpoint(), 'token_endpoint' );
+		}
+	}
+
+	public function html_header() {
+		$kses = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
+
+		if ( is_author() || is_front_page() ) {
+			echo wp_kses( $this->get_html_header( $this->get_endpoint(), 'token_endpoint' ), $kses );
+		}
+	}
+
+	public function rest_index( $index ) {
+		$index['token'] = $this->get_endpoint();
+		return $index;
+	}
+
+	public static function get_grant_types() {
+		return array_unique( apply_filters( 'indieauth_grant_types_supported', array( 'authorization_code', 'refresh_token' ) ) );
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['token_endpoint']        = $this->get_endpoint();
+		$metadata['grant_types_supported'] = $this->get_grant_types();
+		return $metadata;
+	}
+
 
 	/**
 	 * Register the Route.
@@ -114,6 +158,8 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 			return WP_OAuth_Response( 'invalid_request', __( 'Please choose either an action or a grant_type', 'indieauth' ) );
 		}
 
+		$resp = new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+
 		// Action Handler
 		if ( isset( $params['action'] ) ) {
 			switch ( $params['action'] ) {
@@ -126,8 +172,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 						return new WP_OAuth_Response( 'invalid_request', __( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
 					}
 				default:
-					return new WP_OAuth_Response( 'unsupported_action', __( 'Unsupported Action', 'indieauth' ), 400 );
+					$resp = new WP_OAuth_Response( 'unsupported_action', __( 'Unsupported Action', 'indieauth' ), 400 );
 			}
+
+			// Allows for adding custom actions.
+			$resp = apply_filters( 'indieauth_token_action_handler', $resp, $params );
 		}
 
 		// Grant Type Handler.
@@ -139,12 +188,14 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				case 'refresh_token':
 					return $this->refresh_token( $params );
 				default:
-					return new WP_OAuth_Response( 'unsupported_grant_type', __( 'Unsupported grant_type.', 'indieauth' ), 400 );
+					$resp = new WP_OAuth_Response( 'unsupported_grant_type', __( 'Unsupported grant_type.', 'indieauth' ), 400 );
 			}
+			// Allows for adding custom grant type handling.
+			$resp = apply_filters( 'indieauth_token_grant_type_handler', $resp, $params );
 		}
 
 		// Everything Failed
-		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
+		return $resp;
 	}
 
 
@@ -180,7 +231,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
 		);
-		$response = indieauth_verify_local_authorization_code( $args );
+		$response = $this->verify_local_authorization_code( $args );
 
 		$error = get_oauth_error( $response );
 		if ( $error ) {
@@ -270,5 +321,28 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 			);
 		}
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error in response.', 'indieauth' ), 500 );
+	}
+
+	public function verify_local_authorization_code( $args ) {
+		$codes  = new Token_User( '_indieauth_code_' );
+		$return = $codes->get( $args['code'] );
+		if ( ! $return ) {
+			return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		if ( isset( $return['code_challenge'] ) ) {
+			if ( ! isset( $args['code_verifier'] ) ) {
+				$tokens->destroy( $post_args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			if ( ! pkce_verifier( $return['code_challenge'], $args['code_verifier'], $return['code_challenge_method'] ) ) {
+				$tokens->destroy( $args['code'] );
+				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
+			}
+			unset( $return['code_challenge'] );
+			unset( $return['code_challenge_method'] );
+		}
+
+		$codes->destroy( $args['code'] );
+		return $return;
 	}
 }

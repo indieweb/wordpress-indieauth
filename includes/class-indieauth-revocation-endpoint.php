@@ -6,6 +6,28 @@ class IndieAuth_Revocation_Endpoint extends IndieAuth_Endpoint {
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_filter( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'rest_index_indieauth_endpoints', array( $this, 'rest_index' ) );
+	}
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/revocation' );
+	}
+
+	public function auth_methods_supported() {
+		return array_unique( apply_filters( 'indieauth_revocation_auth_methods_supported', array( 'none' ) ) );
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['revocation_endpoint']               = $this->get_endpoint();
+		$metadata['revocation_auth_methods_supported'] = $this->auth_methods_supported();
+		return $metadata;
+	}
+
+
+	public function rest_index( $index ) {
+		$index['revocation'] = $this->get_endpoint();
+		return $index;
 	}
 
 	/**

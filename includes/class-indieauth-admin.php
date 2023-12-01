@@ -143,11 +143,65 @@ class IndieAuth_Admin {
 				'show_in_rest' => true,
 			)
 		);
+		register_setting(
+			'indieauth',
+			'indieauth_expires_in',
+			array(
+				'type'         => 'number',
+				'description'  => __( 'IndieAuth Default Expiry Time', 'indieauth' ),
+				'show_in_rest' => true,
+				'default'      => 1209600, // Two Weeks.
+			)
+		);
 	}
 
 
 	public function admin_init() {
 		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
+
+		add_settings_section(
+			'indieauth',
+			'IndieAuth Endpoint Settings',
+			array( $this, 'endpoint_settings' ),
+			'indieauth'
+		);
+		add_settings_field(
+			'indieauth_expires_in',
+			__( 'Default Token Expiration Time', 'indieauth' ),
+			array( $this, 'numeric_field' ),
+			'indieauth',
+			'indieauth',
+			array(
+				'label_for'   => 'indieauth_expires_in',
+				'class'       => 'widefat',
+				'description' => __( 'Set the Number of Seconds until a Token expires (Default is Two Weeks). 0 to Disable Expiration.', 'indieauth' ),
+				'default'     => '',
+				'min'         => 0,
+			)
+		);
+	}
+
+	public static function endpoint_settings() {
+		esc_html_e( 'These settings control the behavior of the endpoints', 'indieauth' );
+	}
+
+
+	public static function numeric_field( $args ) {
+		$props = array();
+		if ( array_key_exists( 'min', $args ) && is_numeric( $args['min'] ) ) {
+			$props[] = 'min=' . $args['min'];
+		}
+		if ( array_key_exists( 'max', $args ) && is_numeric( $args['max'] ) ) {
+			$props[] = 'max=' . $args['max'];
+		}
+		if ( array_key_exists( 'step', $args ) && is_numeric( $args['step'] ) ) {
+			$props[] = 'step=' . $args['step'];
+		}
+		$props = implode( ' ', $props );
+		printf( '<label for="%1$s"><input id="%1$s" name="%1$s" type="number" value="%2$s" %3$s />', esc_attr( $args['label_for'] ), esc_attr( get_option( $args['label_for'], $args['default'] ) ), esc_html( $props ) );
+		if ( array_key_exists( 'description', $args ) && ! empty( $args['description'] ) ) {
+			printf( '<p>%1$s</p>', esc_html( $args['description'] ) );
+		}
 	}
 
 	/**

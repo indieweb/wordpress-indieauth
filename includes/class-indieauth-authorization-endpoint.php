@@ -5,14 +5,60 @@
  * Implements IndieAuth Authorization Endpoint
  */
 
-class IndieAuth_Authorization_Endpoint {
-	private $tokens;
+class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
+	private $codes;
 
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
-		$this->tokens = new Token_User( '_indieauth_code_' );
+		add_filter( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_filter( 'rest_index_indieauth_endpoints', array( $this, 'rest_index' ) );
+
+		add_action( 'wp_head', array( $this, 'html_header' ) );
+		add_action( 'template_redirect', array( $this, 'http_header' ) );
+
+		$this->codes = new Token_User( '_indieauth_code_' );
 	}
+
+	public function http_header() {
+		if ( is_author() || is_front_page() ) {
+			$this->set_http_header( $this->get_endpoint(), 'authorization_endpoint' );
+		}
+	}
+
+	public function html_header() {
+		$kses = array(
+			'link' => array(
+				'href' => array(),
+				'rel'  => array(),
+			),
+		);
+
+		if ( is_author() || is_front_page() ) {
+			echo wp_kses( $this->get_html_header( $this->get_endpoint(), 'authorization_endpoint' ), $kses );
+		}
+	}
+
+	public static function get_endpoint() {
+		return rest_url( '/indieauth/1.0/auth' );
+	}
+
+	public static function get_response_types() {
+		return array_unique( apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) );
+	}
+
+	public function rest_index( $index ) {
+		$index['authorization'] = $this->get_endpoint();
+		return $index;
+	}
+
+	public function metadata( $metadata ) {
+		$metadata['authorization_endpoint']                         = $this->get_endpoint();
+		$metadata['response_types_supported']                       = $this->get_response_types();
+		$metadata['authorization_response_iss_parameter_supported'] = true;
+		return $metadata;
+	}
+
 
 	/**
 	 * Register the Route.
@@ -272,19 +318,19 @@ class IndieAuth_Authorization_Endpoint {
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
 
-	public function set_code( $user_id, $token ) {
-		$this->tokens->set_user( $user_id );
-		return $this->tokens->set( $token, 600 );
+	public function set_code( $user_id, $code ) {
+		$this->codes->set_user( $user_id );
+		return $this->codes->set( $code, 600 );
 	}
 
 	public function get_code( $code, $hash = true ) {
-		$token = $this->tokens->get( $code, $hash );
-		return $token;
+		$code = $this->codes->get( $code, $hash );
+		return $code;
 	}
 
 	public function delete_code( $code, $user_id = null ) {
-		$this->tokens->set_user( $user_id );
-		return $this->tokens->destroy( $code );
+		$this->codes->set_user( $user_id );
+		return $this->codes->destroy( $code );
 	}
 
 	/*

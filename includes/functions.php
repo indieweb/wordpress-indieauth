@@ -554,42 +554,10 @@ function indieauth_get_root_user() {
 	return $single;
 }
 
-function indieauth_verify_local_authorization_code( $args ) {
-	$tokens = new Token_User( '_indieauth_code_' );
-	$return = $tokens->get( $args['code'] );
-	if ( ! $return ) {
-		return new WP_OAuth_Response( 'invalid_code', __( 'Invalid authorization code', 'indieauth' ), 401 );
-	}
-	if ( isset( $return['code_challenge'] ) ) {
-		if ( ! isset( $args['code_verifier'] ) ) {
-			$tokens->destroy( $post_args['code'] );
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
-		}
-		if ( ! pkce_verifier( $return['code_challenge'], $args['code_verifier'], $return['code_challenge_method'] ) ) {
-			$tokens->destroy( $args['code'] );
-			return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
-		}
-		unset( $return['code_challenge'] );
-		unset( $return['code_challenge_method'] );
-	}
-
-	$tokens->destroy( $args['code'] );
-	return $return;
-}
-
-function indieauth_get_authorization_endpoint() {
-	return IndieAuth_Plugin::$indieauth->get_authorization_endpoint();
-}
-
-
-function indieauth_get_token_endpoint() {
-	return IndieAuth_Plugin::$indieauth->get_token_endpoint();
-}
-
 function indieauth_get_metadata_endpoint() {
-	return IndieAuth_Plugin::$metadata->get_metadata_endpoint();
+	return IndieAuth_Plugin::$metadata->get_endpoint();
 }
 
 function indieauth_get_issuer() {
-	return rest_url( '/indieauth/1.0' );
+	return IndieAuth_Plugin::$metadata->get_issuer();
 }

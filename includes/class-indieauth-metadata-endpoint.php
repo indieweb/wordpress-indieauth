@@ -5,6 +5,7 @@
 class IndieAuth_Metadata_Endpoint {
 
 	public function __construct() {
+		add_filter( 'rest_pre_serve_request', array( $this, 'serve_request' ), 11, 4 );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
@@ -14,8 +15,55 @@ class IndieAuth_Metadata_Endpoint {
 	/*
 	 * Returns the URL for the metadata endpoint.
 	 */
-	public static function get_metadata_endpoint() {
+	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/metadata' );
+	}
+
+
+	public static function get_issuer() {
+		return rest_url( '/indieauth/1.0' );
+	}
+
+
+	/*
+	 * Outputs a marked up Http link header.
+	 *
+	 * @param string $url URL for the link
+	 * @param string $rel Rel property for the link
+	 * @param boolean $replace Passes the value of replace through to the header PHP
+	 */
+	public static function set_http_header( $url, $rel, $replace = false ) {
+		header( sprintf( 'Link: <%s>; rel="%s"', $url, $rel ), $replace );
+	}
+
+	/*
+	 * Returns a marked up HTML link header.
+	 *
+	 * @param string $url URL for the link
+	 * @param string $rel Rel property for the link
+	 * @return string Marked up HTML link to add to head
+	 */
+	public static function get_html_header( $url, $rel ) {
+		return sprintf( '<link rel="%s" href="%s" />' . PHP_EOL, $rel, $url );
+	}
+
+	/**
+	 * Hooks into the REST API output to add a metadata header to the Issuer URL.
+	 *
+	 * @param bool                      $served  Whether the request has already been served.
+	 * @param WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
+	 * @param WP_REST_Request           $request Request used to generate the response.
+	 * @param WP_REST_Server            $server  Server instance.
+	 *
+	 * @return true
+	 */
+	public static function serve_request( $served, $result, $request, $server ) {
+		if ( ! str_contains( $request->get_route(), '/indieauth/1.0' ) ) {
+			return $served;
+		}
+		static::set_http_header( static::get_endpoint(), 'indieauth-metadata' );
+
+		return $served;
 	}
 
 	/**
@@ -28,37 +76,35 @@ class IndieAuth_Metadata_Endpoint {
 	public function register_index( WP_REST_Response $response ) {
 		$data      = $response->get_data();
 		$endpoints = array(
-			'authorization' => indieauth_get_authorization_endpoint(),
-			'token'         => indieauth_get_token_endpoint(),
-			'metadata'      => indieauth_get_metadata_endpoint(),
-			'revocation'    => rest_url( 'indieauth/1.0/revocation' ),
-			'introspection' => rest_url( 'indieauth/1.0/introspection' ),
+			'metadata' => $this->get_endpoint(),
 		);
 		$endpoints = array_filter( $endpoints );
 		if ( empty( $endpoints ) ) {
 			return $response;
 		}
 		$data['authentication']['indieauth'] = array(
-			'endpoints' => $endpoints,
+			'endpoints' => apply_filters( 'rest_index_indieauth_endpoints', $endpoints ),
 		);
 		$response->set_data( $data );
 		return $response;
 	}
 
+
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
-			header( sprintf( 'Link: <%s>; rel="indieauth-metadata"', static::get_metadata_endpoint() ), false );
+			$this->set_http_header( static::get_endpoint(), 'indieauth-metadata' );
 		}
 	}
-	public static function html_header() {
+	public function html_header() {
 		$kses = array(
 			'link' => array(
 				'href' => array(),
 				'rel'  => array(),
 			),
 		);
+
 		if ( is_author() || is_front_page() ) {
-			echo wp_kses( sprintf( '<link rel="indieauth-metadata" href="%s" />' . PHP_EOL, static::get_metadata_endpoint() ), $kses );
+			echo wp_kses( $this->get_html_header( static::get_endpoint(), 'indieauth-metadata' ), $kses );
 		}
 	}
 
@@ -87,30 +133,12 @@ class IndieAuth_Metadata_Endpoint {
 	 * @return Response to Return to the REST Server.
 	 **/
 	public function metadata( $request ) {
-		$grants = array( 'authorization_code', 'refresh_token' );
-		if ( class_exists( 'IndieAuth_Ticket_Endpoint' ) ) {
-			$grants[] = 'ticket';
-		}
-
 		$metadata = array(
-			'issuer'                                     => indieauth_get_issuer(),
-			'authorization_endpoint'                     => indieauth_get_authorization_endpoint(),
-			'scopes_supported'                           => IndieAuth_Plugin::$scopes->get_names(),
-			'response_types_supported'                   => array( 'code' ),
-			'grant_types_supported'                      => $grants,
-			'service_documentation'                      => 'https://indieauth.spec.indieweb.org',
-			'token_endpoint'                             => indieauth_get_token_endpoint(),
-			'revocation_endpoint'                        => rest_url( '/indieauth/1.0/revocation' ),
-			'revocation_endpoint_auth_methods_supported' => array( 'none' ),
-			'introspection_endpoint'                     => rest_url( '/indieauth/1.0/introspection' ),
-			'introspection_endpoint_auth_methods_supported' => array( 'none' ),
-			'code_challenge_methods_supported'           => array( 'S256' ),
-			'authorization_response_iss_parameter_supported' => true,
+			'issuer'                           => indieauth_get_issuer(),
+			'scopes_supported'                 => IndieAuth_Plugin::$scopes->get_names(),
+			'service_documentation'            => 'https://indieauth.spec.indieweb.org',
+			'code_challenge_methods_supported' => array( 'S256' ),
 		);
-
-		if ( class_exists( 'IndieAuth_Ticket_Endpoint' ) ) {
-			$metadata['ticket_endpoint'] = rest_url( 'indieauth/1.0/ticket' );
-		}
 
 		$metadata = apply_filters( 'indieauth_metadata', $metadata );
 		return new WP_REST_Response(

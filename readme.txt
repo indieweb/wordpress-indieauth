@@ -3,8 +3,8 @@ Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 5.6
-Tested up to: 6.3
-Stable tag: 4.3.0
+Tested up to: 6.4
+Stable tag: 4.4.0
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -43,7 +43,7 @@ You can read the [specification](https://indieauth.spec.indieweb.org/) for imple
 
 The goals of OpenID and Web Sign In are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption. Web sign-in prompts a user to enter a URL to sign on. Upon submission, it tries to discover the URL's authorization endpoint, and authenticate to that. If none is found, it falls back on other options.
 
-This plugin only supports searching an external site for an authorization endpoint, allowing you to log into one site with the credentials of another site. This functionality may be split off in future into its own plugin.
+This plugin only supports searching an external site for an authorization endpoint, allowing you to log into one site with the credentials of another site if that site is listed as the website URL in your user profile.
 
 = What is IndieAuth.com? =
 
@@ -70,9 +70,9 @@ We recommend your site uses HTTPS to ensure your credentials are not sent in cle
 
 = What is a token endpoint? =
 
-Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site. The plugin does offer an expert mode to allow you to use an external token endpoint if you want, but by having it built into your WordPress site, it is under your control.
+Once you have proven your identity, the token endpoint issues a token, which applications can use to authenticate as you to your site.
 
-You can manage and revoke tokens under User->Manage Tokens if you are using the local configuration only. You will only see tokens for the currently logged in user.
+You can manage and revoke tokens under User->Manage Tokens. You will only see tokens for the currently logged in user.
 
 = How do I incorporate this into my plugin? =
 
@@ -128,9 +128,9 @@ If that doesn't work either, you may need to ask your hosting provider to whitel
 
 Some hosting providers filter this out using mod_security. For one user, they needed [Rule 340162](https://wiki.atomicorp.com/wiki/index.php/WAF_340162) whitelisted as it detects the use of a URL as an argument.
 
-= What is Ticket Auth and how do I enable it? =
+= What is the Ticketing extension and how do I enable it? =
 
-[Ticket Auth](https://indieweb.org/IndieAuth_Ticket_Auth) is a developing extension to OAuth2/IndieAuth. It creates a ticket endpoint on your site where other sites can send you a ticket, which can be redeemed
+[Ticketing for IndieAuth](https://indieweb.org/Ticketing_for_IndieAuth) is a developing extension to OAuth2/IndieAuth. It creates a ticket endpoint on your site where other sites can send you a ticket, which can be redeemed
 for a token to access private resources on that other site. You can enable the experimental endpoint functionality by adding the below to your wp-config.php. If this becomes more established, it will be added
 in the settings page.
 
@@ -142,6 +142,10 @@ are stored. Tokens are stored per user.
 Since the extension is developing, there is currently not a specified way to transfer this token to a client to be used.
 
 == Upgrade Notice ==
+
+= 4.4.0 =
+
+4.4.0 removes the remote endpoint functionality, which will be archived as a separate plugin in future. It was already disabled by default.
 
 = 4.3.0 =
 
@@ -180,6 +184,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 4.4.0 =
+* Remove remote endpoint functionality already disabled
+* Rearrange so each endpoint is more independent and registers its own parameters
+* Add way to register new grant types.
 
 = 4.3.0 =
 
