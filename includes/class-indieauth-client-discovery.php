@@ -38,7 +38,15 @@ class IndieAuth_Client_Discovery {
 			'redirection'         => 3,
 			'user-agent'          => "$user_agent; IndieAuth Client Information Discovery",
 		);
-		return wp_safe_remote_get( $url, $args );
+		$response = wp_safe_remote_get( $url, $args );
+		if ( ! is_wp_error( $response ) ) {
+			$code = wp_remote_retrieve_response_code( $response );
+			if ( ( $code / 100 ) !== 2 ) {
+				return new WP_Error( 'retrieval_error', __( 'Failed to Retrieve Client Details', 'indieauth' ), $code );
+			}
+		}
+		return $response;
+
 	}
 
 	private function parse( $url ) {
