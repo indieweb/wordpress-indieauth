@@ -37,8 +37,11 @@ class Web_Signin {
 	 * @param string $redirect_uri where to redirect
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
-		$authorization_endpoint = find_rels( $me, 'authorization_endpoint' );
-		if ( ! $authorization_endpoint ) {
+		$endpoints = find_rels( $me, array( 'indieauth-metadata', 'authorization_endpoint' ) );
+
+		if ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
+			$state = $this->get_indieauth_metadata( $endpoints['indieauth-metadata'] );
+		} elseif ( ! array_key_exists( 'authorization_endpoint', $endpoints ) ) {
 			return new WP_Error(
 				'authentication_failed',
 				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
@@ -46,22 +49,57 @@ class Web_Signin {
 					'status' => 401,
 				)
 			);
+		} else {
+			$state = array(
+				'me'                     => $me,
+				'authorization_endpoint' => $endpoints['authorization_endpoint'],
+			);
 		}
-		$state = compact( 'me', 'authorization_endpoint' );
+		$state['me']            = $me;
+		$state['code_verifier'] = wp_generate_password( 128, false );
+
 		$token = new Token_Transient( 'indieauth_state' );
 		$query = add_query_arg(
 			array(
-				'me'            => rawurlencode( $me ),
-				'redirect_uri'  => rawurlencode( $redirect_uri ),
-				'client_id'     => rawurlencode( home_url() ),
-				'state'         => $token->set_with_cookie( $state, 120 ),
-				'response_type' => 'id',
+				'response_type'         => 'code', // In earlier versions of the specification this was ID.
+				'client_id'             => rawurlencode( home_url() ),
+				'redirect_uri'          => rawurlencode( $redirect_uri ),
+				'state'                 => $token->set_with_cookie( $state, 120 ),
+				'code_challenge'        => base64_urlencode( indieauth_hash( $state['code_verifier'] ) ),
+				'code_challenge_method' => 'S256',
+				'me'                    => rawurlencode( $me ),
 			),
-			$authorization_endpoint
+			$endpoints['authorization_endpoint']
 		);
 		// redirect to authentication endpoint
 		wp_redirect( $query );
 	}
+
+	// Retrieves the Metadata from an IndieAuth Metadata Endpoint.
+	public function get_indieauth_metadata( $url ) {
+		$resp = wp_remote_get(
+			$url,
+			array(
+				'headers' => array(
+					'Accept' => 'application/json',
+				),
+			)
+		);
+		if ( is_wp_error( $resp ) ) {
+			return $resp;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $resp );
+
+		if ( ( $code / 100 ) !== 2 ) {
+			return new WP_Error( 'no_metadata_endpoint', __( 'No Metadata Endpoint Found', 'indieauth' ) );
+		}
+
+		$body = wp_remote_retrieve_body( $resp );
+		return json_decode( $body, true );
+	}
+
+
 
 	// $args must consist of redirect_uri, client_id, and code
 	public function verify_authorization_code( $post_args, $endpoint ) {
@@ -70,7 +108,8 @@ class Web_Signin {
 		}
 
 		$defaults = array(
-			'client_id' => home_url(),
+			'client_id'  => home_url(),
+			'grant_type' => 'authorization_code',
 		);
 
 		$post_args = wp_parse_args( $post_args, $defaults );
@@ -120,7 +159,7 @@ class Web_Signin {
 		if ( $user instanceof WP_User ) {
 			return $user;
 		}
-		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
 		$redirect_to = rawurldecode( $redirect_to );
 		$token       = new Token_Transient( 'indieauth_state' );
 		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
@@ -134,10 +173,20 @@ class Web_Signin {
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
+			if ( array_key_exists( 'iss', $_REQUEST ) ) {
+				$iss = rawurldecode( $_REQUEST['iss'] );
+				if ( $iss !== $state['issuer'] ) {
+					return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter does not Match Server Metadata', 'indieauth' ) );
+				}
+			} elseif ( array_key_exists( 'issuer', $state ) ) {
+				return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter Present in Metadata Endpoint But Not Returned by Authorization Endpoint', 'indieauth' ) );
+			}
+
 			$response = $this->verify_authorization_code(
 				array(
-					'code'         => $_REQUEST['code'],
-					'redirect_uri' => wp_login_url( $redirect_to ),
+					'code'          => $_REQUEST['code'],
+					'redirect_uri'  => wp_login_url( $redirect_to ),
+					'code_verifier' => $state['code_verifier'],
 				),
 				$state['authorization_endpoint']
 			);
@@ -253,7 +302,7 @@ class Web_Signin {
 			include plugin_dir_path( __DIR__ ) . 'templates/websignin-form.php';
 		}
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : null;
+			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
 			$redirect_to = rawurldecode( $redirect_to );
 
 			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore

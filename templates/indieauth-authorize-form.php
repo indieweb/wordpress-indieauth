@@ -69,6 +69,8 @@ login_header(
 		<input type="hidden" name="state" value="<?php echo esc_attr( $state ); ?>" />
 		<input type="hidden" name="me" value="<?php echo esc_url( $me ); ?>" />
 		<input type="hidden" name="response_type" value="<?php echo esc_attr( $response_type ); ?>" />
+		<input type="hidden" name="code_challenge" value="<?php echo esc_attr( $code_challenge ); ?>" />
+		<input type="hidden" name="code_challenge_method" value="<?php echo esc_attr( $code_challenge_method ); ?>" />
 
 		<?php if ( ! is_null( $code_challenge ) ) { ?>
 			<input type="hidden" name="code_challenge" value="<?php echo esc_attr( $code_challenge ); ?>" />

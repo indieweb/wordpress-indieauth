@@ -118,7 +118,7 @@ final class IndieAuth_Client_Taxonomy {
 		// strip leading www, if any.
 		$host = preg_replace( '/^www\./', '', $host );
 		$path = wp_parse_url( $url, PHP_URL_PATH );
-		$path = str_replace( '/', '_', $title );
+		$path = str_replace( '/', '_', $path );
 		return sanitize_title( $host . $path );
 	}
 
