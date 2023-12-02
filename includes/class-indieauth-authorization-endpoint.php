@@ -365,11 +365,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 			}
 		}
 
-		$code   = $params['code'];
-		$code_verifier        = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
-		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
-		$token  = $this->get_code( $code );
-		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
+		$code          = $params['code'];
+		$code_verifier = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
+		$params        = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
+		$token         = $this->get_code( $code );
+		$scopes        = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		if ( ! $token ) {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );

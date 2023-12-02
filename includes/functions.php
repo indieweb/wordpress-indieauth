@@ -172,7 +172,7 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		if ( empty( $identifier ) || ! indieauth_validate_user_identifier( $identifier ) ) {
 			return null;
 		}
-		
+
 		$identifier = normalize_url( $identifier );
 		if ( ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) ) && ( wp_parse_url( home_url(), PHP_URL_HOST ) === wp_parse_url( $identifier, PHP_URL_HOST ) ) ) {
 			$identifier = set_url_scheme( $identifier, 'https' );

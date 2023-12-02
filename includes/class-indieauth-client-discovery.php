@@ -32,7 +32,7 @@ class IndieAuth_Client_Discovery {
 	private function fetch( $url ) {
 
 		// Validate if this is an IP address
-		$ip      = filter_var( wp_parse_url( $url, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
+		$ip         = filter_var( wp_parse_url( $url, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
 		$donotfetch = array(
 			'127.0.0.1',
 			'0000:0000:0000:0000:0000:0000:0000:0001',
@@ -44,8 +44,6 @@ class IndieAuth_Client_Discovery {
 			return new WP_Error( 'do_not_fetch', __( 'Client Identifier is localhost', 'indieauth' ) );
 		}
 
-
-
 		$wp_version = get_bloginfo( 'version' );
 		$user_agent = apply_filters( 'http_headers_useragent', 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );
 		$args       = array(
@@ -54,7 +52,7 @@ class IndieAuth_Client_Discovery {
 			'redirection'         => 3,
 			'user-agent'          => "$user_agent; IndieAuth Client Information Discovery",
 		);
-		$response = wp_safe_remote_get( $url, $args );
+		$response   = wp_safe_remote_get( $url, $args );
 		if ( ! is_wp_error( $response ) ) {
 			$code = wp_remote_retrieve_response_code( $response );
 			if ( ( $code / 100 ) !== 2 ) {
@@ -62,7 +60,6 @@ class IndieAuth_Client_Discovery {
 			}
 		}
 		return $response;
-
 	}
 
 	private function parse( $url ) {
