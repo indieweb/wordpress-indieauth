@@ -37,9 +37,27 @@ class Web_Signin {
 	 * @param string $redirect_uri where to redirect
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
+		$me = indieauth_validate_user_identifier( $me );
+		if ( ! $me ) {
+			return new WP_Error(
+				'authentication_failed',
+				__( '<strong>ERROR</strong>: Invalid URL', 'indieauth' ),
+				array(
+					'status' => 401,
+				)
+			);
+		}
 		$endpoints = find_rels( $me, array( 'indieauth-metadata', 'authorization_endpoint' ) );
 
-		if ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
+		if ( ! $endpoints ) {
+			return new WP_Error(
+				'authentication_failed',
+				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
+				array(
+					'status' => 401,
+				)
+			);
+		} elseif ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
 			$state = $this->get_indieauth_metadata( $endpoints['indieauth-metadata'] );
 		} elseif ( ! array_key_exists( 'authorization_endpoint', $endpoints ) ) {
 			return new WP_Error(
@@ -298,32 +316,24 @@ class Web_Signin {
 	}
 
 	public function login_form_websignin() {
-		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
-			include plugin_dir_path( __DIR__ ) . 'templates/websignin-form.php';
-		}
+		$login_errors = null;
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
 			$redirect_to = rawurldecode( $redirect_to );
 
 			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore
 				$me = esc_url_raw( $_POST['websignin_identifier'] ); //phpcs:ignore
-				// Check for valid URLs
-				if ( ! wp_http_validate_url( $me ) ) {
-					return new WP_Error( 'websignin_invalid_url', __( 'Invalid User Profile URL', 'indieauth' ) );
-				}
-
 				$return = $this->websignin_redirect( $me, wp_login_url( $redirect_to ) );
 				if ( is_wp_error( $return ) ) {
-					echo '<div id="login_error">' . esc_html( $return->get_error_message() ) . "</div>\n";
-					return $return;
+					$login_errors = $return;
 				}
 				if ( is_oauth_error( $return ) ) {
-					$return = $return->to_wp_error();
-					echo '<div id="login_error">' . esc_html( $return->get_error_message() ) . "</div>\n";
-					return $return;
+					$login_errors = $return->to_wp_error();
 				}
 			}
 		}
+
+		include plugin_dir_path( __DIR__ ) . 'templates/websignin-form.php';
 		exit;
 	}
 }

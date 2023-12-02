@@ -1,5 +1,4 @@
 <?php
-$login_errors = new WP_Error();
 login_header(
 	__( 'Sign in with your website', 'indieauth' ),
 	'',
