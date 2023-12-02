@@ -75,7 +75,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 						/* The client's URL, which MUST match the client_id used in the authentication request.
 						 */
 						'client_id'     => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						/* The client's redirect URL, which MUST match the initial authentication request.

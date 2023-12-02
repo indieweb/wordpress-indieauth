@@ -47,17 +47,18 @@ login_header(
 		<?php self::scope_list( $scopes ); ?>
 		</ul>
 	</div>
-	<div class="expiration">
-		<?php
+
+	<div class="notice notice-info message expiration">
+	<?php
 		$expiration = (int) get_option( 'indieauth_expires_in' );
-		if ( 0 !== $expiration ) {
-			printf(
-				/* translators: 1. human time difference */
-				'⌛ ' . esc_html__( 'The client will have access for %1$s.', 'indieauth' ),
-				esc_html( human_time_diff( time(), time() + $expiration ) )
-			);
-		}
-		?>
+	if ( 0 !== $expiration ) {
+		printf(
+			/* translators: 1. human time difference */
+			'⌛ ' . esc_html__( 'The client will have access for %1$s.', 'indieauth' ),
+			esc_html( human_time_diff( time(), time() + $expiration ) )
+		);
+	}
+	?>
 	</div>
 	<p class="submit">
 	<?php
@@ -81,4 +82,4 @@ login_header(
 	</p>
 </form>
 <?php /* translators: 1. Redirect URI */ ?>
-<p class="redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after approving this application.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></p>
+<div class="message redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after approving this application.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></div>

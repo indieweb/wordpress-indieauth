@@ -145,7 +145,7 @@ Since the extension is developing, there is currently not a specified way to tra
 
 = 4.4.0 =
 
-4.4.0 removes the remote endpoint functionality, which will be archived as a separate plugin in future. It was already disabled by default.
+4.4.0 removes the remote endpoint functionality, which will be archived as a separate plugin in future. It was already disabled by default. It also removes the ability to login via URL and password. Websignin login is the only login enhancement.
 
 = 4.3.0 =
 
@@ -189,6 +189,15 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Remove remote endpoint functionality already disabled
 * Rearrange so each endpoint is more independent and registers its own parameters
 * Add way to register new grant types.
+* Rewrite Web Signin to support latest version of flow. 
+* Add PKCE support to websignin flow
+* Fix issue with PKCE support where it would not actually verify PKCE for token flow because PKCE is optional
+* Invert PKCE message to highlight when PKCE is not being used over it being used.
+* Do not do client discovery on a non-retrievable URL
+* Validate identifiers to IndieAuth Spec
+* Remove URL plus password login as part of effort to simplify code. 
+* Fix error message surfacing in websignin form
+* Fix CSS on websignin and authorization forms to not misrender the language bar.
 
 = 4.3.0 =
 

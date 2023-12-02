@@ -55,4 +55,63 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 
 	}
 
+	public function test_validate_user_identifier() {
+		foreach( 
+			array( 'https://example.com/', 'https://example.com/username', 'https://example.com/users?id=100' ) as $pass ) {
+			$this->assertNotEquals( false, indieauth_validate_user_identifier( $pass ) );
+		}
+		foreach( 
+			array( 
+				'example.com', // schemeless
+				'mailto:user@example.com', // invalid scheme
+				'https://example.com/foo/./bar',  // single dot
+				'https://example.com/foo/../bar',  // double dot
+				'https://example.com/#me',  // fragment
+				'https://user:pass@example.com/', // contains a username and password
+				'https://example.com:8443/', // contains a port
+				'https://172.28.92.51/' //  host is an IP address
+			) as $fail ) {
+			$this->assertEquals( false, indieauth_validate_user_identifier( $fail ) );
+		}
+	}
+
+	public function test_validate_client_identifier() {
+		foreach( 
+			array( 'https://example.com/', 'https://example.com/application', 'https://example.com/app?id=100', 'https://127.0.0.1', 'http://::1', 'https://localhost', 'https://example.com:8443' ) as $pass ) {
+			$this->assertNotEquals( false, indieauth_validate_client_identifier( $pass ) );
+		}
+		foreach( 
+			array( 
+				'example.com', // schemeless
+				'mailto:user@example.com', // invalid scheme
+				'https://example.com/foo/./bar',  // single dot
+				'https://example.com/foo/../bar',  // double dot
+				'https://example.com/#me',  // fragment
+				'https://user:pass@example.com/', // contains a username and password
+				'https://172.28.92.51/' //  host is an IP address
+			) as $fail ) {
+			$this->assertEquals( false, indieauth_validate_client_identifier( $fail ) );
+		}
+	}
+
+	public function test_validate_issuer_identifier() {
+		foreach( 
+			array( 'https://example.com/', 'https://example.com/application', 'https://127.0.0.1',  'https://localhost', 'https://example.com:8443' ) as $pass ) {
+			$this->assertNotEquals( false, indieauth_validate_issuer_identifier( $pass ) );
+		}
+		foreach( 
+			array( 
+				'example.com', // schemeless
+				'http://example.com', // http scheme
+				'mailto:user@example.com', // invalid scheme
+				'https://example.com/foo/./bar',  // single dot
+				'https://example.com/foo/../bar',  // double dot
+				'https://example.com/#me',  // fragment
+				'https://user:pass@example.com/', // contains a username and password
+				'https://example.com/?id=100', // contains a query
+			) as $fail ) {
+			$this->assertEquals( false, indieauth_validate_issuer_identifier( $fail ) );
+		}
+	}
+
 }

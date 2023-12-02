@@ -80,7 +80,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 						),
 						// The Client URL.
 						'client_id'             => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
 						),
@@ -113,7 +113,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 						/* The Profile URL the user entered. Optional.
 						 */
 						'me'                    => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
@@ -135,7 +135,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 						/* The client's URL, which MUST match the client_id used in the authentication request.
 						*/
 						'client_id'     => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						/* The client's redirect URL, which MUST match the initial authentication request.
@@ -365,11 +365,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 			}
 		}
 
-		$code   = $params['code'];
-		$code_verifier        = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
-		$params = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
-		$token  = $this->get_code( $code );
-		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
+		$code          = $params['code'];
+		$code_verifier = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
+		$params        = wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
+		$token         = $this->get_code( $code );
+		$scopes        = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		if ( ! $token ) {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'Invalid authorization code', 'indieauth' ), 400 );

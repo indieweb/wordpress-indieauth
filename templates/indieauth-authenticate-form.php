@@ -63,4 +63,4 @@ if ( ! $user_website ) {
 	</p>
 </form>
 <?php /* translators: 1. Redirect URI */ ?>
-<p class="redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after authenticating.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></p>
+<div class="message redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after authenticating.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></div>
