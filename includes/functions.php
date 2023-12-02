@@ -561,3 +561,133 @@ function indieauth_get_metadata_endpoint() {
 function indieauth_get_issuer() {
 	return IndieAuth_Plugin::$metadata->get_issuer();
 }
+
+/**
+ * Validate a User Identifier.
+ *
+ * @param string $url User Identifier URL.
+ * @return string|false URL or false on failure.
+ */
+function indieauth_validate_user_identifier( $url ) {
+	if ( ! is_string( $url ) || '' === $url || is_numeric( $url ) ) {
+		return false;
+	}
+
+	$url = trailingslashit( $url );
+
+	if ( ! $url ) {
+		return false;
+	}
+
+	$parsed_url = wp_parse_url( $url );
+
+	if ( ! $parsed_url || empty( $parsed_url['host'] ) || ! in_array( $parsed_url['scheme'], array( 'http', 'https' ), true ) ) {
+		return false;
+	}
+
+	if ( isset( $parsed_url['user'] ) || isset( $parsed_url['pass'] ) || isset( $parsed_url['fragment'] ) || isset( $parsed_url['port'] ) ) {
+		return false;
+	}
+
+	// path has single-dot or double-dot segments; not allowed
+	$paths = explode( '/', $parsed_url['path'] );
+	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
+		return false;
+	}
+
+	// If this is an IP address it is not permitted
+	$ip = filter_var( $parsed_url['host'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
+	if ( $ip ) {
+		return false;
+	}
+
+	return $url;
+}
+
+/**
+ * Validate a Client Identifier URL.
+ *
+ * @param string $url Client Identifier URL.
+ * @return string|false URL or false on failure.
+ */
+function indieauth_validate_client_identifier( $url ) {
+	if ( ! is_string( $url ) || '' === $url || is_numeric( $url ) ) {
+		return false;
+	}
+
+	$url = trailingslashit( $url );
+
+	if ( ! $url ) {
+		return false;
+	}
+
+	$parsed_url = wp_parse_url( $url );
+	if ( ! $parsed_url || empty( $parsed_url['host'] ) ) {
+		return false;
+	}
+
+	if ( isset( $parsed_url['user'] ) || isset( $parsed_url['pass'] ) || isset( $parsed_url['fragment'] ) ) {
+		return false;
+	}
+
+	// path has single-dot or double-dot segments; not allowed
+	$paths = explode( '/', $parsed_url['path'] );
+	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
+		return false;
+	}
+
+	// Validate that if this is an IP address it is one of the approved IPs.
+	$ip      = filter_var( $parsed_url['host'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
+	$allowed = array(
+		'127.0.0.1',
+		'0000:0000:0000:0000:0000:0000:0000:0001',
+		'::1',
+	);
+
+	if ( $ip && ! in_array( $ip, $allowed, true ) ) {
+		return false;
+	}
+
+	return $url;
+}
+
+/**
+ * Validate an Issuer Identifier.
+ *
+ * @param string $url Issuer Identiifier URL.
+ * @return string|false URL or false on failure.
+ */
+function indieauth_validate_issuer_identifier( $url ) {
+	if ( ! is_string( $url ) || '' === $url || is_numeric( $url ) ) {
+		return false;
+	}
+
+	$url = trailingslashit( $url );
+
+	if ( ! $url ) {
+		return false;
+	}
+
+	$parsed_url = wp_parse_url( $url );
+
+	// Issuer Identifiers MUST be https
+	if ( ! isset( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] ) {
+		return false;
+	}
+
+	if ( ! $parsed_url || empty( $parsed_url['host'] ) ) {
+		return false;
+	}
+
+	// path has single-dot or double-dot segments; not allowed
+	$paths = explode( '/', $parsed_url['path'] );
+	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
+		return false;
+	}
+
+	if ( isset( $parsed_url['user'] ) || isset( $parsed_url['pass'] ) || isset( $parsed_url['fragment'] ) || isset( $parsed_url['query'] ) ) {
+		return false;
+	}
+
+	return $url;
+}
