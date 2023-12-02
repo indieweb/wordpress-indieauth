@@ -54,10 +54,6 @@
 	margin-top: 5em;
 }
 
-form input {
-	width: 100%;
-}
-
 </style>
 <?php
 login_footer();
