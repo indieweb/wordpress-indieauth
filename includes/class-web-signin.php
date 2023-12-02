@@ -190,6 +190,9 @@ class Web_Signin {
 			}
 			if ( array_key_exists( 'iss', $_REQUEST ) ) {
 				$iss = rawurldecode( $_REQUEST['iss'] );
+				if ( ! indieauth_validate_issuer_identifier( $iss ) ) {
+					return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter is Not Valid', 'indieauth' ) );
+				}
 				if ( $iss !== $state['issuer'] ) {
 					return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter does not Match Server Metadata', 'indieauth' ) );
 				}
