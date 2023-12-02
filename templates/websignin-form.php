@@ -1,13 +1,13 @@
 <?php
 login_header(
-	__( 'Sign in with your website', 'indieauth' ),
+	__( 'Sign in with your domain name', 'indieauth' ),
 	'',
 	$login_errors
 );
 ?>
 <form name="loginform" id="loginform" action="<?php echo esc_url( add_query_arg( 'action', 'websignin', wp_login_url() ) ); ?>" method="post">
 	<div class="login-info">
-		<p><?php esc_html_e( 'Sign in with your domain', 'indieauth' ); ?></p>
+		<p><?php esc_html_e( 'Sign in with your domain name', 'indieauth' ); ?></p>
 		<input class="input" type="url" name="websignin_identifier" placeholder="https://example.com" />
 	</div>
 	<p class="submit">
@@ -33,15 +33,12 @@ login_header(
 		margin-top: 1em;
 	}
 
-	#login form p.submit {
+	#login form p.submit input {
 		margin-top: 1em;
+		width: 100%;
 	}
 
 	.learn {
 		margin-top: 5em;
-	}
-
-	form input {
-		width: 100%;
 	}
 </style>
