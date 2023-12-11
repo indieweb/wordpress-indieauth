@@ -92,6 +92,7 @@ class IndieAuth_Plugin {
 			array(
 				'functions.php', // Global Functions
 				'class-oauth-response.php', // OAuth REST Error Class
+				'class-indieauth-client.php', // IndieAuth Client Class
 				'class-indieauth-metadata-endpoint.php', // Metadata Endpoint
 				'class-token-generic.php', // Token Base Class
 				'class-token-user.php',

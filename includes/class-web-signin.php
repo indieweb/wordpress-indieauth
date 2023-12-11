@@ -44,8 +44,8 @@ class Web_Signin {
 				)
 			);
 		}
-		$endpoints = find_rels( $me, array( 'indieauth-metadata', 'authorization_endpoint' ) );
-
+		$client    = new IndieAuth_Client();
+		$endpoints = $client->discover_endpoints( $me );
 		if ( ! $endpoints ) {
 			return new WP_Error(
 				'authentication_failed',
@@ -54,22 +54,9 @@ class Web_Signin {
 					'status' => 401,
 				)
 			);
-		} elseif ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
-			$state = $this->get_indieauth_metadata( $endpoints['indieauth-metadata'] );
-		} elseif ( ! array_key_exists( 'authorization_endpoint', $endpoints ) ) {
-			return new WP_Error(
-				'authentication_failed',
-				__( '<strong>ERROR</strong>: Could not discover endpoints', 'indieauth' ),
-				array(
-					'status' => 401,
-				)
-			);
-		} else {
-			$state = array(
-				'me'                     => $me,
-				'authorization_endpoint' => $endpoints['authorization_endpoint'],
-			);
 		}
+
+		$state                  = $client->meta;
 		$state['me']            = $me;
 		$state['code_verifier'] = wp_generate_password( 128, false );
 
@@ -77,91 +64,18 @@ class Web_Signin {
 		$query = add_query_arg(
 			array(
 				'response_type'         => 'code', // In earlier versions of the specification this was ID.
-				'client_id'             => rawurlencode( home_url() ),
+				'client_id'             => rawurlencode( $client->client_id ),
 				'redirect_uri'          => rawurlencode( $redirect_uri ),
 				'state'                 => $token->set_with_cookie( $state, 120 ),
 				'code_challenge'        => base64_urlencode( indieauth_hash( $state['code_verifier'] ) ),
 				'code_challenge_method' => 'S256',
 				'me'                    => rawurlencode( $me ),
 			),
-			$endpoints['authorization_endpoint']
+			$state['authorization_endpoint']
 		);
 		// redirect to authentication endpoint
 		wp_redirect( $query );
 	}
-
-	// Retrieves the Metadata from an IndieAuth Metadata Endpoint.
-	public function get_indieauth_metadata( $url ) {
-		$resp = wp_remote_get(
-			$url,
-			array(
-				'headers' => array(
-					'Accept' => 'application/json',
-				),
-			)
-		);
-		if ( is_wp_error( $resp ) ) {
-			return $resp;
-		}
-
-		$code = (int) wp_remote_retrieve_response_code( $resp );
-
-		if ( ( $code / 100 ) !== 2 ) {
-			return new WP_Error( 'no_metadata_endpoint', __( 'No Metadata Endpoint Found', 'indieauth' ) );
-		}
-
-		$body = wp_remote_retrieve_body( $resp );
-		return json_decode( $body, true );
-	}
-
-
-
-	// $args must consist of redirect_uri, client_id, and code
-	public function verify_authorization_code( $post_args, $endpoint ) {
-		if ( ! wp_http_validate_url( $endpoint ) ) {
-				return new WP_OAuth_Response( 'server_error', __( 'Did Not Receive a Valid Authorization Endpoint', 'indieauth' ), 500 );
-		}
-
-		$defaults = array(
-			'client_id'  => home_url(),
-			'grant_type' => 'authorization_code',
-		);
-
-		$post_args = wp_parse_args( $post_args, $defaults );
-		$args      = array(
-			'headers' => array(
-				'Accept'       => 'application/json',
-				'Content-Type' => 'application/x-www-form-urlencoded',
-			),
-			'body'    => $post_args,
-		);
-		$response  = wp_remote_post( $endpoint, $args );
-		$error     = get_oauth_error( $response );
-		if ( is_oauth_error( $error ) ) {
-				// Pass through well-formed error messages from the authorization endpoint
-				return $error;
-		}
-		$code     = wp_remote_retrieve_response_code( $response );
-		$response = wp_remote_retrieve_body( $response );
-
-		$response = json_decode( $response, true );
-		// check if response was json or not
-		if ( ! is_array( $response ) ) {
-				return new WP_OAuth_Response( 'server_error', __( 'The authorization endpoint did not return a JSON response', 'indieauth' ), 500 );
-		}
-
-		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
-				// The authorization endpoint acknowledged that the authorization code
-				// is valid and returned the authorization info
-				return $response;
-		}
-
-		$error = new WP_OAuth_Response( 'server_error', __( 'There was an error verifying the authorization code, the authorization server return an expected response', 'indieauth' ), 500 );
-		$error->set_debug( array( 'debug' => $response ) );
-		return $error;
-	}
-
-
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
@@ -200,14 +114,17 @@ class Web_Signin {
 				return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter Present in Metadata Endpoint But Not Returned by Authorization Endpoint', 'indieauth' ) );
 			}
 
-			$response = $this->verify_authorization_code(
+			$client       = new IndieAuth_Client();
+			$client->meta = $state;
+			$response     = $client->redeem_authorization_code(
 				array(
 					'code'          => $_REQUEST['code'],
 					'redirect_uri'  => wp_login_url( $redirect_to ),
 					'code_verifier' => $state['code_verifier'],
 				),
-				$state['authorization_endpoint']
+				false // Redeem at Authorization Endpoint
 			);
+
 			if ( is_wp_error( $response ) ) {
 				return $response;
 			}
