@@ -18,6 +18,71 @@ class IndieAuth_Client {
 		$this->client_id = trailingslashit( home_url() );
 	}
 
+	private function remote_get( $url ) {
+		$resp = wp_remote_get(
+			$url,
+			array(
+				'headers' => array(
+					'Accept' => 'application/json',
+				),
+			)
+		);
+		if ( is_wp_error( $resp ) ) {
+			return wp_error_to_oauth_response( $resp );
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $resp );
+		$body = wp_remote_retrieve_body( $resp );
+
+		if ( ( $code / 100 ) !== 2 ) {
+			return new WP_OAuth_Response( 'unable_retrieve', __( 'Unable to Retrieve', 'indieauth' ), $code, $body );
+		}
+
+		$body = json_decode( $body, true );
+
+		if ( ! is_array( $body ) ) {
+				return new WP_OAuth_Response( 'server_error', __( 'The endpoint did not return a JSON response', 'indieauth' ), 500 );
+		}
+
+		return $body;
+	}
+
+	private function remote_post( $url, $post_args ) {
+		$resp = wp_remote_post(
+			$url,
+			array(
+				'headers' => array(
+					'Accept'       => 'application/json',
+					'Content-Type' => 'application/x-www-form-urlencoded',
+				),
+				'body'    => $post_args,
+			)
+		);
+
+		$error = get_oauth_error( $response );
+
+		if ( is_oauth_error( $error ) ) {
+			// Pass through well-formed error messages from the endpoint
+			return $error;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $resp );
+		$body = wp_remote_retrieve_body( $resp );
+
+		if ( ( $code / 100 ) !== 2 ) {
+			return new WP_OAuth_Response( 'unable_retrieve', __( 'Unable to Retrieve', 'indieauth' ), $code, $body );
+		}
+
+		$body = json_decode( $body, true );
+
+		if ( ! is_array( $body ) ) {
+				return new WP_OAuth_Response( 'server_error', __( 'The endpoint did not return a JSON response', 'indieauth' ), 500 );
+		}
+
+		return $body;
+
+	}
+
 	/**
 	 * Discover IndieAuth Metadata either from a Metadata Endpoint or Otherwise.
 	 *
@@ -34,26 +99,13 @@ class IndieAuth_Client {
 		if ( ! $endpoints ) {
 			return false;
 		} elseif ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
-			$resp = wp_remote_get(
-				$endpoints['indieauth-metadata'],
-				array(
-					'headers' => array(
-						'Accept' => 'application/json',
-					),
-				)
-			);
-			if ( is_wp_error( $resp ) ) {
+			$resp = $this->remote_get( $endpoints['indieauth-metadata'] );
+			if ( is_oauth_error( $resp ) ) {
 				return $resp;
 			}
 
-			$code = (int) wp_remote_retrieve_response_code( $resp );
+			$this->meta = $resp;
 
-			if ( ( $code / 100 ) !== 2 ) {
-				return new WP_Error( 'no_metadata_endpoint', __( 'No Metadata Endpoint Found', 'indieauth' ) );
-			}
-
-			$body       = wp_remote_retrieve_body( $resp );
-			$this->meta = json_decode( $body, true );
 			// Store endpoint discovery results for this URL for 3 hours.
 			set_transient( 'indieauth_discovery_' . base64_urlencode( $url ), $this->meta, 10800 );
 			return true;
@@ -96,30 +148,14 @@ class IndieAuth_Client {
 			return new WP_OAuth_Response( 'missing_arguments', __( 'Arguments are missing from redemption flow', 'indieauth' ), 500 );
 		}
 
-		$args     = array(
-			'headers' => array(
-				'Accept'       => 'application/json',
-				'Content-Type' => 'application/x-www-form-urlencoded',
-			),
-			'body'    => $post_args,
-		);
-		$response = wp_remote_post( $endpoint, $args );
-		$error    = get_oauth_error( $response );
+		$response = $this->remote_post( $endpoint, $post_args );
 		if ( is_oauth_error( $error ) ) {
 			// Pass through well-formed error messages from the endpoint
 			return $error;
 		}
-		$code     = wp_remote_retrieve_response_code( $response );
-		$response = wp_remote_retrieve_body( $response );
-
-		$response = json_decode( $response, true );
-		// check if response was json or not
-		if ( ! is_array( $response ) ) {
-				return new WP_OAuth_Response( 'server_error', __( 'The authorization endpoint did not return a JSON response', 'indieauth' ), 500 );
-		}
 
 		// The endpoint acknowledged that the authorization code is valid and returned a me property.
-		if ( 2 === (int) ( $code / 100 ) && isset( $response['me'] ) ) {
+		if ( isset( $response['me'] ) ) {
 			// If this redemption is at the token endpoint
 			if ( $token ) {
 				if ( ! array_key_exists( 'access_token', $response ) ) {
