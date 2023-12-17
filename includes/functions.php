@@ -63,7 +63,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 			'redirection'         => 3,
 			'user-agent'          => "$user_agent; finding rel properties",
 		);
-		$response   = wp_safe_remote_head( $me, $args );
+		$response   = wp_safe_remote_get( $me, $args );
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -74,48 +74,34 @@ if ( ! function_exists( 'find_rels' ) ) {
 			if ( is_string( $links ) ) {
 				$links = array( $links );
 			}
-			$return = parse_link_rels( $links, $me );
+			$rels = parse_link_rels( $links, $me );
 		}
-		if ( $return ) {
+		if ( $rels ) {
 			$code = (int) wp_remote_retrieve_response_code( $response );
 			switch ( $code ) {
 				case 301:
 				case 308:
-					$return['me'] = wp_remote_retrieve_header( $response, 'Location' );
+					$rels['me'] = wp_remote_retrieve_header( $response, 'Location' );
 					break;
 			}
-			if ( isset( $return['me'] ) ) {
+			if ( isset( $rels['me'] ) ) {
 				$me = $return['me'];
-			}
-			if ( is_array( $endpoints ) ) {
-				$return = wp_array_slice_assoc( $return, $endpoints );
-				if ( ! empty( $return ) ) {
-					return $return;
-				}
-			}
-			if ( is_string( $endpoints ) && isset( $return[ $endpoints ] ) ) {
-				return $return[ $endpoints ];
 			}
 		}
 
 		// not an (x)html, sgml, or xml page, no use going further
-		if ( preg_match( '#(image|audio|video|model)/#is', wp_remote_retrieve_header( $response, 'content-type' ) ) ) {
-			return false;
+		if ( ! preg_match( '#(image|audio|video|model)/#is', wp_remote_retrieve_header( $response, 'content-type' ) ) ) {
+			$contents = wp_remote_retrieve_body( $response );
+			$rels     = array_merge( $rels, parse_html_rels( $contents, $me ) );
 		}
-		// now do a GET since we're going to look in the html headers (and we're sure its not a binary file)
-		$response = wp_safe_remote_get( $me, $args );
-		if ( is_wp_error( $response ) ) {
-			return false;
-		}
-		$contents = wp_remote_retrieve_body( $response );
-		$return   = parse_html_rels( $contents, $me );
 		if ( is_array( $endpoints ) ) {
-			$return = wp_array_slice_assoc( $return, $endpoints );
-			if ( ! empty( $return ) ) {
-				return $return;
+			$endpoints[] = 'me';
+			$rels        = wp_array_slice_assoc( $rels, $endpoints );
+			if ( ! empty( $rels ) ) {
+				return $rels;
 			}
-		} elseif ( is_string( $endpoints ) && isset( $return[ $endpoints ] ) ) {
-			return $return[ $endpoints ];
+		} elseif ( is_string( $endpoints ) && isset( $rels[ $endpoints ] ) ) {
+			return $rels[ $endpoints ];
 		}
 		return false;
 	}

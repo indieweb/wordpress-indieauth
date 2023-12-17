@@ -18,7 +18,7 @@ class IndieAuth_Client {
 		$this->client_id = trailingslashit( home_url() );
 	}
 
-	private function remote_get( $url ) {
+	public function remote_get( $url ) {
 		$resp = wp_remote_get(
 			$url,
 			array(
@@ -47,7 +47,7 @@ class IndieAuth_Client {
 		return $body;
 	}
 
-	private function remote_post( $url, $post_args ) {
+	public function remote_post( $url, $post_args ) {
 		$resp = wp_remote_post(
 			$url,
 			array(
@@ -59,7 +59,7 @@ class IndieAuth_Client {
 			)
 		);
 
-		$error = get_oauth_error( $response );
+		$error = get_oauth_error( $resp );
 
 		if ( is_oauth_error( $error ) ) {
 			// Pass through well-formed error messages from the endpoint
@@ -98,7 +98,9 @@ class IndieAuth_Client {
 
 		if ( ! $endpoints ) {
 			return false;
-		} elseif ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
+		}
+
+		if ( array_key_exists( 'indieauth-metadata', $endpoints ) ) {
 			$resp = $this->remote_get( $endpoints['indieauth-metadata'] );
 			if ( is_oauth_error( $resp ) ) {
 				return $resp;
