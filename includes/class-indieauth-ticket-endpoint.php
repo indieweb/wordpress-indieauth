@@ -62,9 +62,15 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 						/* The access token is used when acting on behalf of this URL
 						 */
 						'subject'  => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
+						),
+						/* The Server Issue Identifie
+						 */
+						'iss'      => array(
+							'validate_callback' => 'indieauth_validate_issuer_identifier',
+							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
 					'permission_callback' => '__return_true',
@@ -80,6 +86,12 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		$client    = new IndieAuth_Client();
 		$endpoints = false;
 
+		if ( array_key_exists( 'subject', $params ) ) {
+			$user = get_user_by_identifier( $params['subject'] );
+			if ( ! $user instanceof WP_User ) {
+				return new WP_OAuth_Response( 'invalid_request', __( 'Subject is not a user on this site', 'indieauth', ), 400 );
+			}
+		}
 		if ( array_key_exists( 'iss', $params ) ) {
 			$endpoints = $client->discover_endpoints( $params['iss'] );
 		} elseif ( array_key_exists( 'resource', $params ) ) {
@@ -112,6 +124,10 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 				$return['resource'] = $params['resource'];
 			}
 
+			if ( ! array_key_exists( 'iss', $return ) && array_key_exists( 'iss', $params ) ) {
+				$return['iss'] = $params['iss'];
+			}
+
 			// Add time this token was issued.
 			$return['iat'] = time();
 
@@ -140,13 +156,12 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		}
 
 		if ( ! indieauth_validate_user_identifier( $token['me'] ) ) {
-			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Me Property', 'indieauth' ), 400 );
+			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Me Property', 'indieauth' ), 400, $token['me'] );
 		}
-
 		$user = get_user_by_identifier( $token['me'] );
 
 		if ( ! $user instanceof WP_User ) {
-			return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500 );
+			return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500, $token['me'] );
 		}
 
 		$tokens = new External_User_Token( $user->ID );
