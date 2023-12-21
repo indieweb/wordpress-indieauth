@@ -213,6 +213,5 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			$body,
 			''
 		);
-
 	}
 }

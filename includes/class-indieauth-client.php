@@ -80,7 +80,6 @@ class IndieAuth_Client {
 		}
 
 		return $body;
-
 	}
 
 	/**
@@ -124,8 +123,8 @@ class IndieAuth_Client {
 	 * Redeem Authorization Code
 	 *
 	 * @param array $post_args {
-	 *	Array of Arguments to Be Passed to the the Redemption Request.
-	 * 	@type string $code Authorizaton Code to be redeemed.
+	 *  Array of Arguments to Be Passed to the the Redemption Request.
+	 *  @type string $code Authorizaton Code to be redeemed.
 	 *      @type string $redirect_uri The client's redirect URI
 	 *  @type string $code_verifier
 	 * }
