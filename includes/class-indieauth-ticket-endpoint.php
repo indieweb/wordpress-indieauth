@@ -83,6 +83,9 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 	// Request or revoke a token
 	public function post( $request ) {
 		$params    = $request->get_params();
+		$clean_params = wp_array_slice_assoc( $params, array( 'subject', 'resource', 'iss' ) );
+		// Fires when a ticket is received with the parameters. Excludes ticket code itself
+		do_action( 'indieauth_ticket_received', $clean_params );
 		$client    = new IndieAuth_Client();
 		$endpoints = false;
 
@@ -105,7 +108,6 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		}
 
 		if ( ! $endpoints ) {
-			error_log( wp_json_encode( $client ) );
 			return new WP_OAuth_Response( 'invalid_request', __( 'Unable to Find Endpoints', 'indieauth' ), 400 );
 		}
 
@@ -116,6 +118,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		$return = $this->request_token( $client->meta['token_endpoint'], $params );
 
 		if ( is_oauth_error( $return ) ) {
+			do_action( 'indieauth_ticket_redemption_failed', $clean_params, $return );
 			return $return;
 		}
 
@@ -138,6 +141,9 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			if ( is_oauth_error( $save ) ) {
 				return $save;
 			}
+
+			// Fires when Ticket is Successfully Redeemed, omits token info.
+			do_action( 'indieauth_ticket_redeemed', wp_array_slice_assoc( $return, array( 'me', 'expires_in', 'iat', 'expiration', 'resource', 'iss', 'token_endpoint', 'uuid' ) ) );
 			return new WP_REST_Response(
 				array(
 					'success' => __( 'Your Ticket Has Been Redeemed. Thank you for your trust!', 'indieauth' ),
