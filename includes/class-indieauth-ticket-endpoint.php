@@ -11,6 +11,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_action( 'indieauth_ticket_redeemed', array( $this, 'notify' ) );
 	}
 
 	public static function get_endpoint() {
@@ -185,5 +186,33 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 				'ticket'     => $params['ticket'],
 			)
 		);
+	}
+
+	public function notify( $params ) {
+		$user = get_user_by_identifier( $params['me'] );
+		if ( ! $user ) {
+			return;
+		}
+		$body = __( 'A new ticket was received and successfully redeemed' ) . "\r\n";
+		foreach( $params as $key => $value ) {
+			switch( $key ) {
+				case 'iat':
+					$iat = new DateTime( 'now', wp_timezone() );
+					$iat->setTimeStamp( $value );
+					$body .= sprintf( 'Issued at: %s', $iat->format( DATE_W3C ) ) . "\r\n";
+					break;
+				case 'expires_in':
+					break;
+				default:
+					$body .= sprintf( '%s: %s', $key, $value ) . "\r\n";
+			}
+		}
+		wp_mail( 
+			$user->user_email, 
+			wp_specialchars_decode(  __( 'IndieAuth Ticket Redeemed', 'indieauth' ) ),
+			$body,
+			''
+		);
+
 	}
 }
