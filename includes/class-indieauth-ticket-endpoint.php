@@ -83,7 +83,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 
 	// Request or revoke a token
 	public function post( $request ) {
-		$params    = $request->get_params();
+		$params       = $request->get_params();
 		$clean_params = wp_array_slice_assoc( $params, array( 'subject', 'resource', 'iss' ) );
 		// Fires when a ticket is received with the parameters. Excludes ticket code itself
 		do_action( 'indieauth_ticket_received', $clean_params );
@@ -93,7 +93,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		if ( array_key_exists( 'subject', $params ) ) {
 			$user = get_user_by_identifier( $params['subject'] );
 			if ( ! $user instanceof WP_User ) {
-				return new WP_OAuth_Response( 'invalid_request', __( 'Subject is not a user on this site', 'indieauth', ), 400 );
+				return new WP_OAuth_Response( 'invalid_request', __( 'Subject is not a user on this site', 'indieauth' ), 400 );
 			}
 		}
 		if ( array_key_exists( 'iss', $params ) ) {
@@ -193,9 +193,9 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		if ( ! $user ) {
 			return;
 		}
-		$body = __( 'A new ticket was received and successfully redeemed' ) . "\r\n";
-		foreach( $params as $key => $value ) {
-			switch( $key ) {
+		$body = __( 'A new ticket was received and successfully redeemed', 'indieauth' ) . "\r\n";
+		foreach ( $params as $key => $value ) {
+			switch ( $key ) {
 				case 'iat':
 					$iat = new DateTime( 'now', wp_timezone() );
 					$iat->setTimeStamp( $value );
@@ -207,9 +207,9 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 					$body .= sprintf( '%s: %s', $key, $value ) . "\r\n";
 			}
 		}
-		wp_mail( 
-			$user->user_email, 
-			wp_specialchars_decode(  __( 'IndieAuth Ticket Redeemed', 'indieauth' ) ),
+		wp_mail(
+			$user->user_email,
+			wp_specialchars_decode( __( 'IndieAuth Ticket Redeemed', 'indieauth' ) ),
 			$body,
 			''
 		);
