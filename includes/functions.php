@@ -45,7 +45,7 @@ if ( ! function_exists( 'parse_link_rels' ) ) {
 if ( ! function_exists( 'find_rels' ) ) {
 	function find_rels( $me, $endpoints = null ) {
 		if ( ! $endpoints ) {
-			$endpoints = array( 'authorization_endpoint', 'token_endpoint', 'me' );
+			$endpoints = array( 'indieauth-metadata', 'authorization_endpoint', 'token_endpoint', 'me' );
 		}
 		if ( ! wp_http_validate_url( $me ) ) { // Not an URL. This should never happen.
 			return false;
@@ -67,7 +67,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
-		$return = array();
+		$rels = array();
 		// check link header
 		$links = wp_remote_retrieve_header( $response, 'link' );
 		if ( $links ) {
@@ -76,17 +76,16 @@ if ( ! function_exists( 'find_rels' ) ) {
 			}
 			$rels = parse_link_rels( $links, $me );
 		}
-		if ( $rels ) {
-			$code = (int) wp_remote_retrieve_response_code( $response );
-			switch ( $code ) {
-				case 301:
-				case 308:
-					$rels['me'] = wp_remote_retrieve_header( $response, 'Location' );
-					break;
-			}
-			if ( isset( $rels['me'] ) ) {
-				$me = $return['me'];
-			}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		switch ( $code ) {
+			case 301:
+			case 308:
+				$rels['me'] = wp_remote_retrieve_header( $response, 'Location' );
+				break;
+		}
+		if ( isset( $rels['me'] ) ) {
+			$me = $rels['me'];
 		}
 
 		// not an (x)html, sgml, or xml page, no use going further
@@ -119,13 +118,13 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 		libxml_use_internal_errors( true );
 		$doc = new DOMDocument();
 		$doc->loadHTML( $contents );
-		$xpath  = new DOMXPath( $doc );
-		$return = array();
+		$xpath   = new DOMXPath( $doc );
+		$results = array();
 		// check <link> and <a> elements
 		foreach ( $xpath->query( '//a[@rel and @href] | //link[@rel and @href]' ) as $hyperlink ) {
-			$return[ $hyperlink->getAttribute( 'rel' ) ] = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
+			$results[ $hyperlink->getAttribute( 'rel' ) ] = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
 		}
-		return $return;
+		return $results;
 	}
 }
 
