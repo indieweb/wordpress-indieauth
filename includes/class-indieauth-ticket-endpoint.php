@@ -11,6 +11,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 		add_action( 'wp_head', array( $this, 'html_header' ) );
 		add_action( 'indieauth_metadata', array( $this, 'metadata' ) );
+		add_action( 'indieauth_ticket_redeemed', array( $this, 'notify' ) );
 	}
 
 	public static function get_endpoint() {
@@ -62,9 +63,15 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 						/* The access token is used when acting on behalf of this URL
 						 */
 						'subject'  => array(
-							'validate_callback' => 'rest_is_valid_url',
+							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
+						),
+						/* The Server Issue Identifie
+						 */
+						'iss'      => array(
+							'validate_callback' => 'indieauth_validate_issuer_identifier',
+							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
 					'permission_callback' => '__return_true',
@@ -76,22 +83,43 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 
 	// Request or revoke a token
 	public function post( $request ) {
-		$params = $request->get_params();
+		$params       = $request->get_params();
+		$clean_params = wp_array_slice_assoc( $params, array( 'subject', 'resource', 'iss' ) );
+		// Fires when a ticket is received with the parameters. Excludes ticket code itself
+		do_action( 'indieauth_ticket_received', $clean_params );
+		$client    = new IndieAuth_Client();
+		$endpoints = false;
 
-		if ( is_array( $params['resource'] ) ) {
-			$token_endpoint = find_rels( $params['resource'][0], 'token_endpoint' );
+		if ( array_key_exists( 'subject', $params ) ) {
+			$user = get_user_by_identifier( $params['subject'] );
+			if ( ! $user instanceof WP_User ) {
+				return new WP_OAuth_Response( 'invalid_request', __( 'Subject is not a user on this site', 'indieauth' ), 400 );
+			}
+		}
+		if ( array_key_exists( 'iss', $params ) ) {
+			$endpoints = $client->discover_endpoints( $params['iss'] );
+		} elseif ( array_key_exists( 'resource', $params ) ) {
+			if ( is_array( $params['resource'] ) ) {
+				$endpoints = $client->discover_endpoints( $params['resource'][0] );
+			} else {
+				$endpoints = $client->discover_endpoints( $params['resource'] );
+			}
 		} else {
-			$token_endpoint = find_rels( $params['resource'], 'token_endpoint' );
+			return new WP_OAuth_Response( 'invalid_request', __( 'Missing Parameters', 'indieauth' ), 400 );
 		}
 
-		//If there is no token endpoint found return an error.
-		if ( ! wp_http_validate_url( $token_endpoint ) ) {
-			return new WP_OAuth_Response( 'invalid_request', __( 'Cannot Find Token Endpoint', 'indieauth' ), 400 );
+		if ( ! $endpoints ) {
+			return new WP_OAuth_Response( 'invalid_request', __( 'Unable to Find Endpoints', 'indieauth' ), 400 );
 		}
 
-		$return = $this->request_token( $token_endpoint, $params );
+		if ( is_oauth_error( $endpoints ) ) {
+			return $endpoints;
+		}
+
+		$return = $this->request_token( $client->meta['token_endpoint'], $params );
 
 		if ( is_oauth_error( $return ) ) {
+			do_action( 'indieauth_ticket_redemption_failed', $clean_params, $return );
 			return $return;
 		}
 
@@ -100,16 +128,23 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 				$return['resource'] = $params['resource'];
 			}
 
+			if ( ! array_key_exists( 'iss', $return ) && array_key_exists( 'iss', $params ) ) {
+				$return['iss'] = $params['iss'];
+			}
+
 			// Add time this token was issued.
 			$return['iat'] = time();
 
 			// Store the Token Endpoint so it does not have to be discovered again.
-			$return['token_endpoint'] = $token_endpoint;
+			$return['token_endpoint'] = $client->meta['token_endpoint'];
 
 			$save = $this->save_token( $return );
 			if ( is_oauth_error( $save ) ) {
 				return $save;
 			}
+
+			// Fires when Ticket is Successfully Redeemed, omits token info.
+			do_action( 'indieauth_ticket_redeemed', wp_array_slice_assoc( $return, array( 'me', 'expires_in', 'iat', 'expiration', 'resource', 'iss', 'token_endpoint', 'uuid' ) ) );
 			return new WP_REST_Response(
 				array(
 					'success' => __( 'Your Ticket Has Been Redeemed. Thank you for your trust!', 'indieauth' ),
@@ -127,10 +162,13 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			return new WP_OAuth_Response( 'invalid_request', __( 'Me Property Missing From Response', 'indieauth' ), 400 );
 		}
 
+		if ( ! indieauth_validate_user_identifier( $token['me'] ) ) {
+			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Me Property', 'indieauth' ), 400, $token['me'] );
+		}
 		$user = get_user_by_identifier( $token['me'] );
 
 		if ( ! $user instanceof WP_User ) {
-			return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500 );
+			return new WP_OAuth_Response( 'unknown', __( 'Unable to Identify User Associated with Me Property', 'indieauth' ), 500, $token['me'] );
 		}
 
 		$tokens = new External_User_Token( $user->ID );
@@ -140,44 +178,40 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function request_token( $url, $params ) {
-		$resp = wp_safe_remote_post(
+		$client = new IndieAuth_Client();
+		return $client->remote_post(
 			$url,
 			array(
-				'headers' => array(
-					'Accept' => 'application/json',
-				),
-				'body'    => array(
-					'grant_type' => 'ticket',
-					'ticket'     => $params['ticket'],
-				),
+				'grant_type' => 'ticket',
+				'ticket'     => $params['ticket'],
 			)
 		);
+	}
 
-		if ( is_wp_error( $resp ) ) {
-			return wp_error_to_oauth_response( $resp );
+	public function notify( $params ) {
+		$user = get_user_by_identifier( $params['me'] );
+		if ( ! $user ) {
+			return;
 		}
-
-		$code   = wp_remote_retrieve_response_code( $resp );
-		$body   = wp_remote_retrieve_body( $resp );
-		$return = json_decode( $body, true );
-
-		// check if response was json or not
-		if ( ! is_array( $return ) ) {
-			return new WP_OAuth_Response( 'indieauth_response_error', __( 'On Trying to Redeem a Token the Response was Invalid', 'indieauth' ), 401, $body );
+		$body = __( 'A new ticket was received and successfully redeemed', 'indieauth' ) . "\r\n";
+		foreach ( $params as $key => $value ) {
+			switch ( $key ) {
+				case 'iat':
+					$iat = new DateTime( 'now', wp_timezone() );
+					$iat->setTimeStamp( $value );
+					$body .= sprintf( 'Issued at: %s', $iat->format( DATE_W3C ) ) . "\r\n";
+					break;
+				case 'expires_in':
+					break;
+				default:
+					$body .= sprintf( '%s: %s', $key, $value ) . "\r\n";
+			}
 		}
-
-		if ( array_key_exists( 'error', $return ) ) {
-			return new WP_OAuth_Response( 'indieauth_' . $return['error'], esc_html( $return['error_description'] ) );
-		}
-
-		if ( 2 === (int) ( $code / 100 ) ) {
-			return $return;
-		}
-
-		return new WP_OAuth_Response(
-			'indieauth.invalid_access_token',
-			__( 'Unable to Redeem Ticket for Unknown Reasons.', 'indieauth' ),
-			$code
+		wp_mail(
+			$user->user_email,
+			wp_specialchars_decode( __( 'IndieAuth Ticket Redeemed', 'indieauth' ) ),
+			$body,
+			''
 		);
 	}
 }

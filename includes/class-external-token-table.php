@@ -90,11 +90,11 @@ class External_Token_Table extends WP_List_Table {
 	}
 
 	public function column_issued_at( $item ) {
-		if ( ! array_key_exists( 'issued_at', $item ) ) {
+		if ( ! array_key_exists( 'iat', $item ) ) {
 			return __( 'None', 'indieauth' );
 		}
 
-		return wp_date( get_option( 'date_format' ), $item['issued_at'] );
+		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $item['iat'] );
 	}
 
 	public function column_refresh_token( $item ) {
