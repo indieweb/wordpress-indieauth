@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: IndieAuth 4.4.0\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2023-12-02 19:45:06+00:00\n"
+"POT-Creation-Date: 2023-12-22 04:19:38+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -376,15 +376,11 @@ msgstr ""
 msgid "Invalid access token"
 msgstr ""
 
-#: includes/class-indieauth-client-discovery.php:19
+#: includes/class-indieauth-client-discovery.php:33
 msgid "Failed to Retrieve IndieAuth Client Details "
 msgstr ""
 
-#: includes/class-indieauth-client-discovery.php:44
-msgid "Client Identifier is localhost"
-msgstr ""
-
-#: includes/class-indieauth-client-discovery.php:59
+#: includes/class-indieauth-client-discovery.php:63
 msgid "Failed to Retrieve Client Details"
 msgstr ""
 
@@ -402,6 +398,34 @@ msgstr ""
 
 #: includes/class-indieauth-client-taxonomy.php:211
 msgid "Multiple Terms Found"
+msgstr ""
+
+#: includes/class-indieauth-client.php:38
+#: includes/class-indieauth-client.php:73
+msgid "Unable to Retrieve"
+msgstr ""
+
+#: includes/class-indieauth-client.php:44
+#: includes/class-indieauth-client.php:79
+msgid "The endpoint did not return a JSON response"
+msgstr ""
+
+#: includes/class-indieauth-client.php:136
+msgid "Valid Endpoint Not Provided"
+msgstr ""
+
+#: includes/class-indieauth-client.php:149
+msgid "Arguments are missing from redemption flow"
+msgstr ""
+
+#: includes/class-indieauth-client.php:163
+msgid "Token Endpoint did Not Return a Token"
+msgstr ""
+
+#: includes/class-indieauth-client.php:169
+msgid ""
+"There was an error verifying the authorization code, the authorization "
+"server returned an expected response"
 msgstr ""
 
 #: includes/class-indieauth-debug.php:96
@@ -470,33 +494,45 @@ msgid ""
 "response. Without this only a display name, avatar, and url will be returned"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:89
-msgid "Cannot Find Token Endpoint"
+#: includes/class-indieauth-ticket-endpoint.php:96
+msgid "Subject is not a user on this site"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:115
+#: includes/class-indieauth-ticket-endpoint.php:108
+msgid "Missing Parameters"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:112
+msgid "Unable to Find Endpoints"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:150
 msgid "Your Ticket Has Been Redeemed. Thank you for your trust!"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:122
+#: includes/class-indieauth-ticket-endpoint.php:157
 #: includes/class-indieauth-token-endpoint.php:161
 msgid "Invalid Request"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:127
+#: includes/class-indieauth-ticket-endpoint.php:162
 msgid "Me Property Missing From Response"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:133
+#: includes/class-indieauth-ticket-endpoint.php:166
+msgid "Invalid Me Property"
+msgstr ""
+
+#: includes/class-indieauth-ticket-endpoint.php:171
 msgid "Unable to Identify User Associated with Me Property"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:166
-msgid "On Trying to Redeem a Token the Response was Invalid"
+#: includes/class-indieauth-ticket-endpoint.php:196
+msgid "A new ticket was received and successfully redeemed"
 msgstr ""
 
-#: includes/class-indieauth-ticket-endpoint.php:179
-msgid "Unable to Redeem Ticket for Unknown Reasons."
+#: includes/class-indieauth-ticket-endpoint.php:212
+msgid "IndieAuth Ticket Redeemed"
 msgstr ""
 
 #: includes/class-indieauth-token-endpoint.php:131
@@ -536,51 +572,69 @@ msgstr ""
 msgid "There was an error in response."
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:33
-#: includes/class-indieauth-token-ui.php:112
+#: includes/class-indieauth-token-ui.php:34
+#: includes/class-indieauth-token-ui.php:132
 msgid "Manage IndieAuth Tokens"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:33
+#: includes/class-indieauth-token-ui.php:34
 msgid "Manage Tokens"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:48
+#: includes/class-indieauth-token-ui.php:49
+#: includes/class-indieauth-token-ui.php:68
 msgid "Invalid Nonce"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:51
+#: includes/class-indieauth-token-ui.php:53
+#: includes/class-indieauth-token-ui.php:161
+msgid "Client Discovery"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:54
+msgid "A URL must be provided"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:71
 msgid "Add IndieAuth Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:53
+#: includes/class-indieauth-token-ui.php:73
 msgid "A Name Must be Set for Your Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:66
+#: includes/class-indieauth-token-ui.php:86
 msgid ""
 "A token has been generated and appears below. This token will not be stored "
 "anywhere. Please copy and store it."
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:121
+#: includes/class-indieauth-token-ui.php:141
 msgid "Add Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:123
+#: includes/class-indieauth-token-ui.php:143
 msgid "Name for Token"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:126
+#: includes/class-indieauth-token-ui.php:146
 msgid "Scopes"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:128
+#: includes/class-indieauth-token-ui.php:148
 msgid "Set Expiry Time in Seconds(0 to disable)"
 msgstr ""
 
-#: includes/class-indieauth-token-ui.php:131
+#: includes/class-indieauth-token-ui.php:151
 msgid "Add New Token"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:156
+msgid "Client Discovery Tester"
+msgstr ""
+
+#: includes/class-indieauth-token-ui.php:158
+msgid "Discovery Test"
 msgstr ""
 
 #: includes/class-indieauth-userinfo-endpoint.php:80
@@ -631,59 +685,41 @@ msgstr ""
 msgid "<strong>ERROR</strong>: Invalid URL"
 msgstr ""
 
-#: includes/class-web-signin.php:52 includes/class-web-signin.php:62
+#: includes/class-web-signin.php:52
 msgid "<strong>ERROR</strong>: Could not discover endpoints"
 msgstr ""
 
-#: includes/class-web-signin.php:110
-msgid "No Metadata Endpoint Found"
-msgstr ""
-
-#: includes/class-web-signin.php:122
-msgid "Did Not Receive a Valid Authorization Endpoint"
-msgstr ""
-
-#: includes/class-web-signin.php:150
-msgid "The authorization endpoint did not return a JSON response"
-msgstr ""
-
-#: includes/class-web-signin.php:159
-msgid ""
-"There was an error verifying the authorization code, the authorization "
-"server return an expected response"
-msgstr ""
-
-#: includes/class-web-signin.php:183
+#: includes/class-web-signin.php:97
 msgid "IndieAuth Server did not return the same state parameter"
 msgstr ""
 
-#: includes/class-web-signin.php:186
+#: includes/class-web-signin.php:100
 msgid "Cannot Find IndieAuth Endpoint Cookie"
 msgstr ""
 
-#: includes/class-web-signin.php:194
+#: includes/class-web-signin.php:108
 msgid "Issuer Parameter is Not Valid"
 msgstr ""
 
-#: includes/class-web-signin.php:197
+#: includes/class-web-signin.php:111
 msgid "Issuer Parameter does not Match Server Metadata"
 msgstr ""
 
-#: includes/class-web-signin.php:200
+#: includes/class-web-signin.php:114
 msgid ""
 "Issuer Parameter Present in Metadata Endpoint But Not Returned by "
 "Authorization Endpoint"
 msgstr ""
 
-#: includes/class-web-signin.php:218
+#: includes/class-web-signin.php:135
 msgid "The domain does not match the domain you used to start the authentication."
 msgstr ""
 
-#: includes/class-web-signin.php:222
+#: includes/class-web-signin.php:139
 msgid "Your have entered a valid Domain, but you have no account on this blog."
 msgstr ""
 
-#: indieauth.php:167
+#: indieauth.php:168
 #. translators: 1. Path to file unable to load
 msgid "Unable to load: %1s"
 msgstr ""
