@@ -90,7 +90,7 @@ class IndieAuth_Client_Discovery {
 		}
 
 		$this->get_mf2( $domdocument, $url );
-		if ( empty( $this->mf2 ) ) {
+		if ( ! empty( $this->mf2 ) ) {
 			if ( array_key_exists( 'name', $this->mf2 ) ) {
 				$this->client_name = $this->mf2['name'][0];
 			}
