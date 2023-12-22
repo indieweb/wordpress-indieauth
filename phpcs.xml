@@ -13,6 +13,10 @@
 	<!-- Exclude the Test directory. -->
 	<exclude-pattern>/tests/*</exclude-pattern>
 
+	<!-- Exclude the Libs directory. -->
+	<exclude-pattern>/lib/*</exclude-pattern>
+
+
 	<!-- Exclude the Bin directory. -->
 	<exclude-pattern>/bin/*</exclude-pattern>
 

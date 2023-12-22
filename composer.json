@@ -33,14 +33,16 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
     "phpcompatibility/phpcompatibility-wp": "*",
     "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
-    "yoast/phpunit-polyfills": "^2.0"
+    "yoast/phpunit-polyfills": "^2.0",
+    "mf2/mf2": "^0.5.0"
   },
   "scripts": {
     "install-codestandards": [
       "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin::run"
     ],
     "post-install-cmd": [
-      "@install-codestandard"
+      "@install-codestandard",
+      "@copy-files"
     ],
     "setup-local-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
     "phpunit": "./vendor/bin/phpunit",
@@ -48,6 +50,10 @@
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
       "vendor/bin/phpunit"
+    ],
+    "copy-files": [
+      "cp -u -r vendor/mf2/mf2/Mf2/Parser.php lib/mf2",
+      "cp -u -r vendor/mf2/mf2/*.md lib/mf2"
     ],
     "lint": [
       "./vendor/bin/phpcs -n -p",
