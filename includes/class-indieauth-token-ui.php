@@ -14,6 +14,7 @@ class IndieAuth_Token_UI {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
 		add_action( 'admin_action_indieauth_newtoken', array( $this, 'new_token' ) );
+		add_action( 'admin_action_indieauth_client_discovery', array( $this, 'client_discovery' ) );
 	}
 
 	/**
@@ -39,6 +40,25 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function options_callback() {
+	}
+
+	public function client_discovery() {
+		if ( ! isset( $_POST['indieauth_nonce'] )
+				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_client_discovery' )
+		) {
+			esc_html_e( 'Invalid Nonce', 'indieauth' );
+			exit;
+		}
+		if ( empty( $_REQUEST['client_url'] ) ) {
+			$GLOBALS['title'] = esc_html__( 'Client Discovery', 'indieauth' ); // phpcs:ignore
+			esc_html_e( 'A URL must be provided', 'indieauth' );
+			exit;
+		}
+		header( 'Content-Type: application/json' );
+		$client_url = sanitize_text_field( $_REQUEST['client_url'] );
+		$client     = new IndieAuth_Client_Discovery( $client_url );
+		echo wp_json_encode( $client->export(), JSON_PRETTY_PRINT );
+		exit;
 	}
 
 	public function new_token() {
@@ -131,7 +151,18 @@ class IndieAuth_Token_UI {
 			<p><button class="button-primary"><?php esc_html_e( 'Add New Token', 'indieauth' ); ?></button></p>
 		</form>
 		</div>
-		<?php
+		<?php if ( WP_DEBUG ) { ?>
+			<div>
+			<h3><?php esc_html_e( 'Client Discovery Tester', 'indieauth' ); ?></h3>
+			<form method="post" action="admin.php">
+			<label for="client_url"><?php esc_html_e( 'Discovery Test', 'indieauth' ); ?></label><input type="url" class="widefat" id="client_url" name="client_url" />
+			<?php wp_nonce_field( 'indieauth_client_discovery', 'indieauth_nonce' ); ?>
+				<input type="hidden" name="action" id="action" value="indieauth_client_discovery" />
+				<p><button class="button-primary"><?php esc_html_e( 'Client Discovery', 'indieauth' ); ?></button></p>
+			</form>
+			</div>
+			<?php
+		}
 	}
 
 	public function scopes() {
