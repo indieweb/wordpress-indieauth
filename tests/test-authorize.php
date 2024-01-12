@@ -118,6 +118,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertFalse( $user_id );
+		wp_set_current_user( $user_id );
 		$this->assertTrue( is_wp_error( $authorize->rest_authentication_errors() ) );
 	}
 

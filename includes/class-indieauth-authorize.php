@@ -90,7 +90,7 @@ class IndieAuth_Authorize {
 	 */
 	public function rest_authentication_errors( $error = null ) {
 		if ( is_user_logged_in() ) {
-			// Another OAuth plugin successfully authenticated.
+			// Another OAuth2 plugin successfully authenticated.
 			return null;
 		}
 
