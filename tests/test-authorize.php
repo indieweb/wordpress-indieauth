@@ -63,6 +63,8 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertEquals( $user_id, self::$author_id );
+		wp_set_current_user( $user_id );
+		$this->assertNull( $authorize->rest_authentication_errors() );
 	}
 
 	public function test_authorize_bearer_other_non_matching_provider() {
@@ -80,6 +82,8 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertEquals( $user_id, self::$author_id );
+		wp_set_current_user( $user_id );
+		$this->assertNull( $authorize->rest_authentication_errors() );
 	}
 
 	public function test_authorize_bearer_other_provider() {
@@ -96,6 +100,8 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertEquals( $user_id, self::$author_id );
+		wp_set_current_user( $user_id );
+		$this->assertNull( $authorize->rest_authentication_errors() );
 	}
 
 	public function test_authorize_bearer_no_valid_token_other_provider() {
@@ -112,6 +118,7 @@ class AuthorizeTest extends WP_UnitTestCase {
 		$authorize->load();
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertFalse( $user_id );
+		$this->assertTrue( is_wp_error( $authorize->rest_authentication_errors() ) );
 	}
 
 	// Tests map_meta_cap for standard permissions
