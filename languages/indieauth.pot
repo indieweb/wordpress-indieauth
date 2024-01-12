@@ -1,15 +1,15 @@
-# Copyright (C) 2023 IndieWebCamp WordPress Outreach Club
+# Copyright (C) 2024 IndieWebCamp WordPress Outreach Club
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 4.4.0\n"
+"Project-Id-Version: IndieAuth 4.4.2\n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/wordpress-indieauth\n"
-"POT-Creation-Date: 2023-12-22 04:19:38+00:00\n"
+"POT-Creation-Date: 2024-01-12 20:14:40+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2023-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
@@ -344,7 +344,7 @@ msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
 #: includes/class-indieauth-authorization-endpoint.php:375
-#: includes/class-indieauth-authorize.php:276
+#: includes/class-indieauth-authorize.php:281
 #: includes/class-indieauth-token-endpoint.php:330
 msgid "Invalid authorization code"
 msgstr ""
@@ -366,11 +366,11 @@ msgid ""
 "client_id and redirect_uri match the original request."
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:143
+#: includes/class-indieauth-authorize.php:148
 msgid "User Not Found on this Site"
 msgstr ""
 
-#: includes/class-indieauth-authorize.php:247
+#: includes/class-indieauth-authorize.php:252
 #: includes/class-indieauth-token-endpoint.php:141
 #: includes/class-indieauth-userinfo-endpoint.php:74
 msgid "Invalid access token"

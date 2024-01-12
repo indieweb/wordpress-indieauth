@@ -4,7 +4,7 @@
 **Requires at least:** 4.9.9  
 **Requires PHP:** 5.6  
 **Tested up to:** 6.4  
-**Stable tag:** 4.4.1  
+**Stable tag:** 4.4.2  
 **License:** MIT  
 **License URI:** http://opensource.org/licenses/MIT  
 **Donate link:** https://opencollective.com/indieweb  
@@ -185,24 +185,30 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+### 4.4.2 ###
+
+* Prevent returning 401 for other successful OAuth2 plugins
+
 ### 4.4.1 ###
+
 * Add MF2 Parser for Client Information Discovery
 * Fix ticket endpoint and add additional checks
 * Fix issue with discovery not checking html links if there were any http links
 * Add hooks for Ticket redemption flow
-* Add email notification when ticket received 
+* Add email notification when ticket received
 
 ### 4.4.0 ###
+
 * Remove remote endpoint functionality already disabled
 * Rearrange so each endpoint is more independent and registers its own parameters
 * Add way to register new grant types.
-* Rewrite Web Signin to support latest version of flow. 
+* Rewrite Web Signin to support latest version of flow.
 * Add PKCE support to websignin flow
 * Fix issue with PKCE support where it would not actually verify PKCE for token flow because PKCE is optional
 * Invert PKCE message to highlight when PKCE is not being used over it being used.
 * Do not do client discovery on a non-retrievable URL
 * Validate identifiers to IndieAuth Spec
-* Remove URL plus password login as part of effort to simplify code. 
+* Remove URL plus password login as part of effort to simplify code.
 * Fix error message surfacing in websignin form
 * Fix CSS on websignin and authorization forms to not misrender the language bar.
 
