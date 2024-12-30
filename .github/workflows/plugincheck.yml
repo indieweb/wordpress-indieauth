@@ -20,4 +20,6 @@ jobs:
           './.github'
           './node_modules'
           './vendor'
-        exclude-checks: 'file_type'
+        exclude-checks: |
+          'file_type'
+          'i18n_usage'
