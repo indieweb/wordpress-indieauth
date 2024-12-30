@@ -35,7 +35,8 @@
     "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
     "yoast/phpunit-polyfills": "^3.0",
     "mf2/mf2": "^0.5.0",
-    "sirbrillig/phpcs-variable-analysis": "^2.11"
+    "sirbrillig/phpcs-variable-analysis": "^2.11",
+    "wp-cli/wp-cli": "^2.11"
   },
   "scripts": {
     "install-codestandards": [
@@ -47,6 +48,7 @@
     ],
     "setup-local-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
     "phpunit": "./vendor/bin/phpunit",
+    "plugin-check": "./vendor/bin/wp plugin check simple-location --exclude-checks=file_type --exclude-directories='./bin','./.github'",
     "test": [
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
