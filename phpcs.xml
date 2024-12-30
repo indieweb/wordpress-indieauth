@@ -55,4 +55,5 @@
 	</rule>
 
 	<rule ref="WordPress-Extra" />
+	<rule ref="VariableAnalysis"/>
 </ruleset>
