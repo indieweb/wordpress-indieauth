@@ -59,11 +59,11 @@
       "cp -u -r vendor/mf2/mf2/*.md lib/mf2"
     ],
     "lint": [
-      "./vendor/bin/phpcs -n -p",
+      "./vendor/bin/phpcs -n",
       "@phpcpd"
     ],
-    "phpcs": "./vendor/bin/phpcs -p",
-    "phpcbf": "./vendor/bin/phpcbf -p",
+    "phpcs": "./vendor/bin/phpcs",
+    "phpcbf": "./vendor/bin/phpcbf",
     "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules ."
   }
 }
