@@ -22,4 +22,4 @@ jobs:
           './vendor'
         exclude-checks: |
           'file_type'
-          'i18n_usage'
+          'plugin_review_phpcs'
