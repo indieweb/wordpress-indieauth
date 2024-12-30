@@ -215,7 +215,7 @@ final class IndieAuth_Client_Taxonomy {
 					'name'          => $term->name,
 					'id'            => $term->term_id,
 					'icon'          => get_term_meta( $term->term_id, 'icon', true ),
-					'uri'          => get_term_meta( $term->term_id, 'client_uri', true ),
+					'uri'           => get_term_meta( $term->term_id, 'client_uri', true ),
 					'last_modified' => get_term_meta( $term->term_id, 'last_modified', true ),
 				);
 			}
@@ -249,7 +249,7 @@ final class IndieAuth_Client_Taxonomy {
 			'name'          => $term->name,
 			'id'            => $term->term_id,
 			'icon'          => get_term_meta( $term->term_id, 'icon', true ),
-			'uri'          => get_term_meta( $term->term_id, 'client_uri', true ),
+			'uri'           => get_term_meta( $term->term_id, 'client_uri', true ),
 			'last_modified' => get_term_meta( $term->term_id, 'last_modified', true ),
 		);
 	}

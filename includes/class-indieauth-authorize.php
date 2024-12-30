@@ -147,7 +147,7 @@ class IndieAuth_Authorize {
 			__( 'User Not Found on this Site', 'indieauth' ),
 			401,
 			array(
-				'response' => $me,
+				'response' => $params,
 			)
 		);
 		return $user_id;
