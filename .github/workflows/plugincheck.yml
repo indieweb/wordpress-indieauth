@@ -13,7 +13,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Build plugin
       run: |
-        mv ${{ runner.temp }}/wordpress-indieauth ${{ runner.temp }}/indieauth
+        mv ${{ runner.temp }}/wordpress-indieauth/wordpress-indieauth ${{ runner.temp }}/wordpress-indieauth/indieauth
     - name: Run plugin check
       uses: wordpress/plugin-check-action@v1
       with:
