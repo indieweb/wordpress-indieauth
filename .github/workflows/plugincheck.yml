@@ -11,11 +11,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        path: 'indieauth'
+    - name: Build plugin
+      run: |
+        mv ./dist ${{ runner.temp }}/indieauth
     - name: Run plugin check
       uses: wordpress/plugin-check-action@v1
       with:
+        build-dir:  ${{ runner.temp }}/indieauth
         exclude-directories: |
           './bin'
           './.github'
