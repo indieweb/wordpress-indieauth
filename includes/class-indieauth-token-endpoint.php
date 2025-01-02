@@ -331,11 +331,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {
-				$tokens->destroy( $post_args['code'] );
+				$codes->destroy( $args['code'] );
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
 			}
 			if ( ! pkce_verifier( $return['code_challenge'], $args['code_verifier'], $return['code_challenge_method'] ) ) {
-				$tokens->destroy( $args['code'] );
+				$codes->destroy( $args['code'] );
 				return new WP_OAuth_Response( 'invalid_grant', __( 'Failed PKCE Validation', 'indieauth' ), 400 );
 			}
 			unset( $return['code_challenge'] );

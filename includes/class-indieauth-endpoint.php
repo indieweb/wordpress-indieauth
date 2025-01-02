@@ -90,9 +90,9 @@ abstract class IndieAuth_Endpoint {
 			return false;
 		}
 		if ( ! $user_id ) {
-			$user_id = get_user_by_identifier( $token['me'] );
+			$user = get_user_by_identifier( $token['me'] );
 			if ( $user instanceof WP_User ) {
-				$user_id = $user_id->ID;
+				$user_id = $user->ID;
 			} else {
 				return false;
 			}

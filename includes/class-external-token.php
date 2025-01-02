@@ -107,7 +107,7 @@ class External_User_Token {
 		$code = wp_remote_retrieve_response_code( $resp );
 
 		if ( 2 !== (int) ( $code / 100 ) ) {
-			return $false;
+			return false;
 		}
 
 		$body = wp_remote_retrieve_body( $resp );
@@ -291,7 +291,7 @@ class External_User_Token {
 		$code = wp_remote_retrieve_response_code( $resp );
 
 		if ( 2 !== (int) ( $code / 100 ) ) {
-			return $false;
+			return false;
 		}
 
 		$body = wp_remote_retrieve_body( $resp );

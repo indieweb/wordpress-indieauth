@@ -128,6 +128,7 @@ class IndieAuth_Client_Discovery {
 					}
 				}
 			} else {
+				$domdocument       = new DOMDocument( wp_remote_retrieve_body( $response ) );
 				$this->client_icon = $this->determine_icon( $this->rels );
 				$this->get_html( $domdocument );
 				$this->client_name = $this->html['title'];

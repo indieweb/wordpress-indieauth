@@ -27,14 +27,16 @@
     "composer/installers": "~1.0 || ~2.0"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "^2.2 || ^3.5",
+    "squizlabs/php_codesniffer": "^3.11",
     "phpcompatibility/php-compatibility": "*",
     "wp-coding-standards/wpcs": "*",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
     "phpcompatibility/phpcompatibility-wp": "*",
     "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
     "yoast/phpunit-polyfills": "^3.0",
-    "mf2/mf2": "^0.5.0"
+    "mf2/mf2": "^0.5.0",
+    "sirbrillig/phpcs-variable-analysis": "^2.11",
+    "wp-cli/wp-cli": "^2.11"
   },
   "scripts": {
     "install-codestandards": [
@@ -46,6 +48,7 @@
     ],
     "setup-local-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
     "phpunit": "./vendor/bin/phpunit",
+    "plugin-check": "./vendor/bin/wp plugin check simple-location --exclude-checks=file_type --exclude-directories='./bin','./.github'",
     "test": [
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
@@ -56,11 +59,11 @@
       "cp -u -r vendor/mf2/mf2/*.md lib/mf2"
     ],
     "lint": [
-      "./vendor/bin/phpcs -n -p",
+      "./vendor/bin/phpcs -n",
       "@phpcpd"
     ],
-    "phpcs": "./vendor/bin/phpcs -p",
-    "phpcbf": "./vendor/bin/phpcbf -p",
+    "phpcs": "./vendor/bin/phpcs",
+    "phpcbf": "./vendor/bin/phpcbf",
     "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules ."
   }
 }
