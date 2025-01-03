@@ -2,8 +2,8 @@
 
 **Contributors:** indieweb, pfefferle, dshanske \
 **Tags:** IndieAuth, IndieWeb, IndieWebCamp, login \
-**Requires at least:** 4.9.9 \
-**Requires PHP:** 7.2 \
+**Requires at least:** 6.2 \
+**Requires PHP:** 7.4 \
 **Tested up to:** 6.7 \
 **Stable tag:** 4.5.3 \
 **License:** MIT \
