@@ -4,7 +4,7 @@ Tags: IndieAuth, IndieWeb, IndieWebCamp, login
 Requires at least: 4.9.9
 Requires PHP: 7.2
 Tested up to: 6.7
-Stable tag: 4.5.2
+Stable tag: 4.5.3
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -188,6 +188,9 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 4.5.3 =
+* Fix issue with uninitialized variables
 
 = 4.5.2 =
 * Fix issue with loop on adding new clients
