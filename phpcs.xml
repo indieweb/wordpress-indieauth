@@ -28,10 +28,10 @@
 
 
 	<!-- PHP/WordPress Compatibility Check -->
-	<config name="testVersion" value="7.2-"/>
+	<config name="testVersion" value="7.4-"/>
 	<rule ref="PHPCompatibilityWP"/>
 
-	<config name="minimum_supported_wp_version" value="4.9"/>
+	<config name="minimum_supported_wp_version" value="6.2"/>
 
 
 	<rule ref="WordPress.WP.I18n">

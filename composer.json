@@ -36,7 +36,10 @@
     "yoast/phpunit-polyfills": "^3.0",
     "mf2/mf2": "^0.5.0",
     "sirbrillig/phpcs-variable-analysis": "^2.11",
-    "wp-cli/wp-cli": "^2.11"
+    "wp-cli/wp-cli": "^2.11",
+    "wp-cli/i18n-command": "^2.6",
+    "wpreadme2markdown/wp2md": "^4.1",
+    "wp-cli/wp-cli-bundle": "^2.11"
   },
   "scripts": {
     "install-codestandards": [
@@ -48,7 +51,6 @@
     ],
     "setup-local-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
     "phpunit": "./vendor/bin/phpunit",
-    "plugin-check": "./vendor/bin/wp plugin check simple-location --exclude-checks=file_type --exclude-directories='./bin','./.github'",
     "test": [
       "composer update",
       "bin/install-wp-tests.sh wordpress wordpress wordpress",
@@ -62,8 +64,15 @@
       "./vendor/bin/phpcs -n",
       "@phpcpd"
     ],
+    "release": [
+	"@phpcbf",
+	"@make-pot",
+	"@wp2md"
+    ],
     "phpcs": "./vendor/bin/phpcs",
     "phpcbf": "./vendor/bin/phpcbf",
-    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules ."
+    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules .",
+    "make-pot": "./vendor/bin/wp i18n make-pot . languages/indieauth.pot",
+    "wp2md": "vendor/bin/wp2md -i readme.txt -o readme.md"
   }
 }
