@@ -4,7 +4,7 @@ class TokensTest extends WP_UnitTestCase {
 	public function test_set_and_get_user_token() {
 		$user_id = self::factory()->user->create();
 		$tokens = new Token_User( '_indieauth_code_', $user_id );
-		$token = array( 'foo' => 'foo', 'bar' => 'bar' );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'me' => 'https://example.com' );
 		$key = $tokens->set( $token );
 		$get = $tokens->get( $key );
 		unset( $get['user'] );
@@ -15,7 +15,7 @@ class TokensTest extends WP_UnitTestCase {
 		$user_id_1 = self::factory()->user->create();
 		$user_id_2 = self::factory()->user->create();
 		$tokens = new Token_User( '_indieauth_code_', $user_id_1 );
-		$token = array( 'foo' => 'foo', 'bar' => 'bar' );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'me' => 'https://example.com' );
 		$tokens->set( $token );
 		$tokens->set_user( $user_id_2 );
 		$key = $tokens->set( $token );
@@ -27,7 +27,7 @@ class TokensTest extends WP_UnitTestCase {
 		$user_id_1 = self::factory()->user->create();
 		$tokens = new Token_User( '_indieauth_code_', $user_id_1 );
 		$uuid = wp_generate_uuid4();
-		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'uuid' => $uuid );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'me' => 'https://example.com', 'uuid' => $uuid );
 		$access_token = $tokens->set( $token );
 		$return = $tokens->find_by_field( 'uuid', $uuid, $user_id_1 );
 		$first = reset( $return );
@@ -39,7 +39,7 @@ class TokensTest extends WP_UnitTestCase {
 	public function test_expired_token() {
 		$user_id = self::factory()->user->create();
 		$tokens = new Token_User( '_indieauth_code_', $user_id );
-		$token = array( 'foo' => 'foo', 'bar' => 'bar' );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'me' => 'https://example.com' );
 		$key = $tokens->set( $token, -30 );
 		$get = $tokens->get( $key );
 		$this->assertFalse( $get );
@@ -48,7 +48,7 @@ class TokensTest extends WP_UnitTestCase {
 	public function test_destroy_token() {
 		$user_id = self::factory()->user->create();
 		$tokens = new Token_User( '_indieauth_code_', $user_id );
-		$token = array( 'foo' => 'foo', 'bar' => 'bar' );
+		$token = array( 'foo' => 'foo', 'bar' => 'bar', 'me' => 'https://example.com' );
 		$key = $tokens->set( $token, 300 );
 		$get = $tokens->get( $key );
 		unset( $get['user'] );
