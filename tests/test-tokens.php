@@ -8,6 +8,7 @@ class TokensTest extends WP_UnitTestCase {
 		$key = $tokens->set( $token );
 		$get = $tokens->get( $key );
 		unset( $get['user'] );
+		$token['sub'] = $token['me'];
 		$this->assertEquals( $token, $get );
 	}
 
@@ -53,6 +54,7 @@ class TokensTest extends WP_UnitTestCase {
 		$get = $tokens->get( $key );
 		unset( $get['user'] );
 		unset( $get['exp' ] );
+		$token['sub'] = $token['me'];
 		$this->assertEquals( $get, $token );
 		$destroy = $tokens->destroy( $key );
 		$this->assertTrue( $destroy );
