@@ -89,7 +89,7 @@ class IndieAuth_Plugin {
 		}
 	}
 
-	public static function plugins_loaded() {
+	public static function init() {
 		// Load Core Classes that are always loaded
 		self::load(
 			array(
@@ -175,4 +175,4 @@ class IndieAuth_Plugin {
 	}
 }
 
-add_action( 'plugins_loaded', array( 'IndieAuth_Plugin', 'plugins_loaded' ), 2 );
+add_action( 'init', array( 'IndieAuth_Plugin', 'init' ), 2 );
