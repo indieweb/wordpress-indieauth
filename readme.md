@@ -3,7 +3,7 @@
 **Contributors:** indieweb, pfefferle, dshanske \
 **Tags:** IndieAuth, IndieWeb, login, oauth \
 **Tested up to:** 6.7 \
-**Stable tag:** 4.5.3 \
+**Stable tag:** 4.5.4 \
 **License:** MIT \
 **License URI:** http://opensource.org/licenses/MIT \
 **Donate link:** https://opencollective.com/indieweb
@@ -187,6 +187,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.5.4
+
+* Fix error on settings page reported via wordpress.org forums
 
 ### 4.5.3
 
