@@ -472,7 +472,8 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 
 	public function confirmed() {
 		// Verify nonce for CSRF protection before processing any user input
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'indieauth_authorize' ) ) {
+		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'indieauth_authorize' ) ) {
 			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );
 		}
 
