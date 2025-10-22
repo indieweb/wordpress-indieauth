@@ -471,15 +471,15 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function confirmed() {
+		// Verify nonce for CSRF protection before processing any user input
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'indieauth_authorize' ) ) {
+			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );
+		}
+
 		$current_user = wp_get_current_user();
 		$user         = $current_user->ID;
 		// phpcs:disable
 		$client_id     = wp_unslash( $_POST['client_id'] );
-
-		// Verify nonce for CSRF protection
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'indieauth_authorize_' . $client_id ) ) {
-			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );
-		}
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;
