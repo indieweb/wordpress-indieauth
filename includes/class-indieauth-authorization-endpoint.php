@@ -424,7 +424,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	public function authorize() {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
-		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) ); // WPCS: CSRF OK
+		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) );
 		$client_term                 = IndieAuth_Client_Taxonomy::add_client( $client_id );
 		if ( ! is_wp_error( $client_term ) ) {
 			$client_name = $client_term['name'];
@@ -474,7 +474,12 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$current_user = wp_get_current_user();
 		$user         = $current_user->ID;
 		// phpcs:disable
-		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
+		$client_id     = wp_unslash( $_POST['client_id'] );
+
+		// Verify nonce for CSRF protection
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'indieauth_authorize_' . $client_id ) ) {
+			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );
+		}
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;

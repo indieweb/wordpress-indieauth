@@ -64,6 +64,8 @@ login_header(
 	<?php
 		// Hook to allow adding to form
 		do_action( 'indieauth_authorization_form', $current_user->user_id, $client_id );
+		// Add nonce for CSRF protection
+		wp_nonce_field( 'indieauth_authorize_' . $client_id );
 	?>
 		<input type="hidden" name="client_id" value="<?php echo esc_url( $client_id ); ?>" />
 		<input type="hidden" name="redirect_uri" value="<?php echo esc_url( $redirect_uri ); ?>" />
