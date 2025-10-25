@@ -97,12 +97,15 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 							'required' => true,
 						),
 						/* Code Challenge.
-						 * IndieAuth 1.1 requires PKCE, but for now these parameters will remain optional to give time for other implementers.
 						 */
-						'code_challenge'        => array(),
+						'code_challenge'        => array(
+							'required' => true,
+						),
 						/* The hashing method used to calculate the code challenge, e.g. "S256"
 						 */
-						'code_challenge_method' => array(),
+						'code_challenge_method' => array(
+							'required' => true,
+						),
 
 						/* A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
 						 * If the client omits this value, the authorization server MUST NOT issue an access token for this authorization code.
