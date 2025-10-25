@@ -99,12 +99,12 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 						/* Code Challenge.
 						 */
 						'code_challenge'        => array(
-							'required' => true
+							'required' => true,
 						),
 						/* The hashing method used to calculate the code challenge, e.g. "S256"
 						 */
 						'code_challenge_method' => array(
-							'required' => true
+							'required' => true,
 						),
 
 						/* A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
