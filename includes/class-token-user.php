@@ -190,6 +190,9 @@ class Token_User extends Token_Generic {
 		}
 
 		$value['user'] = $user_id;
+		if ( isset( $value['me'] ) ) {
+			$value['sub'] = $value['me'];
+		}
 		return $value;
 	}
 

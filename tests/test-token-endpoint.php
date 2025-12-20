@@ -43,6 +43,7 @@ class TokenEndpointTest extends WP_UnitTestCase {
 		);
 		static::$test_auth_code['me'] = get_author_posts_url( static::$author_id );
 		static::$test_token['me'] = get_author_posts_url( static::$author_id );
+		static::$test_token['sub'] = static::$test_token['me'];
 		static::$refresh_token['me'] = get_author_posts_url( static::$author_id );
 		static::$subscriber_id = $factory->user->create(
 			array(
