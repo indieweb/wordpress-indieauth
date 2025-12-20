@@ -2,16 +2,16 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: IndieAuth 4.5.4\n"
+"Project-Id-Version: IndieAuth 4.5.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/indieauth\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-02-16T04:04:44+00:00\n"
+"POT-Creation-Date: 2025-10-25T19:41:13+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: indieauth\n"
 
 #. Plugin Name of the plugin
@@ -95,6 +95,7 @@ msgstr ""
 #: includes/class-external-token-table.php:87
 #: includes/class-token-list-table.php:184
 #: includes/class-token-list-table.php:203
+#, php-format
 msgid "%s ago"
 msgstr ""
 
@@ -184,6 +185,7 @@ msgid "These settings control the behavior of the endpoints"
 msgstr ""
 
 #: includes/class-indieauth-admin.php:216
+#, php-format
 msgid "Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href=\"%1$s\">settings-page</a>."
 msgstr ""
 
@@ -247,118 +249,123 @@ msgstr ""
 msgid "<a href=\"https://www.w3.org/TR/indieauth/\">W3C Spec</a>"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:161
+#: includes/class-indieauth-authorization-endpoint.php:164
 msgid "Legacy Scope (Deprecated)"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:162
+#: includes/class-indieauth-authorization-endpoint.php:165
 msgid "Allows the applicate to create posts in draft status only"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:163
+#: includes/class-indieauth-authorization-endpoint.php:166
 msgid "Allows the application to create posts and upload to the Media Endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:164
+#: includes/class-indieauth-authorization-endpoint.php:167
 #: includes/class-indieauth-scopes.php:94
 msgid "Allows the application to update posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:165
+#: includes/class-indieauth-authorization-endpoint.php:168
 msgid "Allows the application to delete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:166
+#: includes/class-indieauth-authorization-endpoint.php:169
 msgid "Allows the application to undelete posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:167
+#: includes/class-indieauth-authorization-endpoint.php:170
 #: includes/class-indieauth-scopes.php:119
 msgid "Allows the application to upload to the media endpoint"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:169
+#: includes/class-indieauth-authorization-endpoint.php:172
 msgid "Allows the application read access to channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:170
+#: includes/class-indieauth-authorization-endpoint.php:173
 msgid "Allows the application to manage a follow list"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:171
+#: includes/class-indieauth-authorization-endpoint.php:174
 msgid "Allows the application to mute and unmute users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:172
+#: includes/class-indieauth-authorization-endpoint.php:175
 msgid "Allows the application to block and unlock users"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:173
+#: includes/class-indieauth-authorization-endpoint.php:176
 msgid "Allows the application to manage channels"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:174
+#: includes/class-indieauth-authorization-endpoint.php:177
 #: includes/class-indieauth-scopes.php:178
 msgid "Allows the application to save content for later retrieval"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:176
+#: includes/class-indieauth-authorization-endpoint.php:179
 msgid "Allows access to the users default profile information which includes name, photo, and url"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:177
+#: includes/class-indieauth-authorization-endpoint.php:180
 msgid "Allows access to the users email address"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:182
+#: includes/class-indieauth-authorization-endpoint.php:185
 msgid "No Description Available"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:228
+#: includes/class-indieauth-authorization-endpoint.php:231
 msgid "Token will have no privileges to create posts"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:274
+#: includes/class-indieauth-authorization-endpoint.php:277
 msgid "Unsupported Response Type"
 msgstr ""
 
 #. translators: Name of missing parameter
-#: includes/class-indieauth-authorization-endpoint.php:288
-#: includes/class-indieauth-authorization-endpoint.php:364
+#: includes/class-indieauth-authorization-endpoint.php:291
+#: includes/class-indieauth-authorization-endpoint.php:367
+#, php-format
 msgid "Missing Parameter: %1$s"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:307
+#: includes/class-indieauth-authorization-endpoint.php:310
 msgid "Invalid scope request"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:313
+#: includes/class-indieauth-authorization-endpoint.php:316
 msgid "Cannot request email scope without profile scope"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:350
+#: includes/class-indieauth-authorization-endpoint.php:353
 msgid "Endpoint only accepts authorization_code grant_type"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:375
+#: includes/class-indieauth-authorization-endpoint.php:378
 #: includes/class-indieauth-authorize.php:280
 #: includes/class-indieauth-token-endpoint.php:330
 msgid "Invalid authorization code"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:380
+#: includes/class-indieauth-authorization-endpoint.php:383
 msgid "The authorization code expired"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:387
-#: includes/class-indieauth-authorization-endpoint.php:391
+#: includes/class-indieauth-authorization-endpoint.php:390
+#: includes/class-indieauth-authorization-endpoint.php:394
 #: includes/class-indieauth-token-endpoint.php:335
 #: includes/class-indieauth-token-endpoint.php:339
 msgid "Failed PKCE Validation"
 msgstr ""
 
-#: includes/class-indieauth-authorization-endpoint.php:408
+#: includes/class-indieauth-authorization-endpoint.php:411
 msgid "There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request."
+msgstr ""
+
+#: includes/class-indieauth-authorization-endpoint.php:480
+msgid "Security check failed. Please try again."
 msgstr ""
 
 #: includes/class-indieauth-authorize.php:147
@@ -520,6 +527,7 @@ msgstr ""
 
 #. translators: Capability
 #: includes/class-indieauth-scopes.php:45
+#, php-format
 msgid "Unknown cap: %s"
 msgstr ""
 
@@ -781,6 +789,7 @@ msgstr ""
 
 #. translators: 1. Path to file unable to load
 #: indieauth.php:171
+#, php-format
 msgid "Unable to load: %1s"
 msgstr ""
 
@@ -810,11 +819,13 @@ msgstr ""
 
 #. translators: Client Name or ID
 #: templates/indieauth-authenticate-form.php:5
+#, php-format
 msgid "Authenticate %1$s"
 msgstr ""
 
 #. translators: 1. Client with link 2. User ID 3. User Display Name 4. User Nicename
 #: templates/indieauth-authenticate-form.php:23
+#, php-format
 msgid "The app %1$s would like to identify you as %2$s, which is user %3$s (%4$s)."
 msgstr ""
 
@@ -822,32 +833,36 @@ msgstr ""
 msgid "The app will have no access to your site, but is requesting access to the following information and may request a token to refresh this information in future, which you can revoke at any time:"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:61
+#: templates/indieauth-authenticate-form.php:63
 msgid "Allow"
 msgstr ""
 
-#: templates/indieauth-authenticate-form.php:62
-#: templates/indieauth-authorize-form.php:81
+#: templates/indieauth-authenticate-form.php:64
+#: templates/indieauth-authorize-form.php:83
 msgid "Cancel"
 msgstr ""
 
 #. translators: 1. Redirect URI
-#: templates/indieauth-authenticate-form.php:66
+#: templates/indieauth-authenticate-form.php:68
+#, php-format
 msgid "You will be redirected to %1$s after authenticating."
 msgstr ""
 
 #. translators: 1. Client Name
 #: templates/indieauth-authorize-form.php:5
+#, php-format
 msgid "Authorize %1$s"
 msgstr ""
 
 #. translators: 1. Client
 #: templates/indieauth-authorize-form.php:19
+#, php-format
 msgid "%1$s wants to access your site."
 msgstr ""
 
 #. translators: 1. User Display Name 2. User Nice Name
 #: templates/indieauth-authorize-form.php:35
+#, php-format
 msgid "The app will use credentials of %1$s (%2$s). You can revoke access at any time."
 msgstr ""
 
@@ -857,15 +872,17 @@ msgstr ""
 
 #. translators: 1. human time difference
 #: templates/indieauth-authorize-form.php:57
+#, php-format
 msgid "The client will have access for %1$s."
 msgstr ""
 
-#: templates/indieauth-authorize-form.php:80
+#: templates/indieauth-authorize-form.php:82
 msgid "Approve"
 msgstr ""
 
 #. translators: 1. Redirect URI
-#: templates/indieauth-authorize-form.php:85
+#: templates/indieauth-authorize-form.php:87
+#, php-format
 msgid "You will be redirected to %1$s after approving this application."
 msgstr ""
 
@@ -875,6 +892,7 @@ msgstr ""
 
 #. translators: PKCE specification link
 #: templates/indieauth-notices.php:17
+#, php-format
 msgid "This app is not using %s for security which is now required for IndieAuth"
 msgstr ""
 

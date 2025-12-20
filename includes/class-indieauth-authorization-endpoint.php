@@ -97,12 +97,15 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 							'required' => true,
 						),
 						/* Code Challenge.
-						 * IndieAuth 1.1 requires PKCE, but for now these parameters will remain optional to give time for other implementers.
 						 */
-						'code_challenge'        => array(),
+						'code_challenge'        => array(
+							'required' => true,
+						),
 						/* The hashing method used to calculate the code challenge, e.g. "S256"
 						 */
-						'code_challenge_method' => array(),
+						'code_challenge_method' => array(
+							'required' => true,
+						),
 
 						/* A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
 						 * If the client omits this value, the authorization server MUST NOT issue an access token for this authorization code.
@@ -424,7 +427,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	public function authorize() {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
-		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) ); // WPCS: CSRF OK
+		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) );
 		$client_term                 = IndieAuth_Client_Taxonomy::add_client( $client_id );
 		if ( ! is_wp_error( $client_term ) ) {
 			$client_name = $client_term['name'];
@@ -471,10 +474,16 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	}
 
 	public function confirmed() {
+		// Verify nonce for CSRF protection before processing any user input
+		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'indieauth_authorize' ) ) {
+			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );
+		}
+
 		$current_user = wp_get_current_user();
 		$user         = $current_user->ID;
 		// phpcs:disable
-		$client_id     = wp_unslash( $_POST['client_id'] ); // WPCS: CSRF OK
+		$client_id     = wp_unslash( $_POST['client_id'] );
 		$redirect_uri  = isset( $_POST['redirect_uri'] ) ? wp_unslash( $_POST['redirect_uri'] ) : null;
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;

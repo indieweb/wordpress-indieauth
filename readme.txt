@@ -2,7 +2,7 @@
 Contributors: indieweb, pfefferle, dshanske
 Tags: IndieAuth, IndieWeb, login, oauth
 Tested up to: 6.7
-Stable tag: 4.5.4
+Stable tag: 4.5.5
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 Donate link: https://opencollective.com/indieweb
@@ -12,8 +12,7 @@ IndieAuth is a way to allow users to use their own domain to sign into other web
 == Description ==
 
 The plugin turns WordPress into an IndieAuth endpoint. This can be used to act as an authentication mechanism for WordPress and its REST API, as well as an identity mechanism for other sites. It uses the URL from the profile page to identify the blog user or your author url. We recommend your site be served over https to use this.
-
-You can also install this plugin to enable web sign-in for your site using your domain.
+ measure then updates must be made.You can also install this plugin to enable web sign-in for your site using your domain.
 
 == Installation ==
 
@@ -64,7 +63,7 @@ By adding Indieauth support, you can log into sites simply by providing your URL
 
 = How secure is this? =
 
-We recommend your site uses HTTPS to ensure your credentials are not sent in cleartext. As of Version 3.3, this plugin supports Proof Key for Code Exchange(PKCE), if the client supports it.
+We recommend your site uses HTTPS to ensure your credentials are not sent in cleartext. As of Version 4.5.5, this plugin requires Proof Key for Code Exchange(PKCE), whether or not the client supports it.
 
 = What is a token endpoint? =
 
@@ -186,6 +185,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 == Changelog ==
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+= 4.5.5 =
+* Security: Fix CSRF vulnerability in authorization endpoint
+* Security: PKCE mandatory in the IndieAuth spec is no longer optional in the plugin. If your client does not support this security measure then updates must be made.
 
 = 4.5.4 =
 * Fix error on settings page reported via wordpress.org forums
