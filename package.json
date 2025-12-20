@@ -1,0 +1,16 @@
+{
+	"name": "wordpress-indieauth",
+	"version": "1.0.0",
+	"description": "IndieAuth for WordPress",
+	"license": "MIT",
+	"scripts": {
+		"start": "wp-env start",
+		"stop": "wp-env stop",
+		"destroy": "wp-env destroy",
+		"cli": "wp-env run cli",
+		"test:php": "wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/indieauth/phpunit.xml.dist'"
+	},
+	"devDependencies": {
+		"@wordpress/env": "^10.0.0"
+	}
+}
