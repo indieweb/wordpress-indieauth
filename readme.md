@@ -3,7 +3,7 @@
 - Contributors: indieweb, pfefferle, dshanske
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
-- Tested up to: 6.7
+- Tested up to: 6.9
 - Stable tag: 4.5.5
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
