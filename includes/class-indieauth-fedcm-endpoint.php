@@ -55,11 +55,14 @@ class IndieAuth_FedCM_Endpoint {
 			return;
 		}
 
+		$script_path = plugin_dir_path( __DIR__ ) . 'js/fedcm-register.js';
+		$version     = file_exists( $script_path ) ? (string) filemtime( $script_path ) : '1.0.0';
+
 		wp_enqueue_script(
 			'indieauth-fedcm-register',
 			plugins_url( 'js/fedcm-register.js', __DIR__ ),
 			array(),
-			'1.0.0',
+			$version,
 			true
 		);
 
@@ -229,7 +232,9 @@ class IndieAuth_FedCM_Endpoint {
 							'sanitize_callback' => 'esc_url_raw',
 						),
 						'account_id' => array(
-							'required' => true,
+							'required'          => true,
+							'validate_callback' => 'indieauth_validate_user_identifier',
+							'sanitize_callback' => 'esc_url_raw',
 						),
 						'nonce'      => array(),
 						'params'     => array(),
@@ -298,9 +303,9 @@ class IndieAuth_FedCM_Endpoint {
 	 */
 	public function config( $request ) {
 		$config = array(
-			'accounts_endpoint'        => '/wp-json/indieauth/1.0/fedcm/accounts',
-			'client_metadata_endpoint' => '/wp-json/indieauth/1.0/fedcm/client_metadata',
-			'id_assertion_endpoint'    => '/wp-json/indieauth/1.0/fedcm/assertion',
+			'accounts_endpoint'        => self::get_accounts_endpoint(),
+			'client_metadata_endpoint' => self::get_client_metadata_endpoint(),
+			'id_assertion_endpoint'    => self::get_assertion_endpoint(),
 			'login_url'                => self::get_login_url(),
 		);
 
@@ -483,10 +488,16 @@ class IndieAuth_FedCM_Endpoint {
 		if ( $params ) {
 			if ( is_string( $params ) ) {
 				$params = json_decode( $params, true );
+				if ( JSON_ERROR_NONE !== json_last_error() ) {
+					return new WP_REST_Response(
+						array( 'error' => 'Invalid JSON in params' ),
+						400
+					);
+				}
 			}
 			if ( is_array( $params ) ) {
-				$code_challenge        = isset( $params['code_challenge'] ) ? $params['code_challenge'] : null;
-				$code_challenge_method = isset( $params['code_challenge_method'] ) ? $params['code_challenge_method'] : null;
+				$code_challenge        = isset( $params['code_challenge'] ) ? sanitize_text_field( $params['code_challenge'] ) : null;
+				$code_challenge_method = isset( $params['code_challenge_method'] ) ? sanitize_text_field( $params['code_challenge_method'] ) : null;
 			}
 		}
 
@@ -494,6 +505,14 @@ class IndieAuth_FedCM_Endpoint {
 		if ( ! $code_challenge || ! $code_challenge_method ) {
 			return new WP_REST_Response(
 				array( 'error' => 'PKCE parameters required' ),
+				400
+			);
+		}
+
+		// Validate supported PKCE method.
+		if ( 'S256' !== $code_challenge_method ) {
+			return new WP_REST_Response(
+				array( 'error' => 'Unsupported code_challenge_method' ),
 				400
 			);
 		}
@@ -514,7 +533,7 @@ class IndieAuth_FedCM_Endpoint {
 		);
 
 		if ( $nonce ) {
-			$token['nonce'] = $nonce;
+			$token['nonce'] = sanitize_text_field( $nonce );
 		}
 
 		$token = array_filter( $token );
