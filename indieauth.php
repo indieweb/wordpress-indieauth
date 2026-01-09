@@ -62,6 +62,10 @@ class IndieAuth_Plugin {
 
 	public static function activation() {
 		self::schedule();
+		// Flush rewrite rules for FedCM well-known endpoint.
+		if ( class_exists( 'IndieAuth_WebIdentity' ) ) {
+			IndieAuth_WebIdentity::flush_rewrite_rules();
+		}
 	}
 
 	public static function schedule() {
@@ -122,6 +126,8 @@ class IndieAuth_Plugin {
 			'class-indieauth-revocation-endpoint.php', // Revocation Endpoint
 			'class-indieauth-introspection-endpoint.php', // Introspection Endpoint
 			'class-indieauth-userinfo-endpoint.php', // User Info Endpoint
+			'class-indieauth-fedcm-endpoint.php', // FedCM Endpoint
+			'class-indieauth-webidentity.php', // Web Identity Well-Known Handler
 			'class-token-list-table.php', // Token Management UI
 			'class-indieauth-token-ui.php',
 		);
@@ -134,6 +140,8 @@ class IndieAuth_Plugin {
 		new IndieAuth_Revocation_Endpoint();
 		new IndieAuth_Introspection_Endpoint();
 		new IndieAuth_Userinfo_Endpoint();
+		new IndieAuth_FedCM_Endpoint();
+		new IndieAuth_WebIdentity();
 
 		if ( WP_DEBUG ) {
 			self::load( 'class-indieauth-debug.php' );
