@@ -62,9 +62,15 @@ class IndieAuth_Plugin {
 
 	public static function activation() {
 		self::schedule();
+
 		// Flush rewrite rules for FedCM well-known endpoint.
-		if ( class_exists( 'IndieAuth_WebIdentity' ) ) {
-			IndieAuth_WebIdentity::flush_rewrite_rules();
+		// Load the class file explicitly since activation runs before init.
+		$webidentity_file = plugin_dir_path( __FILE__ ) . 'includes/class-indieauth-webidentity.php';
+		if ( file_exists( $webidentity_file ) ) {
+			require_once $webidentity_file;
+			if ( class_exists( 'IndieAuth_WebIdentity' ) ) {
+				IndieAuth_WebIdentity::flush_rewrite_rules();
+			}
 		}
 	}
 

@@ -19,7 +19,10 @@
 		return;
 	}
 
-	IdentityProvider.register( configUrl ).catch( function() {
-		// Registration failed or was rejected - this is fine, fail silently.
+	IdentityProvider.register( configUrl ).catch( function( error ) {
+		// Registration failed or was rejected - log for debugging but don't interrupt user.
+		if ( typeof console !== 'undefined' && typeof console.debug === 'function' ) {
+			console.debug( 'IndieAuth FedCM: IdentityProvider.register() failed:', error );
+		}
 	} );
 } )();

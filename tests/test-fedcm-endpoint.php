@@ -90,7 +90,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Invalid request', $data['error'] );
+		$this->assertEquals( 'Missing or invalid Sec-Fetch-Dest header', $data['error'] );
 	}
 
 	/**
@@ -171,7 +171,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Invalid request', $data['error'] );
+		$this->assertEquals( 'Missing or invalid Sec-Fetch-Dest header', $data['error'] );
 	}
 
 	/**
@@ -190,6 +190,31 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
 				'Origin'         => 'https://different-origin.example.com',
+			)
+		);
+
+		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data = $response->get_data();
+		$this->assertEquals( 'Origin mismatch', $data['error'] );
+	}
+
+	/**
+	 * Test assertion endpoint requires Origin scheme to match client_id scheme.
+	 */
+	public function test_assertion_endpoint_requires_matching_origin_scheme() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->create_request(
+			'POST',
+			'assertion',
+			array(
+				'client_id'  => 'https://app.example.com/',
+				'account_id' => self::$author_url,
+			),
+			array(
+				'Sec-Fetch-Dest' => 'webidentity',
+				'Origin'         => 'http://app.example.com', // HTTP instead of HTTPS.
 			)
 		);
 

@@ -257,7 +257,7 @@ class IndieAuth_FedCM_Endpoint {
 	}
 
 	/**
-	 * Validate Origin header matches client_id hostname.
+	 * Validate Origin header matches client_id scheme and hostname.
 	 *
 	 * @param WP_REST_Request $request   The request object.
 	 * @param string          $client_id The client ID.
@@ -269,10 +269,23 @@ class IndieAuth_FedCM_Endpoint {
 			return false;
 		}
 
-		$origin_host    = wp_parse_url( $origin, PHP_URL_HOST );
-		$client_id_host = wp_parse_url( $client_id, PHP_URL_HOST );
+		$origin_parts    = wp_parse_url( $origin );
+		$client_id_parts = wp_parse_url( $client_id );
 
-		return $origin_host === $client_id_host;
+		if ( ! is_array( $origin_parts ) || ! is_array( $client_id_parts ) ) {
+			return false;
+		}
+
+		$origin_scheme    = isset( $origin_parts['scheme'] ) ? $origin_parts['scheme'] : null;
+		$origin_host      = isset( $origin_parts['host'] ) ? $origin_parts['host'] : null;
+		$client_id_scheme = isset( $client_id_parts['scheme'] ) ? $client_id_parts['scheme'] : null;
+		$client_id_host   = isset( $client_id_parts['host'] ) ? $client_id_parts['host'] : null;
+
+		if ( null === $origin_scheme || null === $origin_host || null === $client_id_scheme || null === $client_id_host ) {
+			return false;
+		}
+
+		return $origin_scheme === $client_id_scheme && $origin_host === $client_id_host;
 	}
 
 	/**
@@ -317,11 +330,7 @@ class IndieAuth_FedCM_Endpoint {
 		 */
 		$config = apply_filters( 'indieauth_fedcm_config', $config, $request );
 
-		return new WP_REST_Response(
-			$config,
-			200,
-			array( 'Content-Type' => 'application/json' )
-		);
+		return new WP_REST_Response( $config, 200 );
 	}
 
 	/**
@@ -336,7 +345,7 @@ class IndieAuth_FedCM_Endpoint {
 		// Validate FedCM request header.
 		if ( ! $this->is_valid_fedcm_request( $request ) ) {
 			return new WP_REST_Response(
-				array( 'error' => 'Invalid request' ),
+				array( 'error' => 'Missing or invalid Sec-Fetch-Dest header' ),
 				400
 			);
 		}
@@ -383,7 +392,7 @@ class IndieAuth_FedCM_Endpoint {
 		$response = new WP_REST_Response(
 			array( 'accounts' => array( $account ) ),
 			200,
-			array( 'Content-Type' => 'application/json' )
+			array()
 		);
 
 		return $this->add_cors_headers( $response, $request );
@@ -426,7 +435,7 @@ class IndieAuth_FedCM_Endpoint {
 		$response = new WP_REST_Response(
 			$metadata,
 			200,
-			array( 'Content-Type' => 'application/json' )
+			array()
 		);
 
 		return $this->add_cors_headers( $response, $request );
@@ -444,7 +453,7 @@ class IndieAuth_FedCM_Endpoint {
 		// Validate FedCM request header.
 		if ( ! $this->is_valid_fedcm_request( $request ) ) {
 			return new WP_REST_Response(
-				array( 'error' => 'Invalid request' ),
+				array( 'error' => 'Missing or invalid Sec-Fetch-Dest header' ),
 				400
 			);
 		}
@@ -495,10 +504,14 @@ class IndieAuth_FedCM_Endpoint {
 					);
 				}
 			}
-			if ( is_array( $params ) ) {
-				$code_challenge        = isset( $params['code_challenge'] ) ? sanitize_text_field( $params['code_challenge'] ) : null;
-				$code_challenge_method = isset( $params['code_challenge_method'] ) ? sanitize_text_field( $params['code_challenge_method'] ) : null;
+			if ( ! is_array( $params ) ) {
+				return new WP_REST_Response(
+					array( 'error' => 'Invalid params format' ),
+					400
+				);
 			}
+			$code_challenge        = isset( $params['code_challenge'] ) ? sanitize_text_field( $params['code_challenge'] ) : null;
+			$code_challenge_method = isset( $params['code_challenge_method'] ) ? sanitize_text_field( $params['code_challenge_method'] ) : null;
 		}
 
 		// PKCE is required for IndieAuth.
@@ -518,12 +531,28 @@ class IndieAuth_FedCM_Endpoint {
 		}
 
 		// Generate authorization code.
-		$uuid  = wp_generate_uuid4();
+		$uuid = wp_generate_uuid4();
+
+		// Determine scope - default to 'profile' for FedCM.
+		$scope = 'profile';
+		if ( is_array( $params ) && isset( $params['scope'] ) ) {
+			$scope = sanitize_text_field( $params['scope'] );
+		}
+
+		/**
+		 * Filter the scope used for FedCM-issued authorization codes.
+		 *
+		 * @param string          $scope   The scope to be stored with the authorization code.
+		 * @param WP_REST_Request $request The REST request object.
+		 * @param WP_User         $user    The authenticated WordPress user.
+		 */
+		$scope = apply_filters( 'indieauth_fedcm_scope', $scope, $request, $user );
+
 		$token = array(
 			'response_type'         => 'code',
 			'client_id'             => $client_id,
 			'redirect_uri'          => $client_id, // FedCM doesn't use redirect_uri, use client_id.
-			'scope'                 => 'profile',
+			'scope'                 => $scope,
 			'me'                    => $me,
 			'code_challenge'        => $code_challenge,
 			'code_challenge_method' => $code_challenge_method,
@@ -562,7 +591,7 @@ class IndieAuth_FedCM_Endpoint {
 		$response = new WP_REST_Response(
 			array( 'token' => wp_json_encode( $token_response ) ),
 			200,
-			array( 'Content-Type' => 'application/json' )
+			array()
 		);
 
 		return $this->add_cors_headers( $response, $request );
