@@ -236,8 +236,12 @@ class IndieAuth_FedCM_Endpoint {
 							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'nonce'      => array(),
-						'params'     => array(),
+						'nonce'      => array(
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'params'     => array(
+							'required' => true, // PKCE params are required for IndieAuth.
+						),
 					),
 					'permission_callback' => '__return_true',
 				),
