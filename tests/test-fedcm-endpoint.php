@@ -225,6 +225,31 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test assertion endpoint requires Origin port to match client_id port.
+	 */
+	public function test_assertion_endpoint_requires_matching_origin_port() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->create_request(
+			'POST',
+			'assertion',
+			array(
+				'client_id'  => 'https://app.example.com:8080/',
+				'account_id' => self::$author_url,
+			),
+			array(
+				'Sec-Fetch-Dest' => 'webidentity',
+				'Origin'         => 'https://app.example.com', // Missing port.
+			)
+		);
+
+		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data = $response->get_data();
+		$this->assertEquals( 'Origin mismatch', $data['error'] );
+	}
+
+	/**
 	 * Test assertion endpoint requires login.
 	 */
 	public function test_assertion_endpoint_requires_login() {

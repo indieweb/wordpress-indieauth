@@ -257,7 +257,9 @@ class IndieAuth_FedCM_Endpoint {
 	}
 
 	/**
-	 * Validate Origin header matches client_id scheme and hostname.
+	 * Validate Origin header matches client_id scheme, hostname, and port.
+	 *
+	 * Per FedCM spec, the full origin (scheme + host + port) must match.
 	 *
 	 * @param WP_REST_Request $request   The request object.
 	 * @param string          $client_id The client ID.
@@ -278,14 +280,22 @@ class IndieAuth_FedCM_Endpoint {
 
 		$origin_scheme    = isset( $origin_parts['scheme'] ) ? $origin_parts['scheme'] : null;
 		$origin_host      = isset( $origin_parts['host'] ) ? $origin_parts['host'] : null;
+		$origin_port      = isset( $origin_parts['port'] ) ? (int) $origin_parts['port'] : null;
 		$client_id_scheme = isset( $client_id_parts['scheme'] ) ? $client_id_parts['scheme'] : null;
 		$client_id_host   = isset( $client_id_parts['host'] ) ? $client_id_parts['host'] : null;
+		$client_id_port   = isset( $client_id_parts['port'] ) ? (int) $client_id_parts['port'] : null;
 
 		if ( null === $origin_scheme || null === $origin_host || null === $client_id_scheme || null === $client_id_host ) {
 			return false;
 		}
 
-		return $origin_scheme === $client_id_scheme && $origin_host === $client_id_host;
+		// Scheme and host must match.
+		if ( $origin_scheme !== $client_id_scheme || $origin_host !== $client_id_host ) {
+			return false;
+		}
+
+		// Port must match (null means default port for scheme).
+		return $origin_port === $client_id_port;
 	}
 
 	/**
@@ -330,7 +340,10 @@ class IndieAuth_FedCM_Endpoint {
 		 */
 		$config = apply_filters( 'indieauth_fedcm_config', $config, $request );
 
-		return new WP_REST_Response( $config, 200 );
+		$response = new WP_REST_Response( $config, 200 );
+
+		// Config endpoint must be accessible cross-origin per FedCM spec.
+		return $this->add_cors_headers( $response, $request );
 	}
 
 	/**
@@ -551,7 +564,7 @@ class IndieAuth_FedCM_Endpoint {
 		$token = array(
 			'response_type'         => 'code',
 			'client_id'             => $client_id,
-			'redirect_uri'          => $client_id, // FedCM doesn't use redirect_uri, use client_id.
+			'redirect_uri'          => 'urn:ietf:wg:oauth:2.0:oob', // FedCM doesn't redirect; use OOB constant.
 			'scope'                 => $scope,
 			'me'                    => $me,
 			'code_challenge'        => $code_challenge,
