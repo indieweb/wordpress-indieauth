@@ -8,9 +8,9 @@
 		"stop": "wp-env stop",
 		"destroy": "wp-env destroy",
 		"cli": "wp-env run cli",
-		"test:php": "wp-env run phpunit 'phpunit -c /var/www/html/wp-content/plugins/indieauth/phpunit.xml.dist'"
+		"test:php": "wp-env run tests-cli --env-cwd=\"wp-content/plugins/indieauth\" vendor/bin/phpunit"
 	},
 	"devDependencies": {
-		"@wordpress/env": "^10.0.0"
+		"@wordpress/env": "^10.37.0"
 	}
 }

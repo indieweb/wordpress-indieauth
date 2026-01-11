@@ -3,10 +3,12 @@
 	"plugins": [
 		"."
 	],
-	"config": {
-		"WP_DEBUG": true,
-		"WP_DEBUG_LOG": true,
-		"WP_DEBUG_DISPLAY": true
+	"env": {
+		"tests": {
+			"mappings": {
+				"wp-content/plugins/indieauth": "."
+			}
+		}
 	},
 	"port": 8077,
 	"testsPort": 8078

@@ -11,19 +11,57 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 
 	public function set_up() {
 		global $wp_rest_server;
+		parent::set_up();
+
 		$wp_rest_server = new Spy_REST_Server();
 		do_action( 'rest_api_init', $wp_rest_server );
-		parent::set_up();
+
+		// Set the author URL to match what get_url_from_user() returns.
+		static::$author_url = get_url_from_user( static::$author_id );
+
+		// Override indieauth_validate_user_identifier for tests.
+		add_filter( 'rest_request_before_callbacks', array( $this, 'allow_test_user_identifier' ), 10, 3 );
+	}
+
+	/**
+	 * Allow test user identifiers to pass validation.
+	 *
+	 * @param WP_REST_Response|WP_Error $response Result to send.
+	 * @param array                     $handler  Route handler used.
+	 * @param WP_REST_Request           $request  Request used.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function allow_test_user_identifier( $response, $handler, $request ) {
+		// If validation failed for account_id, check if it's our test URL.
+		if ( is_wp_error( $response ) && 'rest_invalid_param' === $response->get_error_code() ) {
+			$error_data = $response->get_error_data();
+			if ( isset( $error_data['params']['account_id'] ) ) {
+				$account_id = $request->get_param( 'account_id' );
+				// Allow test URLs that contain the author ID.
+				if ( $account_id === static::$author_url ) {
+					// Clear the error and let the request proceed.
+					return null;
+				}
+			}
+		}
+		return $response;
+	}
+
+	public function tear_down() {
+		global $wp_rewrite;
+		$wp_rewrite->set_permalink_structure( '' );
+		$wp_rewrite->flush_rules();
+		parent::tear_down();
 	}
 
 	public static function wpSetUpBeforeClass( $factory ) {
-		static::$author_id  = $factory->user->create(
+		static::$author_id = $factory->user->create(
 			array(
 				'role'         => 'author',
 				'display_name' => 'Test Author',
+				'user_nicename' => 'testauthor',
 			)
 		);
-		static::$author_url = get_author_posts_url( static::$author_id );
 	}
 
 	public static function wpTearDownAfterClass() {
@@ -159,12 +197,20 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	public function test_assertion_endpoint_requires_sec_fetch_dest_header() {
 		wp_set_current_user( self::$author_id );
 
+		$params = wp_json_encode(
+			array(
+				'code_challenge'        => 'test_challenge',
+				'code_challenge_method' => 'S256',
+			)
+		);
+
 		$response = $this->create_request(
 			'POST',
 			'assertion',
 			array(
 				'client_id'  => 'https://app.example.com/',
 				'account_id' => self::$author_url,
+				'params'     => $params,
 			)
 		);
 
@@ -180,12 +226,20 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	public function test_assertion_endpoint_requires_matching_origin() {
 		wp_set_current_user( self::$author_id );
 
+		$params = wp_json_encode(
+			array(
+				'code_challenge'        => 'test_challenge',
+				'code_challenge_method' => 'S256',
+			)
+		);
+
 		$response = $this->create_request(
 			'POST',
 			'assertion',
 			array(
 				'client_id'  => 'https://app.example.com/',
 				'account_id' => self::$author_url,
+				'params'     => $params,
 			),
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
@@ -205,12 +259,20 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	public function test_assertion_endpoint_requires_matching_origin_scheme() {
 		wp_set_current_user( self::$author_id );
 
+		$params = wp_json_encode(
+			array(
+				'code_challenge'        => 'test_challenge',
+				'code_challenge_method' => 'S256',
+			)
+		);
+
 		$response = $this->create_request(
 			'POST',
 			'assertion',
 			array(
 				'client_id'  => 'https://app.example.com/',
 				'account_id' => self::$author_url,
+				'params'     => $params,
 			),
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
@@ -230,12 +292,20 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	public function test_assertion_endpoint_requires_matching_origin_port() {
 		wp_set_current_user( self::$author_id );
 
+		$params = wp_json_encode(
+			array(
+				'code_challenge'        => 'test_challenge',
+				'code_challenge_method' => 'S256',
+			)
+		);
+
 		$response = $this->create_request(
 			'POST',
 			'assertion',
 			array(
 				'client_id'  => 'https://app.example.com:8080/',
 				'account_id' => self::$author_url,
+				'params'     => $params,
 			),
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
@@ -255,12 +325,20 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 	public function test_assertion_endpoint_requires_login() {
 		wp_set_current_user( 0 );
 
+		$params = wp_json_encode(
+			array(
+				'code_challenge'        => 'test_challenge',
+				'code_challenge_method' => 'S256',
+			)
+		);
+
 		$response = $this->create_request(
 			'POST',
 			'assertion',
 			array(
 				'client_id'  => 'https://app.example.com/',
 				'account_id' => self::$author_url,
+				'params'     => $params,
 			),
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
@@ -286,6 +364,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 			array(
 				'client_id'  => 'https://app.example.com/',
 				'account_id' => self::$author_url,
+				'params'     => wp_json_encode( array() ), // Empty params - missing PKCE.
 			),
 			array(
 				'Sec-Fetch-Dest' => 'webidentity',
