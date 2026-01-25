@@ -96,7 +96,7 @@ class IndieAuth_Client_Discovery {
 			 *      @type string $logo_uri URL that references a logo or icon for the client. Optional.
 			 *      @type array $redirect_uris An array of redirect URIs. Optional.
 			 *  }
-			 **/
+			 */
 			if ( ! is_array( $this->json ) || empty( $this->json ) ) {
 					return new WP_Error( 'empty_json', __( 'Discovery Has Returned an Empty JSON Document', 'indieauth' ) );
 			}

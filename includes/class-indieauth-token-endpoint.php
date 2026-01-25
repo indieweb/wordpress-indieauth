@@ -1,12 +1,22 @@
 <?php
 /**
+ * IndieAuth Token Endpoint class file.
  *
- *
- * Implements IndieAuth Token Endpoint
+ * @package IndieAuth
  */
 
+/**
+ * IndieAuth Token Endpoint class.
+ *
+ * Implements the IndieAuth Token Endpoint for issuing and managing access tokens.
+ *
+ * @since 1.0.0
+ */
 class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		parent::__construct();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -17,16 +27,27 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 	}
 
+	/**
+	 * Get the token endpoint URL.
+	 *
+	 * @return string The token endpoint URL.
+	 */
 	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/token' );
 	}
 
+	/**
+	 * Output HTTP Link header for token endpoint.
+	 */
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
 			$this->set_http_header( $this->get_endpoint(), 'token_endpoint' );
 		}
 	}
 
+	/**
+	 * Output HTML link tag for token endpoint.
+	 */
 	public function html_header() {
 		$kses = array(
 			'link' => array(
@@ -40,15 +61,32 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 	}
 
+	/**
+	 * Add token endpoint to REST index.
+	 *
+	 * @param array $index REST API index.
+	 * @return array Modified index.
+	 */
 	public function rest_index( $index ) {
 		$index['token'] = $this->get_endpoint();
 		return $index;
 	}
 
+	/**
+	 * Get supported grant types.
+	 *
+	 * @return array List of supported grant types.
+	 */
 	public static function get_grant_types() {
 		return array_unique( apply_filters( 'indieauth_grant_types_supported', array( 'authorization_code', 'refresh_token' ) ) );
 	}
 
+	/**
+	 * Add token endpoint metadata.
+	 *
+	 * @param array $metadata Server metadata.
+	 * @return array Modified metadata.
+	 */
 	public function metadata( $metadata ) {
 		$metadata['token_endpoint']        = $this->get_endpoint();
 		$metadata['grant_types_supported'] = $this->get_grant_types();
@@ -69,29 +107,23 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
 						'grant_type'    => array(),
-						/* The authorization code received from the authorization endpoint in the redirect.
-						 */
+						// The authorization code received from the authorization endpoint in the redirect.
 						'code'          => array(),
-						/* The client's URL, which MUST match the client_id used in the authentication request.
-						 */
+						// The client's URL, which MUST match the client_id used in the authentication request.
 						'client_id'     => array(
 							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						/* The client's redirect URL, which MUST match the initial authentication request.
-						 */
+						// The client's redirect URL, which MUST match the initial authentication request.
 						'redirect_uri'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						/* The original plaintext random string generated before starting the authorization request.
-						 */
+						// The original plaintext random string generated before starting the authorization request.
 						'code_verifier' => array(),
-						/* Currently only Used for Token Revokation as action=revoke
-						 */
+						// Currently only used for token revocation as action=revoke.
 						'action'        => array(),
-						/* Paired with Action for Token Revokation
-						 */
+						// Paired with action for token revocation.
 						'token'         => array(),
 					),
 					'permission_callback' => '__return_true',
@@ -112,11 +144,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		);
 	}
 
-	/*
+	/**
 	 * Token Endpoint GET Handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
-	 * @return Response to Return to the REST Server.
+	 * @return WP_REST_Response|WP_OAuth_Response Response to return to the REST Server.
 	 */
 	public function get( $request ) {
 		$params = $request->get_params();
@@ -144,11 +176,11 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		return rest_ensure_response( $token );
 	}
 
-	/*
+	/**
 	 * Token Endpoint POST Handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
-	 * @return Response to Return to the REST Server.
+	 * @return WP_REST_Response|WP_OAuth_Response|string Response to return to the REST Server.
 	 */
 	public function post( $request ) {
 		$params = $request->get_params();
@@ -160,10 +192,10 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 
 		$resp = new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 
-		// Action Handler
+		// Action Handler.
 		if ( isset( $params['action'] ) ) {
 			switch ( $params['action'] ) {
-				// Revoke Token
+				// Revoke Token.
 				case 'revoke':
 					if ( isset( $params['token'] ) ) {
 						$this->delete_token( $params['token'] );
@@ -182,7 +214,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		// Grant Type Handler.
 		if ( isset( $params['grant_type'] ) ) {
 			switch ( $params['grant_type'] ) {
-				// Request Token
+				// Request Token.
 				case 'authorization_code':
 					return $this->authorization_code( $params );
 				case 'refresh_token':
@@ -194,12 +226,17 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 			$resp = apply_filters( 'indieauth_token_grant_type_handler', $resp, $params );
 		}
 
-		// Everything Failed
+		// Everything Failed.
 		return $resp;
 	}
 
 
-	// Refresh Token Grant Type.
+	/**
+	 * Handle refresh token grant type.
+	 *
+	 * @param array $params Request parameters.
+	 * @return WP_REST_Response|WP_OAuth_Response Token response or error.
+	 */
 	public function refresh_token( $params ) {
 
 		$diff = array_diff( array( 'refresh_token' ), array_keys( $params ) );
@@ -217,7 +254,12 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		return $this->generate_token_response( $refresh );
 	}
 
-	// Authorization Code Grant Type.
+	/**
+	 * Handle authorization code grant type.
+	 *
+	 * @param array $params Request parameters.
+	 * @return WP_REST_Response|WP_OAuth_Response Token response or error.
+	 */
 	public function authorization_code( $params ) {
 		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
@@ -241,6 +283,12 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		return $this->generate_token_response( $response );
 	}
 
+	/**
+	 * Generate token response from authorization data.
+	 *
+	 * @param array $response Authorization response data.
+	 * @return WP_REST_Response|WP_OAuth_Response Token response or error.
+	 */
 	public function generate_token_response( $response ) {
 		$return = array(
 			'me' => $response['me'],
@@ -256,7 +304,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				$return['profile'] = indieauth_get_user( $response['user'], in_array( 'email', $scopes, true ) );
 			}
 
-			// Issue a token
+			// Issue a token.
 			if ( ! empty( $scopes ) ) {
 				$client = IndieAuth_Client_Taxonomy::add_client( $response['client_id'] );
 				if ( is_wp_error( $client ) ) {
@@ -266,10 +314,9 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 				$return['token_type'] = 'Bearer';
 
 				if ( ! array_key_exists( 'uuid', $response ) ) {
-					/* Add UUID for reference. In case you’d like to build infrastructure for additional properties and store them in an alternate location.
-					 * As of 4.1.0, the uuid is passed from the authorization code to the access token and refresh token. But if not, it is added here.
-					 * This idea came from the core application password implementation.
-					 */
+					// Add UUID for reference. In case you'd like to build infrastructure for additional properties and store them in an alternate location.
+					// As of 4.1.0, the uuid is passed from the authorization code to the access token and refresh token. But if not, it is added here.
+					// This idea came from the core application password implementation.
 					$return['uuid'] = wp_generate_uuid4();
 				} else {
 					$return['uuid'] = $response['uuid'];
@@ -290,7 +337,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 
 				$return['access_token'] = $this->set_token( $return, $expires, $response['user'] );
 
-				// Do Not Add Expires In for the Return Until After It is Saved to the Database
+				// Do not add expires_in for the return until after it is saved to the database.
 				if ( 0 !== $expires ) {
 					$return['expires_in']    = $expires;
 					$return['refresh_token'] = $this->set_refresh_token( $return, $response['user'] );
@@ -299,7 +346,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		}
 
 		if ( $return ) {
-			// Return only the standard keys in the response
+			// Return only the standard keys in the response.
 			return new WP_REST_Response(
 				wp_array_slice_assoc(
 					$return,
@@ -313,7 +360,7 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 						'refresh_token',
 					)
 				),
-				200, // Status Code
+				200,
 				array(
 					'Cache-Control' => 'no-store',
 					'Pragma'        => 'no-cache',
@@ -323,6 +370,12 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 		return new WP_OAuth_Response( 'server_error', __( 'There was an error in response.', 'indieauth' ), 500 );
 	}
 
+	/**
+	 * Verify local authorization code.
+	 *
+	 * @param array $args Arguments including code, redirect_uri, client_id, code_verifier.
+	 * @return array|WP_OAuth_Response Authorization data or error.
+	 */
 	public function verify_local_authorization_code( $args ) {
 		$codes  = new Token_User( '_indieauth_code_' );
 		$return = $codes->get( $args['code'] );

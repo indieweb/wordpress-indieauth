@@ -1,11 +1,27 @@
 <?php
+/**
+ * IndieAuth Scopes class file.
+ *
+ * @package IndieAuth
+ */
 
 /**
- * Container Class used to hold all of the registed scopes
+ * Container class used to hold all of the registered scopes.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Scopes {
-	private $scopes; // Stores All Registered Scopes
 
+	/**
+	 * Stores all registered scopes.
+	 *
+	 * @var array
+	 */
+	private $scopes;
+
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		$this->scopes = array();
 		$this->register_builtin_scopes();
@@ -13,7 +29,9 @@ class IndieAuth_Scopes {
 	}
 
 	/**
-	 * Offers a list of caps to be checked in the function below. Allows custom capabilities to not be filtered
+	 * Offers a list of caps to be checked in the function below. Allows custom capabilities to not be filtered.
+	 *
+	 * @return array List of capabilities to filter.
 	 */
 	public function map_caps() {
 		return apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages', 'unfiltered_html' ) );
@@ -28,9 +46,8 @@ class IndieAuth_Scopes {
 	 * @param array    $args    Adds the context to the cap. Typically the object ID.
 	 * @return string[] $caps    Filtered array of user capabilities after factoring in the token permissions.
 	 */
-
 	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
-		// If this is not null this is an indieauth response
+		// If this is not null this is an IndieAuth response.
 		$response = indieauth_get_response();
 		if ( ! empty( $response ) ) {
 			$scopes = indieauth_get_scopes();
@@ -38,7 +55,7 @@ class IndieAuth_Scopes {
 				return array( 'do_not_allow' );
 			}
 
-			// This check is only for certain capabilities
+			// This check is only for certain capabilities.
 			if ( ! in_array( $cap, $this->map_caps(), true ) ) {
 				if ( WP_DEBUG ) {
 					/* translators: Capability */
@@ -47,7 +64,7 @@ class IndieAuth_Scopes {
 				return $caps;
 			}
 			foreach ( $caps as $c ) {
-				// If the capability is not in any of the scopes then do not allow
+				// If the capability is not in any of the scopes then do not allow.
 				if ( ! $this->has_cap( $c, $scopes ) ) {
 					return array( 'do_not_allow' );
 				}
@@ -193,13 +210,12 @@ class IndieAuth_Scopes {
 		);
 	}
 
-	/* Register a scope
+	/**
+	 * Register a scope.
 	 *
-	 * @param IndieAuth_Scope $scope
-	 *
-	 * @return boolean Wheterh successful or not
+	 * @param IndieAuth_Scope $scope Scope object.
+	 * @return bool Whether successful or not.
 	 */
-
 	public function register_scope( $scope ) {
 		if ( ! $scope instanceof IndieAuth_Scope ) {
 			return false;
@@ -208,20 +224,20 @@ class IndieAuth_Scopes {
 		return true;
 	}
 
-	/* Deregister scope by name
+	/**
+	 * Deregister scope by name.
 	 *
-	 * @param string $name
-	 *
+	 * @param string $name Scope name.
 	 */
 	public function deregister_scope( $name ) {
 		unset( $this->scopes['name'] );
 	}
 
-	/* Retrieve a scope by name
+	/**
+	 * Retrieve a scope by name.
 	 *
-	 * @param string Scope Name
-	 *
-	 * @return null|IndieAuth_Scope
+	 * @param string $name Scope name.
+	 * @return null|IndieAuth_Scope Scope object or null.
 	 */
 	public function get_scope( $name ) {
 		if ( array_key_exists( $name, $this->scopes ) ) {
@@ -230,32 +246,31 @@ class IndieAuth_Scopes {
 		return null;
 	}
 
-	/* Return a list of scope names
+	/**
+	 * Return a list of scope names.
 	 *
-	 * @return Array of Scope Names
-	 *
+	 * @return array Array of scope names.
 	 */
 	public function get_names() {
 		return array_keys( $this->scopes );
 	}
 
-	/* Confirm if a scope exists by that name
+	/**
+	 * Confirm if a scope exists by that name.
 	 *
-	 * @param string $name Name Being Checked.
-	 *
-	 * @return boolean If exists.
+	 * @param string $name Name being checked.
+	 * @return bool If exists.
 	 */
 	public function is_scope( $name ) {
 		return array_key_exists( $name, $this->scopes );
 	}
 
-	/* Confirm if a capability is in one of the scopes provided.
+	/**
+	 * Confirm if a capability is in one of the scopes provided.
 	 *
-	 * @param string $cap Capability
+	 * @param string          $cap    Capability.
 	 * @param string|string[] $scopes Array of scopes or single scope.
-	 *
-	 * @return boolean If one of the capabilities is in the scope
-	 *
+	 * @return bool If one of the capabilities is in the scope.
 	 */
 	public function has_cap( $cap, $scopes ) {
 		if ( is_string( $scopes ) ) {

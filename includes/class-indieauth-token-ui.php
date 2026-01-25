@@ -1,8 +1,16 @@
 <?php
 /**
- * Generates page for token UI.
+ * IndieAuth Token UI class file.
  *
  * @package IndieAuth
+ */
+
+/**
+ * IndieAuth Token UI class.
+ *
+ * Generates page for token management UI.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Token_UI {
 	/**
@@ -42,6 +50,9 @@ class IndieAuth_Token_UI {
 	public function options_callback() {
 	}
 
+	/**
+	 * Handle client discovery action.
+	 */
 	public function client_discovery() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
 				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_client_discovery' )
@@ -61,6 +72,9 @@ class IndieAuth_Token_UI {
 		exit;
 	}
 
+	/**
+	 * Handle new token creation action.
+	 */
 	public function new_token() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
 				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_newtoken' )
@@ -92,6 +106,14 @@ class IndieAuth_Token_UI {
 		exit;
 	}
 
+	/**
+	 * Generate a local token.
+	 *
+	 * @param string $name       Token name.
+	 * @param string $scopes     Space-separated scopes.
+	 * @param int    $expires_in Expiration in seconds.
+	 * @return string|false Token or false on failure.
+	 */
 	private function generate_local_token( $name, $scopes, $expires_in = 0 ) {
 		$user_id = get_current_user_id();
 		$tokens  = new Token_User( '_indieauth_token_' );
@@ -122,7 +144,7 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function options_form() {
-		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
+		// As a precaution every time the Token UI page is loaded it will check for any expired auth codes and purge them.
 		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
 		$codes->check_expires();
 		// Check to see if the cleanup function is scheduled.
@@ -165,6 +187,9 @@ class IndieAuth_Token_UI {
 		}
 	}
 
+	/**
+	 * Render scopes checkboxes.
+	 */
 	public function scopes() {
 		$scopes = IndieAuth_Authorization_Endpoint::scopes();
 		echo '<ul>';
@@ -184,7 +209,7 @@ class IndieAuth_Token_UI {
 	public static function str_prefix( $source, $prefix ) {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
-} // End Class
+}
 
 new IndieAuth_Token_UI();
 

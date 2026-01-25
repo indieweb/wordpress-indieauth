@@ -1,24 +1,38 @@
 <?php
 /**
- * IndieAuth Client Taxonomy Class
+ * IndieAuth Client Taxonomy class file.
  *
- * Registers the taxonomy and sets its behavior.
- *
+ * @package IndieAuth
  */
 
 add_action( 'init', array( 'IndieAuth_Client_Taxonomy', 'init' ) );
 
 /**
  * Class that handles the client taxonomy functions.
+ *
+ * Registers the taxonomy and sets its behavior.
+ *
+ * @since 1.0.0
  */
 final class IndieAuth_Client_Taxonomy {
 
+	/**
+	 * Initialize the taxonomy.
+	 */
 	public static function init() {
 		self::register();
 
 		add_filter( 'terms_clauses', array( __CLASS__, 'terms_clauses' ), 11, 3 );
 	}
 
+	/**
+	 * Filter terms clauses to allow exact description search.
+	 *
+	 * @param array $clauses    SQL clauses.
+	 * @param array $taxonomies Taxonomies.
+	 * @param array $args       Query arguments.
+	 * @return array Modified clauses.
+	 */
 	public static function terms_clauses( $clauses, $taxonomies, $args ) {
 		global $wpdb;
 
@@ -105,7 +119,10 @@ final class IndieAuth_Client_Taxonomy {
 	}
 
 	/**
-	 * Update Client Icon from Discovery
+	 * Update client icon from discovery.
+	 *
+	 * @param string $url Client URL.
+	 * @return string|false Icon URL or false on failure.
 	 */
 	public static function update_client_icon_from_discovery( $url ) {
 		$current = self::get_client( $url );
@@ -125,12 +142,12 @@ final class IndieAuth_Client_Taxonomy {
 	/**
 	 * Generate a slug based on the URL of a client.
 	 *
-	 * @param string URL
-	 * @return string|string[]|null
+	 * @param string $url Client URL.
+	 * @return string Generated slug.
 	 */
 	public static function generate_slug( $url ) {
 		$host = wp_parse_url( $url, PHP_URL_HOST );
-		// strip leading www, if any.
+		// Strip leading www, if any.
 		$host = preg_replace( '/^www\./', '', $host );
 		$path = wp_parse_url( $url, PHP_URL_PATH );
 		$path = str_replace( '/', '_', $path );
@@ -139,6 +156,11 @@ final class IndieAuth_Client_Taxonomy {
 
 	/**
 	 * Add a client as a term and return.
+	 *
+	 * @param string      $url  Client URL.
+	 * @param string|null $name Client name.
+	 * @param string|null $icon Client icon URL.
+	 * @return array|WP_Error Client data or error.
 	 */
 	public static function add_client( $url, $name = null, $icon = null ) {
 		$exists = self::get_client( $url );
@@ -197,10 +219,13 @@ final class IndieAuth_Client_Taxonomy {
 	}
 
 	/**
-	 * Get Client
+	 * Get client.
+	 *
+	 * @param string|int|null $url Client URL, term ID, or null for all.
+	 * @return array|WP_Error Client data or error.
 	 */
 	public static function get_client( $url = null ) {
-		// If url is null retrieve all clients.
+		// If URL is null retrieve all clients.
 		if ( is_null( $url ) ) {
 			$terms   = get_terms(
 				array(
@@ -255,7 +280,10 @@ final class IndieAuth_Client_Taxonomy {
 	}
 
 	/**
-	 * Delete a client
+	 * Delete a client.
+	 *
+	 * @param string $url Client URL.
+	 * @return bool|int|WP_Error Term ID or error.
 	 */
 	public static function delete_client( $url ) {
 		$client = self::get_client( $url );
@@ -274,9 +302,9 @@ final class IndieAuth_Client_Taxonomy {
 	/**
 	 * Return upload directory.
 	 *
-	 * @param string $filepath File Path. Optional
-	 * @param boolean $url Return a URL if true, otherwise the directory.
-	 * @return string URL of upload directory.
+	 * @param string $filepath File path. Optional.
+	 * @param bool   $url      Return a URL if true, otherwise the directory.
+	 * @return string URL or path of upload directory.
 	 */
 	public static function upload_directory( $filepath = '', $url = false ) {
 		$upload_dir  = wp_get_upload_dir();
@@ -301,11 +329,10 @@ final class IndieAuth_Client_Taxonomy {
 	}
 
 	/**
-	 * Delete Icon File.
+	 * Delete icon file.
 	 *
-	 * @param string $url Icon to Delete.
-	 * @return boolean True if successful. False if not.
-	 *
+	 * @param string $url Icon to delete.
+	 * @return bool True if successful, false if not.
 	 */
 	public static function delete_icon_file( $url ) {
 		$filepath = self::icon_url_to_filepath( $url );
@@ -321,12 +348,11 @@ final class IndieAuth_Client_Taxonomy {
 
 
 	/**
-	 * Sideload Icon
+	 * Sideload icon.
 	 *
-	 * @param string $url URL for the client icon.
-	 * @param string $client_id Client ID
-	 * @return string URL to Downloaded Image.
-	 *
+	 * @param string $url       URL for the client icon.
+	 * @param string $client_id Client ID.
+	 * @return string|false URL to downloaded image or false on failure.
 	 */
 	public static function sideload_icon( $url, $client_id ) {
 		// If the URL is inside the upload directory.
@@ -352,7 +378,7 @@ final class IndieAuth_Client_Taxonomy {
 			$url = str_replace( 'height=' . $query['height'], 'height=' . INDIEAUTH_ICON_SIZE, $url );
 		}
 
-		// Download Profile Picture and add as attachment
+		// Download profile picture and add as attachment.
 		$download = download_url( $url, 300 );
 		if ( is_wp_error( $download ) ) {
 			return false;
@@ -367,4 +393,4 @@ final class IndieAuth_Client_Taxonomy {
 
 		return self::upload_directory( $filehandle, true );
 	}
-} // End Class
+}

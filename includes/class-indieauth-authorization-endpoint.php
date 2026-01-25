@@ -1,13 +1,29 @@
 <?php
 /**
+ * IndieAuth Authorization Endpoint class file.
  *
- *
- * Implements IndieAuth Authorization Endpoint
+ * @package IndieAuth
  */
 
+/**
+ * IndieAuth Authorization Endpoint class.
+ *
+ * Implements the IndieAuth Authorization Endpoint for handling authorization requests.
+ *
+ * @since 1.0.0
+ */
 class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
+
+	/**
+	 * Authorization codes storage.
+	 *
+	 * @var Token_User
+	 */
 	private $codes;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'login_form_indieauth', array( $this, 'login_form_indieauth' ) );
@@ -20,12 +36,18 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$this->codes = new Token_User( '_indieauth_code_' );
 	}
 
+	/**
+	 * Output HTTP Link header for authorization endpoint.
+	 */
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
 			$this->set_http_header( $this->get_endpoint(), 'authorization_endpoint' );
 		}
 	}
 
+	/**
+	 * Output HTML link tag for authorization endpoint.
+	 */
 	public function html_header() {
 		$kses = array(
 			'link' => array(
@@ -39,19 +61,41 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		}
 	}
 
+	/**
+	 * Get the authorization endpoint URL.
+	 *
+	 * @return string The authorization endpoint URL.
+	 */
 	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/auth' );
 	}
 
+	/**
+	 * Get supported response types.
+	 *
+	 * @return array List of supported response types.
+	 */
 	public static function get_response_types() {
 		return array_unique( apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) );
 	}
 
+	/**
+	 * Add authorization endpoint to REST index.
+	 *
+	 * @param array $index REST API index.
+	 * @return array Modified index.
+	 */
 	public function rest_index( $index ) {
 		$index['authorization'] = $this->get_endpoint();
 		return $index;
 	}
 
+	/**
+	 * Add authorization endpoint metadata.
+	 *
+	 * @param array $metadata Server metadata.
+	 * @return array Modified metadata.
+	 */
 	public function metadata( $metadata ) {
 		$metadata['authorization_endpoint']                         = $this->get_endpoint();
 		$metadata['response_types_supported']                       = $this->get_response_types();
@@ -72,13 +116,12 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get' ),
 					'args'                => array(
-						/* Code is currently the only type as of IndieAuth 1.1 and a response_type is now required, but not requiring it here yet.
-						 * Indicates to the authorization server that an authorization code should be returned as the response.
-						 */
+						// Code is currently the only type as of IndieAuth 1.1 and a response_type is now required.
+						// Indicates to the authorization server that an authorization code should be returned as the response.
 						'response_type'         => array(
 							'default' => 'code',
 						),
-						// The Client URL.
+						// The client URL.
 						'client_id'             => array(
 							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
@@ -90,31 +133,23 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
 						),
-						/* A parameter set by the client which will be included when the user is redirected back to the client.
-						 * This is used to prevent CSRF attacks. The authorization server MUST return the unmodified state value back to the client.
-						 */
+						// A parameter set by the client which will be included when the user is redirected back to the client.
+						// This is used to prevent CSRF attacks.
 						'state'                 => array(
 							'required' => true,
 						),
-						/* Code Challenge.
-						 */
+						// Code challenge.
 						'code_challenge'        => array(
 							'required' => true,
 						),
-						/* The hashing method used to calculate the code challenge, e.g. "S256"
-						 */
+						// The hashing method used to calculate the code challenge, e.g. "S256".
 						'code_challenge_method' => array(
 							'required' => true,
 						),
-
-						/* A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
-						 * If the client omits this value, the authorization server MUST NOT issue an access token for this authorization code.
-						 * Only the user's profile URL may be returned without any scope requested. See Profile Information for details about
-						 * which scopes to request to return user profile information. Optional.
-						 */
+						// A space-separated list of scopes the client is requesting, e.g. "profile", or "profile create".
+						// Optional.
 						'scope'                 => array(),
-						/* The Profile URL the user entered. Optional.
-						 */
+						// The profile URL the user entered. Optional.
 						'me'                    => array(
 							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
@@ -126,29 +161,23 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						/* grant_type=authorization_code is the only POST option supported right now. This remains optional as not required in
-						 * the original but will eventually be required.
-						 */
+						// grant_type=authorization_code is the only POST option supported right now.
 						'grant_type'    => array(
 							'default' => 'authorization_code',
 						),
-						/* The authorization code received from the authorization endpoint in the redirect.
-						 */
+						// The authorization code received from the authorization endpoint in the redirect.
 						'code'          => array(),
-						/* The client's URL, which MUST match the client_id used in the authentication request.
-						*/
+						// The client's URL, which MUST match the client_id used in the authentication request.
 						'client_id'     => array(
 							'validate_callback' => 'indieauth_validate_client_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						/* The client's redirect URL, which MUST match the initial authentication request.
-						 */
+						// The client's redirect URL, which MUST match the initial authentication request.
 						'redirect_uri'  => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						/* The original plaintext random string generated before starting the authorization request.
-						 */
+						// The original plaintext random string generated before starting the authorization request.
 						'code_verifier' => array(),
 					),
 					'permission_callback' => '__return_true',
@@ -157,7 +186,12 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		);
 	}
 
-	// Get Scope Descriptions
+	/**
+	 * Get scope descriptions.
+	 *
+	 * @param string $scope Scope name or 'all' for all scopes.
+	 * @return array|string Scope descriptions or single description.
+	 */
 	public static function scopes( $scope = 'all' ) {
 		$scopes = array(
 			// Micropub Scopes
@@ -186,10 +220,10 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		return apply_filters( 'indieauth_scope_description', $description, $scope );
 	}
 
-	/*
+	/**
 	 * Output a list of checkboxes to select scopes.
 	 *
-	 * @param array $scopes Scopes to Output.
+	 * @param array $scopes Scopes to output.
 	 */
 	public static function scope_list( $scopes ) {
 		if ( ! empty( $scopes ) ) {
@@ -259,11 +293,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		}
 	}
 
-	/*
+	/**
 	 * Authorization Endpoint GET request handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
-	 * @return Response to Return to the REST Server.
+	 * @return WP_REST_Response|WP_OAuth_Response Response to return to the REST Server.
 	 */
 	public function get( $request ) {
 		$params = $request->get_params();
@@ -277,11 +311,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		return new WP_OAuth_Response( 'unsupported_response_type', __( 'Unsupported Response Type', 'indieauth' ), 400 );
 	}
 
-	/*
+	/**
 	 * Handler for Response Type Code.
 	 *
-	 * @param array $params The Parameters Passed to the REST Server.
-	 * @return Response to Return to the REST Server.
+	 * @param array $params The parameters passed to the REST Server.
+	 * @return WP_REST_Response|WP_OAuth_Response Response to return to the REST Server.
 	 */
 	public function code( $params ) {
 		$required = array( 'redirect_uri', 'client_id', 'state' );
@@ -321,28 +355,48 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		return new WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
 	}
 
+	/**
+	 * Set an authorization code.
+	 *
+	 * @param int   $user_id User ID.
+	 * @param array $code    Code data.
+	 * @return string|false Code key or false on failure.
+	 */
 	public function set_code( $user_id, $code ) {
 		$this->codes->set_user( $user_id );
 		return $this->codes->set( $code, 600 );
 	}
 
+	/**
+	 * Get an authorization code.
+	 *
+	 * @param string $code Authorization code.
+	 * @param bool   $hash Whether to hash the code.
+	 * @return array|false Code data or false.
+	 */
 	public function get_code( $code, $hash = true ) {
 		$code = $this->codes->get( $code, $hash );
 		return $code;
 	}
 
+	/**
+	 * Delete an authorization code.
+	 *
+	 * @param string   $code    Authorization code.
+	 * @param int|null $user_id User ID.
+	 * @return bool Whether deletion was successful.
+	 */
 	public function delete_code( $code, $user_id = null ) {
 		$this->codes->set_user( $user_id );
 		return $this->codes->destroy( $code );
 	}
 
-	/*
+	/**
 	 * Authorization Endpoint POST request handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
-	 * @return Response to Return to the REST Server.
+	 * @return WP_REST_Response|WP_OAuth_Response|array Response to return to the REST Server.
 	 */
-
 	public function post( $request ) {
 		$params = $request->get_params();
 
@@ -353,11 +407,11 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		return new WP_OAuth_Response( 'unsupported_grant_type', __( 'Endpoint only accepts authorization_code grant_type', 'indieauth' ), 400 );
 	}
 
-	/*
+	/**
 	 * Grant Type Authorization Code Request Handler.
 	 *
 	 * @param array $params Parameters.
-	 * @return Response to Return to the REST Server.
+	 * @return array|WP_OAuth_Response Response to return to the REST Server.
 	 */
 	public function authorization_code( $params ) {
 		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
@@ -383,7 +437,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 			return new WP_OAuth_Response( 'invalid_grant', __( 'The authorization code expired', 'indieauth' ), 400 );
 		}
 		unset( $token['exp'] );
-		// If there is a code challenge
+		// If there is a code challenge.
 		if ( isset( $token['code_challenge'] ) ) {
 			if ( ! $code_verifier ) {
 				$this->delete_code( $code, $token['user'] );
@@ -411,6 +465,9 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		return new WP_OAuth_Response( 'invalid_grant', __( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
 	}
 
+	/**
+	 * Handle IndieAuth login form action.
+	 */
 	public function login_form_indieauth() {
 		if ( ! is_user_logged_in() ) {
 			auth_redirect();
@@ -424,6 +481,9 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		exit;
 	}
 
+	/**
+	 * Display the authorization form.
+	 */
 	public function authorize() {
 		$current_user = wp_get_current_user();
 		// phpcs:disable
@@ -473,6 +533,9 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		include plugin_dir_path( __DIR__ ) . 'templates/indieauth-auth-footer.php';
 	}
 
+	/**
+	 * Process confirmed authorization.
+	 */
 	public function confirmed() {
 		// Verify nonce for CSRF protection before processing any user input
 		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
@@ -489,7 +552,8 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? wp_unslash( $_POST['code_challenge'] ) : null;
 		$code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? wp_unslash( $_POST['code_challenge_method'] ) : null;
 
-		// Do not allow the post scope as deprecated. For compatibility, instead update the offering to the more limited but functionally identical create/update.
+		// Do not allow the post scope as deprecated.
+		// For compatibility, instead update the offering to the more limited but functionally identical create/update.
 		$search = array_search( 'post', $scope, true );
 		if ( is_numeric( $search ) ) {
 			unset( $scope[ $search ] );
@@ -500,8 +564,9 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 		
-		// In IndieAuth 1.1, me parameter is optional. Me should actually be derived only from the logged in user not from this parameter.
-		// In other implementations, there may be multiple identities permitted for a single user, but this is not currently practical on a 
+		// In IndieAuth 1.1, me parameter is optional.
+		// Me should actually be derived only from the logged in user not from this parameter.
+		// In other implementations, there may be multiple identities permitted for a single user, but this is not currently practical on a
 		// WordPress site, so we will just ignore the optional me parameter and always return our own.
 		$me = get_url_from_user( $user );
 
@@ -509,8 +574,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$response_type = isset( $_POST['response_type'] ) ? wp_unslash( $_POST['response_type'] ) : null;
 
 
-		/* Add UUID for reference.  
-		 */
+		// Add UUID for reference.
 		$uuid = wp_generate_uuid4();
 
 		/// phpcs:enable

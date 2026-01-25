@@ -1,7 +1,27 @@
-<?php
-//phpcs:ignore
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
+/**
+ * OAuth Response class file.
+ *
+ * @package IndieAuth
+ */
+
+// phpcs:disable Universal.Files.SeparateFunctionsFromOO.Mixed
+
+/**
+ * OAuth Response class extending WP_REST_Response.
+ *
+ * @since 1.0.0
+ */
 class WP_OAuth_Response extends WP_REST_Response {
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string     $error             Error code.
+	 * @param string     $error_description Error description.
+	 * @param int        $code              HTTP status code.
+	 * @param array|null $debug             Optional debug information.
+	 */
 	public function __construct( $error, $error_description, $code = 200, $debug = null ) {
 		$this->set_status( $code );
 		$this->set_data(
@@ -14,15 +34,25 @@ class WP_OAuth_Response extends WP_REST_Response {
 			$this->set_debug( $debug );
 		}
 		if ( WP_DEBUG ) {
-			error_log( $this->to_log() ); // phpcs:ignore
+			error_log( $this->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 
-	public function set_debug( $array ) {
+	/**
+	 * Set debug information.
+	 *
+	 * @param array $debug_data Debug data to merge.
+	 */
+	public function set_debug( $debug_data ) {
 		$data = $this->get_data();
-		$this->set_data( array_merge( $data, $array ) );
+		$this->set_data( array_merge( $data, $debug_data ) );
 	}
 
+	/**
+	 * Convert to WP_Error.
+	 *
+	 * @return WP_Error The error object.
+	 */
 	public function to_wp_error() {
 		$data              = $this->get_data();
 		$error             = $data['error'];
@@ -40,6 +70,11 @@ class WP_OAuth_Response extends WP_REST_Response {
 		);
 	}
 
+	/**
+	 * Convert to log string.
+	 *
+	 * @return string Log message.
+	 */
 	public function to_log() {
 		$data   = $this->get_data();
 		$status = $this->get_status();
@@ -47,10 +82,15 @@ class WP_OAuth_Response extends WP_REST_Response {
 	}
 }
 
-//phpcs:ignore
+/**
+ * Get OAuth error from response.
+ *
+ * @param mixed $obj Response object or array.
+ * @return WP_OAuth_Response|false OAuth response or false.
+ */
 function get_oauth_error( $obj ) {
 	if ( is_array( $obj ) ) {
-		// When checking the result of wp_remote_post
+		// When checking the result of wp_remote_post.
 		if ( isset( $obj['body'] ) ) {
 			$body = json_decode( $obj['body'], true );
 			if ( isset( $body['error'] ) ) {
@@ -70,12 +110,22 @@ function get_oauth_error( $obj ) {
 	return false;
 }
 
-//phpcs:ignore
+/**
+ * Check if object is an OAuth error.
+ *
+ * @param mixed $obj Object to check.
+ * @return bool True if OAuth error.
+ */
 function is_oauth_error( $obj ) {
 	return ( $obj instanceof WP_OAuth_Response );
 }
 
-//phpcs:ignore
+/**
+ * Convert WP_Error to OAuth response.
+ *
+ * @param WP_Error $error The WordPress error.
+ * @return WP_OAuth_Response|null OAuth response or null.
+ */
 function wp_error_to_oauth_response( $error ) {
 	if ( is_wp_error( $error ) ) {
 		$data   = $error->get_error_data();

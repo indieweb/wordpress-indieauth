@@ -1,9 +1,22 @@
 <?php
 /**
- * Web Sign In
+ * Web Sign In class file.
+ *
+ * @package IndieAuth
+ */
+
+/**
+ * Web Sign In class.
+ *
+ * Handles web sign-in functionality for WordPress login.
+ *
+ * @since 1.0.0
  */
 class Web_Signin {
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'settings' ) );
 
@@ -13,8 +26,10 @@ class Web_Signin {
 		add_action( 'authenticate', array( $this, 'authenticate' ), 20, 2 );
 	}
 
+	/**
+	 * Register settings for web sign-in.
+	 */
 	public function settings() {
-
 		register_setting(
 			'indieauth',
 			'indieauth_show_login_form',
@@ -28,10 +43,11 @@ class Web_Signin {
 	}
 
 	/**
-	 * Redirect to Authorization Endpoint for Authentication
+	 * Redirect to Authorization Endpoint for Authentication.
 	 *
-	 * @param string $me URL parameter
-	 * @param string $redirect_uri where to redirect
+	 * @param string $me           URL parameter.
+	 * @param string $redirect_uri Where to redirect.
+	 * @return WP_Error|void Error on failure, redirects on success.
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
 		$me = indieauth_validate_user_identifier( $me );
@@ -73,16 +89,16 @@ class Web_Signin {
 			),
 			$state['authorization_endpoint']
 		);
-		// redirect to authentication endpoint
+		// Redirect to authentication endpoint.
 		wp_redirect( $query );
 	}
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
 	 *
-	 * @action: authenticate
-	 * @param mixed $user authenticated user object, or WP_Error or null
-	 * @return mixed authenticated user object, or WP_Error or null
+	 * @param WP_User|WP_Error|null $user Authenticated user object, or WP_Error or null.
+	 * @param string                $url  URL parameter (unused but required by filter).
+	 * @return WP_User|WP_Error|null Authenticated user object, or WP_Error or null.
 	 */
 	public function authenticate( $user, $url ) {
 		if ( $user instanceof WP_User ) {
@@ -144,7 +160,7 @@ class Web_Signin {
 
 
 	/**
-	 * render the login form
+	 * Render the login form.
 	 */
 	public function login_form() {
 		$template = plugin_dir_path( __DIR__ ) . 'templates/websignin-link.php';
@@ -153,6 +169,9 @@ class Web_Signin {
 		}
 	}
 
+	/**
+	 * Handle web sign-in form submission.
+	 */
 	public function login_form_websignin() {
 		$login_errors = null;
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {

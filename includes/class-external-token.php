@@ -117,7 +117,7 @@ class External_User_Token {
 	/**
 	 * Retrieves a token
 	 *
-	 * @param string  $key token to retrieve.
+	 * @param string $key token to retrieve.
 	 * @return array|boolean Token data or false if not found
 	 */
 	public function get( $key ) {
@@ -141,7 +141,7 @@ class External_User_Token {
 	/**
 	 * Retrieves a token
 	 *
-	 * @param string  $key token to retrieve.
+	 * @param string $key token to retrieve.
 	 * @return array|boolean Token data or false if not found
 	 */
 	public function get_all() {
@@ -194,7 +194,7 @@ class External_User_Token {
 	 * Destroys a token.
 	 *
 	 * @param array|string $tokens Token to destroy. Will also accept an array of tokens to destroy.
-	 * @param boolean $revoke Whether to send revoke request to token endpoint.
+	 * @param boolean      $revoke Whether to send revoke request to token endpoint.
 	 */
 	public function destroy( $destroy, $revoke = true ) {
 		if ( ! current_user_can( 'edit_user', $this->user_id ) ) {
@@ -222,7 +222,7 @@ class External_User_Token {
 	/**
 	 * Revokes an External token.
 	 *
-	 * @param array $token Token to destroy. This is the token info stored in the database.
+	 * @param array   $token Token to destroy. This is the token info stored in the database.
 	 * @param boolean $revoke Whether to send revoke request to token endpoint.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */

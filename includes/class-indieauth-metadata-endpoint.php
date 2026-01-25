@@ -1,9 +1,20 @@
 <?php
 /**
- * Metadata Endpoint Functionality
+ * IndieAuth Metadata Endpoint class file.
+ *
+ * @package IndieAuth
+ */
+
+/**
+ * Metadata Endpoint Functionality.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Metadata_Endpoint {
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_filter( 'rest_pre_serve_request', array( $this, 'serve_request' ), 11, 4 );
 		add_filter( 'rest_index', array( $this, 'register_index' ) );
@@ -12,36 +23,41 @@ class IndieAuth_Metadata_Endpoint {
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
 	}
 
-	/*
+	/**
 	 * Returns the URL for the metadata endpoint.
+	 *
+	 * @return string Endpoint URL.
 	 */
 	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/metadata' );
 	}
 
-
+	/**
+	 * Returns the issuer URL.
+	 *
+	 * @return string Issuer URL.
+	 */
 	public static function get_issuer() {
 		return rest_url( '/indieauth/1.0' );
 	}
 
-
-	/*
+	/**
 	 * Outputs a marked up Http link header.
 	 *
-	 * @param string $url URL for the link
-	 * @param string $rel Rel property for the link
-	 * @param boolean $replace Passes the value of replace through to the header PHP
+	 * @param string $url     URL for the link.
+	 * @param string $rel     Rel property for the link.
+	 * @param bool   $replace Passes the value of replace through to the header PHP.
 	 */
 	public static function set_http_header( $url, $rel, $replace = false ) {
 		header( sprintf( 'Link: <%s>; rel="%s"', $url, $rel ), $replace );
 	}
 
-	/*
+	/**
 	 * Returns a marked up HTML link header.
 	 *
-	 * @param string $url URL for the link
-	 * @param string $rel Rel property for the link
-	 * @return string Marked up HTML link to add to head
+	 * @param string $url URL for the link.
+	 * @param string $rel Rel property for the link.
+	 * @return string Marked up HTML link to add to head.
 	 */
 	public static function get_html_header( $url, $rel ) {
 		return sprintf( '<link rel="%s" href="%s" />' . PHP_EOL, $rel, $url );
@@ -54,8 +70,7 @@ class IndieAuth_Metadata_Endpoint {
 	 * @param WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
 	 * @param WP_REST_Request           $request Request used to generate the response.
 	 * @param WP_REST_Server            $server  Server instance.
-	 *
-	 * @return true
+	 * @return bool Whether the request has been served.
 	 */
 	public static function serve_request( $served, $result, $request, $server ) {
 		if ( ! str_contains( $request->get_route(), '/indieauth/1.0' ) ) {
@@ -67,12 +82,11 @@ class IndieAuth_Metadata_Endpoint {
 	}
 
 	/**
-	 * Add authentication information into the REST API Index
+	 * Add authentication information into the REST API Index.
 	 *
-	 * @param WP_REST_Response $response REST API Response Object
-	 *
-	 * @return WP_REST_Response Response object with endpoint info added
-	 **/
+	 * @param WP_REST_Response $response REST API Response Object.
+	 * @return WP_REST_Response Response object with endpoint info added.
+	 */
 	public function register_index( WP_REST_Response $response ) {
 		$data      = $response->get_data();
 		$endpoints = array(
@@ -89,12 +103,18 @@ class IndieAuth_Metadata_Endpoint {
 		return $response;
 	}
 
-
+	/**
+	 * Output HTTP link header on author and front pages.
+	 */
 	public function http_header() {
 		if ( is_author() || is_front_page() ) {
 			$this->set_http_header( static::get_endpoint(), 'indieauth-metadata' );
 		}
 	}
+
+	/**
+	 * Output HTML link header on author and front pages.
+	 */
 	public function html_header() {
 		$kses = array(
 			'link' => array(
@@ -130,8 +150,8 @@ class IndieAuth_Metadata_Endpoint {
 	 * Metadata Endpoint GET request handler.
 	 *
 	 * @param WP_REST_Request $request The Request Object.
-	 * @return Response to Return to the REST Server.
-	 **/
+	 * @return WP_REST_Response Response to Return to the REST Server.
+	 */
 	public function metadata( $request ) {
 		$metadata = array(
 			'issuer'                           => indieauth_get_issuer(),
