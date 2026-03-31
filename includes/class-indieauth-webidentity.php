@@ -8,7 +8,6 @@
 /**
  * Handles the /.well-known/web-identity endpoint for FedCM discovery.
  *
- * @package IndieAuth
  * @see https://indieweb.org/FedCM_for_IndieAuth
  */
 class IndieAuth_WebIdentity {

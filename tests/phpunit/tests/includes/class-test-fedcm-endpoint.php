@@ -1,8 +1,12 @@
 <?php
 /**
- * FedCM Endpoint Tests
+ * FedCM Endpoint Tests file.
  *
  * @package IndieAuth
+ */
+
+/**
+ * FedCM Endpoint Tests.
  */
 class FedCMEndpointTest extends WP_UnitTestCase {
 
@@ -375,7 +379,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'PKCE parameters required', $data['error'] );
+		$this->assertEquals( 'rest_invalid_param', $data['code'] );
 	}
 
 	/**
@@ -408,7 +412,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Unsupported code_challenge_method', $data['error'] );
+		$this->assertEquals( 'rest_invalid_param', $data['code'] );
 	}
 
 	/**
@@ -434,7 +438,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Invalid JSON in params', $data['error'] );
+		$this->assertEquals( 'rest_invalid_param', $data['code'] );
 	}
 
 	/**

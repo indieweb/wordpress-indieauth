@@ -9,7 +9,6 @@
  * Implements the Federated Credential Management (FedCM) API endpoints
  * for IndieAuth authentication.
  *
- * @package IndieAuth
  * @see https://indieweb.org/FedCM_for_IndieAuth
  */
 class IndieAuth_FedCM_Endpoint {
@@ -244,13 +243,43 @@ class IndieAuth_FedCM_Endpoint {
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'params'     => array(
-							'required' => true, // PKCE params are required for IndieAuth.
+							'required'          => true, // PKCE params are required for IndieAuth.
+							'validate_callback' => array( $this, 'validate_params' ),
 						),
 					),
 					'permission_callback' => '__return_true',
 				),
 			)
 		);
+	}
+
+	/**
+	 * Validate the params argument contains required PKCE fields.
+	 *
+	 * @param mixed $value The params value.
+	 * @return bool|WP_Error True if valid, WP_Error otherwise.
+	 */
+	public function validate_params( $value ) {
+		if ( is_string( $value ) ) {
+			$value = json_decode( $value, true );
+			if ( JSON_ERROR_NONE !== json_last_error() ) {
+				return new WP_Error( 'invalid_params', __( 'Invalid JSON in params', 'indieauth' ) );
+			}
+		}
+
+		if ( ! is_array( $value ) ) {
+			return new WP_Error( 'invalid_params', __( 'Invalid params format', 'indieauth' ) );
+		}
+
+		if ( empty( $value['code_challenge'] ) || empty( $value['code_challenge_method'] ) ) {
+			return new WP_Error( 'invalid_params', __( 'PKCE parameters required', 'indieauth' ) );
+		}
+
+		if ( 'S256' !== $value['code_challenge_method'] ) {
+			return new WP_Error( 'invalid_params', __( 'Unsupported code_challenge_method', 'indieauth' ) );
+		}
+
+		return true;
 	}
 
 	/**
@@ -386,7 +415,7 @@ class IndieAuth_FedCM_Endpoint {
 		$account = array(
 			'id'         => $me,
 			'name'       => $user->display_name,
-			'email'      => $me, // Use URL as email placeholder for IndieAuth.
+			'email'      => $user->user_email,
 			'given_name' => $user->first_name ? $user->first_name : $user->display_name,
 		);
 
@@ -511,45 +540,13 @@ class IndieAuth_FedCM_Endpoint {
 			);
 		}
 
-		// Parse PKCE params if provided.
-		$code_challenge        = null;
-		$code_challenge_method = null;
-
-		if ( $params ) {
-			if ( is_string( $params ) ) {
-				$params = json_decode( $params, true );
-				if ( JSON_ERROR_NONE !== json_last_error() ) {
-					return new WP_REST_Response(
-						array( 'error' => 'Invalid JSON in params' ),
-						400
-					);
-				}
-			}
-			if ( ! is_array( $params ) ) {
-				return new WP_REST_Response(
-					array( 'error' => 'Invalid params format' ),
-					400
-				);
-			}
-			$code_challenge        = isset( $params['code_challenge'] ) ? sanitize_text_field( $params['code_challenge'] ) : null;
-			$code_challenge_method = isset( $params['code_challenge_method'] ) ? sanitize_text_field( $params['code_challenge_method'] ) : null;
+		// Parse PKCE params (already validated by validate_params callback).
+		if ( is_string( $params ) ) {
+			$params = json_decode( $params, true );
 		}
 
-		// PKCE is required for IndieAuth.
-		if ( ! $code_challenge || ! $code_challenge_method ) {
-			return new WP_REST_Response(
-				array( 'error' => 'PKCE parameters required' ),
-				400
-			);
-		}
-
-		// Validate supported PKCE method.
-		if ( 'S256' !== $code_challenge_method ) {
-			return new WP_REST_Response(
-				array( 'error' => 'Unsupported code_challenge_method' ),
-				400
-			);
-		}
+		$code_challenge        = sanitize_text_field( $params['code_challenge'] );
+		$code_challenge_method = sanitize_text_field( $params['code_challenge_method'] );
 
 		// Generate authorization code.
 		$uuid = wp_generate_uuid4();
