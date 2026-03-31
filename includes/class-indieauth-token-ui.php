@@ -1,8 +1,16 @@
 <?php
 /**
- * Generates page for token UI.
+ * IndieAuth Token UI class file.
  *
  * @package IndieAuth
+ */
+
+/**
+ * IndieAuth Token UI class.
+ *
+ * Generates page for token management UI.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Token_UI {
 	/**
@@ -42,9 +50,12 @@ class IndieAuth_Token_UI {
 	public function options_callback() {
 	}
 
+	/**
+	 * Handle client discovery action.
+	 */
 	public function client_discovery() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
-				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_client_discovery' )
+				|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['indieauth_nonce'] ) ), 'indieauth_client_discovery' )
 		) {
 			esc_html_e( 'Invalid Nonce', 'indieauth' );
 			exit;
@@ -55,15 +66,18 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		header( 'Content-Type: application/json' );
-		$client_url = sanitize_text_field( $_REQUEST['client_url'] );
+		$client_url = sanitize_text_field( wp_unslash( $_REQUEST['client_url'] ) );
 		$client     = new IndieAuth_Client_Discovery( $client_url );
 		echo wp_json_encode( $client->export(), JSON_PRETTY_PRINT );
 		exit;
 	}
 
+	/**
+	 * Handle new token creation action.
+	 */
 	public function new_token() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
-				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_newtoken' )
+				|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['indieauth_nonce'] ) ), 'indieauth_newtoken' )
 		) {
 			esc_html_e( 'Invalid Nonce', 'indieauth' );
 			exit;
@@ -74,13 +88,14 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		require ABSPATH . 'wp-admin/admin-header.php';
-		$client_name = sanitize_text_field( $_REQUEST['client_name'] );
-		$scopes      = trim( implode( ' ', $_REQUEST['scopes'] ) );
+		$client_name = sanitize_text_field( wp_unslash( $_REQUEST['client_name'] ) );
+		$scopes      = isset( $_REQUEST['scopes'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_REQUEST['scopes'] ) ) : array();
+		$scopes      = trim( implode( ' ', $scopes ) );
 		if ( empty( $scopes ) ) {
 			$scopes = 'create update';
 		}
 		$scopes  = sanitize_text_field( $scopes );
-		$expires = sanitize_text_field( $_REQUEST['expires_in'] );
+		$expires = isset( $_REQUEST['expires_in'] ) ? absint( $_REQUEST['expires_in'] ) : 0;
 		$token   = self::generate_local_token( $client_name, $scopes, $expires );
 		?>
 	<p><?php esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
@@ -92,6 +107,14 @@ class IndieAuth_Token_UI {
 		exit;
 	}
 
+	/**
+	 * Generate a local token.
+	 *
+	 * @param string $name       Token name.
+	 * @param string $scopes     Space-separated scopes.
+	 * @param int    $expires_in Expiration in seconds.
+	 * @return string|false Token or false on failure.
+	 */
 	private function generate_local_token( $name, $scopes, $expires_in = 0 ) {
 		$user_id = get_current_user_id();
 		$tokens  = new Token_User( '_indieauth_token_' );
@@ -122,7 +145,7 @@ class IndieAuth_Token_UI {
 	 * @access public
 	 */
 	public function options_form() {
-		// As a precaution every time the Token UI page is lost it will check for any expired auth codes and purge them
+		// As a precaution every time the Token UI page is loaded it will check for any expired auth codes and purge them.
 		$codes = new Token_User( '_indieauth_code_', get_current_user_id() );
 		$codes->check_expires();
 		// Check to see if the cleanup function is scheduled.
@@ -165,6 +188,9 @@ class IndieAuth_Token_UI {
 		}
 	}
 
+	/**
+	 * Render scopes checkboxes.
+	 */
 	public function scopes() {
 		$scopes = IndieAuth_Authorization_Endpoint::scopes();
 		echo '<ul>';
@@ -184,7 +210,7 @@ class IndieAuth_Token_UI {
 	public static function str_prefix( $source, $prefix ) {
 		return strncmp( $source, $prefix, strlen( $prefix ) ) === 0;
 	}
-} // End Class
+}
 
 new IndieAuth_Token_UI();
 

@@ -1,9 +1,22 @@
 <?php
 /**
- * Web Sign In
+ * Web Sign In class file.
+ *
+ * @package IndieAuth
+ */
+
+/**
+ * Web Sign In class.
+ *
+ * Handles web sign-in functionality for WordPress login.
+ *
+ * @since 1.0.0
  */
 class Web_Signin {
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'settings' ) );
 
@@ -13,8 +26,10 @@ class Web_Signin {
 		add_action( 'authenticate', array( $this, 'authenticate' ), 20, 2 );
 	}
 
+	/**
+	 * Register settings for web sign-in.
+	 */
 	public function settings() {
-
 		register_setting(
 			'indieauth',
 			'indieauth_show_login_form',
@@ -28,10 +43,11 @@ class Web_Signin {
 	}
 
 	/**
-	 * Redirect to Authorization Endpoint for Authentication
+	 * Redirect to Authorization Endpoint for Authentication.
 	 *
-	 * @param string $me URL parameter
-	 * @param string $redirect_uri where to redirect
+	 * @param string $me           URL parameter.
+	 * @param string $redirect_uri Where to redirect.
+	 * @return WP_Error|void Error on failure, redirects on success.
 	 */
 	public function websignin_redirect( $me, $redirect_uri ) {
 		$me = indieauth_validate_user_identifier( $me );
@@ -73,26 +89,28 @@ class Web_Signin {
 			),
 			$state['authorization_endpoint']
 		);
-		// redirect to authentication endpoint
-		wp_redirect( $query );
+		// Redirect to authentication endpoint.
+		wp_redirect( $query ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
 	}
 
 	/**
 	 * Authenticate user to WordPress using IndieAuth.
 	 *
-	 * @action: authenticate
-	 * @param mixed $user authenticated user object, or WP_Error or null
-	 * @return mixed authenticated user object, or WP_Error or null
+	 * @param WP_User|WP_Error|null $user Authenticated user object, or WP_Error or null.
+	 * @param string                $url  URL parameter (unused but required by filter).
+	 * @return WP_User|WP_Error|null Authenticated user object, or WP_Error or null.
 	 */
-	public function authenticate( $user, $url ) {
+	public function authenticate( $user, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		if ( $user instanceof WP_User ) {
 			return $user;
 		}
-		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? sanitize_text_field( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
 		$redirect_to = rawurldecode( $redirect_to );
 		$token       = new Token_Transient( 'indieauth_state' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( array_key_exists( 'code', $_REQUEST ) && array_key_exists( 'state', $_REQUEST ) ) {
-			$state = $token->verify( $_REQUEST['state'] );
+			$state = $token->verify( sanitize_text_field( wp_unslash( $_REQUEST['state'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( ! $state ) {
 				return new WP_Error( 'indieauth_state_error', __( 'IndieAuth Server did not return the same state parameter', 'indieauth' ) );
 			}
@@ -102,8 +120,8 @@ class Web_Signin {
 			if ( is_wp_error( $state ) ) {
 				return $state;
 			}
-			if ( array_key_exists( 'iss', $_REQUEST ) ) {
-				$iss = rawurldecode( $_REQUEST['iss'] );
+			if ( array_key_exists( 'iss', $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$iss = rawurldecode( sanitize_text_field( wp_unslash( $_REQUEST['iss'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				if ( ! indieauth_validate_issuer_identifier( $iss ) ) {
 					return new WP_Error( 'indieauth_iss_error', __( 'Issuer Parameter is Not Valid', 'indieauth' ) );
 				}
@@ -118,11 +136,11 @@ class Web_Signin {
 			$client->meta = $state;
 			$response     = $client->redeem_authorization_code(
 				array(
-					'code'          => $_REQUEST['code'],
+					'code'          => sanitize_text_field( wp_unslash( $_REQUEST['code'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					'redirect_uri'  => wp_login_url( $redirect_to ),
 					'code_verifier' => $state['code_verifier'],
 				),
-				false // Redeem at Authorization Endpoint
+				false // Redeem at Authorization Endpoint.
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -144,7 +162,7 @@ class Web_Signin {
 
 
 	/**
-	 * render the login form
+	 * Render the login form.
 	 */
 	public function login_form() {
 		$template = plugin_dir_path( __DIR__ ) . 'templates/websignin-link.php';
@@ -153,21 +171,18 @@ class Web_Signin {
 		}
 	}
 
+	/**
+	 * Handle web sign-in form submission.
+	 */
 	public function login_form_websignin() {
-		$login_errors = null;
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? $_REQUEST['redirect_to'] : '';
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$redirect_to = array_key_exists( 'redirect_to', $_REQUEST ) ? sanitize_text_field( wp_unslash( $_REQUEST['redirect_to'] ) ) : '';
 			$redirect_to = rawurldecode( $redirect_to );
 
-			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore
-				$me = esc_url_raw( $_POST['websignin_identifier'] ); //phpcs:ignore
-				$return = $this->websignin_redirect( $me, wp_login_url( $redirect_to ) );
-				if ( is_wp_error( $return ) ) {
-					$login_errors = $return;
-				}
-				if ( is_oauth_error( $return ) ) {
-					$login_errors = $return->to_wp_error();
-				}
+			if ( array_key_exists( 'websignin_identifier', $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$me = esc_url_raw( wp_unslash( $_POST['websignin_identifier'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$this->websignin_redirect( $me, wp_login_url( $redirect_to ) );
 			}
 		}
 

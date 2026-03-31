@@ -1,11 +1,22 @@
 <?php
 /**
+ * IndieAuth Ticket Endpoint class file.
  *
- *
- * Implements IndieAuth Ticket Endpoint
+ * @package IndieAuth
  */
 
+/**
+ * IndieAuth Ticket Endpoint class.
+ *
+ * Implements the IndieAuth Ticket Endpoint for receiving and redeeming tickets.
+ *
+ * @since 1.0.0
+ */
 class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
+
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 		add_action( 'template_redirect', array( $this, 'http_header' ) );
@@ -14,18 +25,36 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		add_action( 'indieauth_ticket_redeemed', array( $this, 'notify' ) );
 	}
 
+	/**
+	 * Get the ticket endpoint URL.
+	 *
+	 * @return string The ticket endpoint URL.
+	 */
 	public static function get_endpoint() {
 		return rest_url( '/indieauth/1.0/ticket' );
 	}
 
+	/**
+	 * Add ticket endpoint to metadata.
+	 *
+	 * @param array $metadata Server metadata.
+	 * @return array Modified metadata.
+	 */
 	public function metadata( $metadata ) {
 		$metadata['ticket_endpoint'] = $this->get_endpoint();
 		return $metadata;
 	}
 
+	/**
+	 * Output HTTP Link header for ticket endpoint.
+	 */
 	public function http_header() {
 		$this->set_http_header( static::get_endpoint(), 'ticket_endpoint' );
 	}
+
+	/**
+	 * Output HTML link tag for ticket endpoint.
+	 */
 	public function html_header() {
 		$kses = array(
 			'link' => array(
@@ -48,27 +77,23 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'args'                => array(
-						/* a random string that cna be redeemed for an access token.
-						 */
+						// A random string that can be redeemed for an access token.
 						'ticket'   => array(
 							'required' => true,
 						),
-						/* the access token will work at this URL.
-						 */
+						// The access token will work at this URL.
 						'resource' => array(
 							'validate_callback' => 'rest_is_valid_url',
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
 						),
-						/* The access token is used when acting on behalf of this URL
-						 */
+						// The access token is used when acting on behalf of this URL.
 						'subject'  => array(
 							'validate_callback' => 'indieauth_validate_user_identifier',
 							'sanitize_callback' => 'esc_url_raw',
 							'required'          => true,
 						),
-						/* The Server Issue Identifie
-						 */
+						// The server issuer identifier.
 						'iss'      => array(
 							'validate_callback' => 'indieauth_validate_issuer_identifier',
 							'sanitize_callback' => 'esc_url_raw',
@@ -81,11 +106,16 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 	}
 
 
-	// Request or revoke a token
+	/**
+	 * Handle ticket endpoint POST request.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_OAuth_Response Response object.
+	 */
 	public function post( $request ) {
 		$params       = $request->get_params();
 		$clean_params = wp_array_slice_assoc( $params, array( 'subject', 'resource', 'iss' ) );
-		// Fires when a ticket is received with the parameters. Excludes ticket code itself
+		// Fires when a ticket is received with the parameters. Excludes ticket code itself.
 		do_action( 'indieauth_ticket_received', $clean_params );
 		$client    = new IndieAuth_Client();
 		$endpoints = false;
@@ -116,6 +146,10 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			return $endpoints;
 		}
 
+		if ( ! wp_http_validate_url( $client->meta['token_endpoint'] ) ) {
+			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Token Endpoint URL', 'indieauth' ), 400 );
+		}
+
 		$return = $this->request_token( $client->meta['token_endpoint'], $params );
 
 		if ( is_oauth_error( $return ) ) {
@@ -135,7 +169,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			// Add time this token was issued.
 			$return['iat'] = time();
 
-			// Store the Token Endpoint so it does not have to be discovered again.
+			// Store the token endpoint so it does not have to be discovered again.
 			$return['token_endpoint'] = $client->meta['token_endpoint'];
 
 			$save = $this->save_token( $return );
@@ -143,7 +177,7 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 				return $save;
 			}
 
-			// Fires when Ticket is Successfully Redeemed, omits token info.
+			// Fires when ticket is successfully redeemed, omits token info.
 			do_action( 'indieauth_ticket_redeemed', wp_array_slice_assoc( $return, array( 'me', 'expires_in', 'iat', 'expiration', 'resource', 'iss', 'token_endpoint', 'uuid' ) ) );
 			return new WP_REST_Response(
 				array(
@@ -157,6 +191,12 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Request', 'indieauth' ), 400 );
 	}
 
+	/**
+	 * Save token from ticket redemption.
+	 *
+	 * @param array $token Token data.
+	 * @return true|WP_OAuth_Response True on success, error on failure.
+	 */
 	public function save_token( $token ) {
 		if ( ! array_key_exists( 'me', $token ) ) {
 			return new WP_OAuth_Response( 'invalid_request', __( 'Me Property Missing From Response', 'indieauth' ), 400 );
@@ -177,6 +217,13 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		return true;
 	}
 
+	/**
+	 * Request token from token endpoint.
+	 *
+	 * @param string $url    Token endpoint URL.
+	 * @param array  $params Request parameters.
+	 * @return array|WP_OAuth_Response Token data or error.
+	 */
 	public function request_token( $url, $params ) {
 		$client = new IndieAuth_Client();
 		return $client->remote_post(
@@ -188,6 +235,11 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 		);
 	}
 
+	/**
+	 * Notify user of successful ticket redemption.
+	 *
+	 * @param array $params Token parameters.
+	 */
 	public function notify( $params ) {
 		$user = get_user_by_identifier( $params['me'] );
 		if ( ! $user ) {

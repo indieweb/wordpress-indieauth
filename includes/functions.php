@@ -1,11 +1,18 @@
 <?php
-
 /**
- * @param array  $links  Link headers as a string
- * @param string $url URL to use to make absolute
- * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
+ * Global Functions for IndieAuth.
+ *
+ * @package IndieAuth
  */
+
 if ( ! function_exists( 'parse_link_rels' ) ) {
+	/**
+	 * Parse link headers for rel values.
+	 *
+	 * @param array  $links Link headers as a string.
+	 * @param string $url   URL to use to make absolute.
+	 * @return array Rel values as indices to arrays of URLs, empty array if no rels at all.
+	 */
 	function parse_link_rels( $links, $url ) {
 		$rels = array();
 		foreach ( $links as $link ) {
@@ -18,7 +25,7 @@ if ( ! function_exists( 'parse_link_rels' ) ) {
 					break;
 				}
 			}
-			if ( ! empty( $relarray ) ) { // ignore Link: headers without rel
+			if ( ! empty( $relarray ) ) { // Ignore Link: headers without rel.
 				foreach ( $relarray as $rel ) {
 					$rel = strtolower( trim( $rel ) );
 					if ( ! empty( $rel ) ) {
@@ -31,18 +38,17 @@ if ( ! function_exists( 'parse_link_rels' ) ) {
 	}
 }
 
-/**
- * Finds rels on the given URL
- *
- * Checks for specific rel properties in a URL. It does
- * a check for the headers first and returns that, if available
- *
- * @param string       $me URL
- * @param string|array $endpoints Specific endpoints to search for
- *
- * @return bool|array|string False on failure, array containing one or both or the headers on success or string if single property
- */
 if ( ! function_exists( 'find_rels' ) ) {
+	/**
+	 * Finds rels on the given URL.
+	 *
+	 * Checks for specific rel properties in a URL. It does
+	 * a check for the headers first and returns that, if available.
+	 *
+	 * @param string       $me        URL.
+	 * @param string|array $endpoints Specific endpoints to search for.
+	 * @return bool|array|string False on failure, array containing one or both or the headers on success or string if single property.
+	 */
 	function find_rels( $me, $endpoints = null ) {
 		if ( ! $endpoints ) {
 			$endpoints = array( 'indieauth-metadata', 'authorization_endpoint', 'token_endpoint', 'me' );
@@ -50,7 +56,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 		if ( ! wp_http_validate_url( $me ) ) { // Not an URL. This should never happen.
 			return false;
 		}
-		// do not search for an Indieauth server on our own uploads
+		// Do not search for an Indieauth server on our own uploads.
 		$uploads_dir = wp_upload_dir();
 		if ( 0 === strpos( $me, $uploads_dir['baseurl'] ) ) {
 			return false;
@@ -68,7 +74,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 			return $response;
 		}
 		$rels = array();
-		// check link header
+		// Check link header.
 		$links = wp_remote_retrieve_header( $response, 'link' );
 		if ( $links ) {
 			if ( is_string( $links ) ) {
@@ -88,7 +94,7 @@ if ( ! function_exists( 'find_rels' ) ) {
 			$me = $rels['me'];
 		}
 
-		// not an (x)html, sgml, or xml page, no use going further
+		// Not an (x)html, sgml, or xml page, no use going further.
 		if ( ! preg_match( '#(image|audio|video|model)/#is', wp_remote_retrieve_header( $response, 'content-type' ) ) ) {
 			$contents = wp_remote_retrieve_body( $response );
 			$rels     = array_merge( $rels, parse_html_rels( $contents, $me ) );
@@ -106,21 +112,23 @@ if ( ! function_exists( 'find_rels' ) ) {
 	}
 }
 
-/**
- * @param array  $contents HTML to parse for rel links
- * @param string $url URL to use to make absolute
- * @return array $rels rel values as indices to arrays of URLs, empty array if no rels at all
- */
 if ( ! function_exists( 'parse_html_rels' ) ) {
+	/**
+	 * Parse HTML for rel links.
+	 *
+	 * @param string $contents HTML to parse for rel links.
+	 * @param string $url      URL to use to make absolute.
+	 * @return array Rel values as indices to arrays of URLs, empty array if no rels at all.
+	 */
 	function parse_html_rels( $contents, $url ) {
-		// unicode to HTML entities
+		// Unicode to HTML entities.
 		$contents = mb_convert_encoding( $contents, 'HTML-ENTITIES', mb_detect_encoding( $contents ) );
 		libxml_use_internal_errors( true );
 		$doc = new DOMDocument();
 		$doc->loadHTML( $contents );
 		$xpath   = new DOMXPath( $doc );
 		$results = array();
-		// check <link> and <a> elements
+		// Check <link> and <a> elements.
 		foreach ( $xpath->query( '//a[@rel and @href] | //link[@rel and @href]' ) as $hyperlink ) {
 			$results[ $hyperlink->getAttribute( 'rel' ) ] = WP_Http::make_absolute_url( $hyperlink->getAttribute( 'href' ), $url );
 		}
@@ -128,16 +136,17 @@ if ( ! function_exists( 'parse_html_rels' ) ) {
 	}
 }
 
-/**
- * Uses the code from is_multi_author to determine the identity of the single author
- * @return false|int User ID of the single author if exists
- */
 if ( ! function_exists( 'get_single_author' ) ) {
+	/**
+	 * Uses the code from is_multi_author to determine the identity of the single author.
+	 *
+	 * @return false|int User ID of the single author if exists.
+	 */
 	function get_single_author() {
 		global $wpdb;
 		$single_author = get_transient( 'single_author' );
 		if ( false === $single_author ) {
-			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" );
+			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$single_author = 1 === count( $rows ) ? (int) $rows[0] : false;
 			set_transient( 'single_author', $single_author );
 		}
@@ -145,15 +154,15 @@ if ( ! function_exists( 'get_single_author' ) ) {
 	}
 }
 
-/**
- * Get the user associated with the specified Identifier-URI.
- *
- * @param string $identifier identifier to match
- * @return WP_User $user Associated user, or null if no associated user
- */
 if ( ! function_exists( 'get_user_by_identifier' ) ) {
+	/**
+	 * Get the user associated with the specified Identifier-URI.
+	 *
+	 * @param string $identifier Identifier to match.
+	 * @return WP_User|null Associated user, or null if no associated user.
+	 */
 	function get_user_by_identifier( $identifier ) {
-		// Refuse to validate empty or invalid user identifiers
+		// Refuse to validate empty or invalid user identifiers.
 		if ( empty( $identifier ) || ! indieauth_validate_user_identifier( $identifier ) ) {
 			return null;
 		}
@@ -162,15 +171,15 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		if ( ( 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ) ) && ( wp_parse_url( home_url(), PHP_URL_HOST ) === wp_parse_url( $identifier, PHP_URL_HOST ) ) ) {
 			$identifier = set_url_scheme( $identifier, 'https' );
 		}
-		// Try to save the expense of a search query if the URL is the site URL
+		// Try to save the expense of a search query if the URL is the site URL.
 		if ( home_url( '/' ) === $identifier ) {
-			// Use the settings to set the root user
+			// Use the settings to set the root user.
 			if ( 0 !== indieauth_get_root_user() ) {
 				return get_user_by( 'id', (int) get_option( 'indieauth_root_user' ) );
 			}
 		}
 
-		// Check if this is a author post URL
+		// Check if this is a author post URL.
 		$user = url_to_author( $identifier );
 		if ( $user instanceof WP_User ) {
 			return $user;
@@ -182,7 +191,7 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 		);
 
 		$users = get_users( $args );
-		// check result
+		// Check result.
 		if ( is_countable( $users ) && 1 === count( $users ) ) {
 			return $users[0];
 		}
@@ -190,11 +199,13 @@ if ( ! function_exists( 'get_user_by_identifier' ) ) {
 	}
 }
 
-
-/**
- * Tries to make some decisions about what URL to return for a user
- */
 if ( ! function_exists( 'get_url_from_user' ) ) {
+	/**
+	 * Tries to make some decisions about what URL to return for a user.
+	 *
+	 * @param int $user_id User ID.
+	 * @return string|null URL or null.
+	 */
 	function get_url_from_user( $user_id ) {
 		if ( (int) indieauth_get_root_user() === $user_id ) {
 			return home_url( '/' );
@@ -206,37 +217,36 @@ if ( ! function_exists( 'get_url_from_user' ) ) {
 	}
 }
 
-/**
- * Examine a url and try to determine the author ID it represents.
- *
- * @param string $url Permalink to check.
- *
- * @return WP_User, or null on failure.
- */
 if ( ! function_exists( 'url_to_author' ) ) {
+	/**
+	 * Examine a url and try to determine the author ID it represents.
+	 *
+	 * @param string $url Permalink to check.
+	 * @return WP_User|null User or null on failure.
+	 */
 	function url_to_author( $url ) {
 		global $wp_rewrite;
-		// check if url hase the same host
+		// Check if url has the same host.
 		if ( wp_parse_url( site_url(), PHP_URL_HOST ) !== wp_parse_url( $url, PHP_URL_HOST ) ) {
 			return null;
 		}
-		// first, check to see if there is a 'author=N' to match against
+		// First, check to see if there is a 'author=N' to match against.
 		if ( preg_match( '/[?&]author=(\d+)/i', $url, $values ) ) {
 			$id = absint( $values[1] );
 			if ( $id ) {
 				return get_user_by( 'id', $id );
 			}
 		}
-		// check to see if we are using rewrite rules
+		// Check to see if we are using rewrite rules.
 		$rewrite = $wp_rewrite->wp_rewrite_rules();
-		// not using rewrite rules, and 'author=N' method failed, so we're out of options
+		// Not using rewrite rules, and 'author=N' method failed, so we're out of options.
 		if ( empty( $rewrite ) ) {
 			return null;
 		}
-		// generate rewrite rule for the author url
+		// Generate rewrite rule for the author url.
 		$author_rewrite = $wp_rewrite->get_author_permastruct();
 		$author_regexp  = str_replace( '%author%', '', $author_rewrite );
-		// match the rewrite rule with the passed url
+		// Match the rewrite rule with the passed url.
 		if ( preg_match( '/https?:\/\/(.+)' . preg_quote( $author_regexp, '/' ) . '([^\/]+)/i', $url, $match ) ) {
 			$user = get_user_by( 'slug', $match[2] );
 			if ( $user ) {
@@ -248,22 +258,29 @@ if ( ! function_exists( 'url_to_author' ) ) {
 }
 
 /**
- * Returns if valid URL for REST validation
+ * Returns if valid URL for REST validation.
  *
- * @param string $url
- *
- * @return boolean
+ * @param string               $url     URL to validate.
+ * @param WP_REST_Request|null $request REST request object.
+ * @param string|null          $key     Parameter key.
+ * @return bool Whether URL is valid.
  */
-function rest_is_valid_url( $url, $request = null, $key = null ) {
+function rest_is_valid_url( $url, $request = null, $key = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	if ( ! is_string( $url ) || empty( $url ) ) {
 		return false;
 	}
 	return filter_var( $url, FILTER_VALIDATE_URL );
 }
 
+/**
+ * Get REST URL that works even when called early.
+ *
+ * @param string $path Optional path to append.
+ * @return string REST URL.
+ */
 function indieauth_rest_url( $path = '' ) {
-	// rest_url is being called too early for wp_rewrite to be set
-	// This fallback checks and returns the non rewritten version
+	// rest_url is being called too early for wp_rewrite to be set.
+	// This fallback checks and returns the non rewritten version.
 	global $wp_rewrite;
 	if ( ! $wp_rewrite ) {
 		return home_url( 'index.php?rest_route=' . $path );
@@ -271,13 +288,13 @@ function indieauth_rest_url( $path = '' ) {
 	return rest_url( $path );
 }
 
-// https://github.com/ralouphie/getallheaders
+// @see https://github.com/ralouphie/getallheaders.
 if ( ! function_exists( 'getallheaders' ) ) {
 
 	/**
 	 * Get all HTTP header key/values as an associative array for the current request.
 	 *
-	 * @return string[string] The HTTP header key/value pairs.
+	 * @return array The HTTP header key/value pairs.
 	 */
 	function getallheaders() {
 		$headers = array();
@@ -288,7 +305,7 @@ if ( ! function_exists( 'getallheaders' ) ) {
 			'CONTENT_MD5'    => 'Content-Md5',
 		);
 
-		foreach ( $_SERVER as $key => $value ) {
+		foreach ( $_SERVER as $key => $value ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			if ( substr( $key, 0, 5 ) === 'HTTP_' ) {
 				$key = substr( $key, 5 );
 				if ( ! isset( $copy_server[ $key ] ) || ! isset( $_SERVER[ $key ] ) ) {
@@ -302,12 +319,12 @@ if ( ! function_exists( 'getallheaders' ) ) {
 
 		if ( ! isset( $headers['Authorization'] ) ) {
 			if ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-				$headers['Authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+				$headers['Authorization'] = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			} elseif ( isset( $_SERVER['PHP_AUTH_USER'] ) ) {
-				$basic_pass               = isset( $_SERVER['PHP_AUTH_PW'] ) ? $_SERVER['PHP_AUTH_PW'] : '';
-				$headers['Authorization'] = 'Basic ' . base64_encode( $_SERVER['PHP_AUTH_USER'] . ':' . $basic_pass );
+				$basic_pass               = isset( $_SERVER['PHP_AUTH_PW'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_PW'] ) ) : '';
+				$headers['Authorization'] = 'Basic ' . base64_encode( sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_USER'] ) ) . ':' . $basic_pass ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			} elseif ( isset( $_SERVER['PHP_AUTH_DIGEST'] ) ) {
-				$headers['Authorization'] = $_SERVER['PHP_AUTH_DIGEST'];
+				$headers['Authorization'] = sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_DIGEST'] ) );
 			}
 		}
 
@@ -315,16 +332,17 @@ if ( ! function_exists( 'getallheaders' ) ) {
 	}
 }
 
-/**
- * Add query strings to an URL
- *
- * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
- * Copyright 2017 Aaron Parecki, used with permission under MIT License
- *
- * @param array  $args the query stings as array
- * @param string $url  the final URL
- */
 if ( ! function_exists( 'add_query_params_to_url' ) ) {
+	/**
+	 * Add query strings to an URL.
+	 *
+	 * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
+	 * Copyright 2017 Aaron Parecki, used with permission under MIT License.
+	 *
+	 * @param array  $args The query stings as array.
+	 * @param string $url  The final URL.
+	 * @return string URL with query parameters.
+	 */
 	function add_query_params_to_url( $args, $url ) {
 		$parts = wp_parse_url( $url );
 		if ( array_key_exists( 'query', $parts ) && $parts['query'] ) {
@@ -341,17 +359,17 @@ if ( ! function_exists( 'add_query_params_to_url' ) ) {
 	}
 }
 
-/**
- * Inverse of parse_url
- *
- * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
- * Copyright 2017 Aaron Parecki, used with permission under MIT License
- *
- * @link http://php.net/parse_url
- * @param  string $parsed_url the parsed URL (wp_parse_url)
- * @return string             the final URL
- */
 if ( ! function_exists( 'build_url' ) ) {
+	/**
+	 * Inverse of parse_url.
+	 *
+	 * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
+	 * Copyright 2017 Aaron Parecki, used with permission under MIT License.
+	 *
+	 * @link http://php.net/parse_url
+	 * @param array $parsed_url The parsed URL (wp_parse_url).
+	 * @return string The final URL.
+	 */
 	function build_url( $parsed_url ) {
 		$scheme   = ! empty( $parsed_url['scheme'] ) ? $parsed_url['scheme'] . '://' : '';
 		$host     = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
@@ -368,13 +386,19 @@ if ( ! function_exists( 'build_url' ) ) {
 }
 
 if ( ! function_exists( 'normalize_url' ) ) {
-	// Adds slash if no path is in the URL, and convert hostname to lowercase
+	/**
+	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
+	 *
+	 * @param string $url       URL to normalize.
+	 * @param bool   $force_ssl Whether to force SSL.
+	 * @return string|false Normalized URL or false.
+	 */
 	function normalize_url( $url, $force_ssl = false ) {
 		$parts = wp_parse_url( $url );
 		if ( array_key_exists( 'path', $parts ) && '' === $parts['path'] ) {
 			return false;
 		}
-		// wp_parse_url returns just "path" for naked domains
+		// wp_parse_url returns just "path" for naked domains.
 		if ( count( $parts ) === 1 && array_key_exists( 'path', $parts ) ) {
 			$parts['host'] = $parts['path'];
 			unset( $parts['path'] );
@@ -387,7 +411,7 @@ if ( ! function_exists( 'normalize_url' ) ) {
 		if ( ! array_key_exists( 'path', $parts ) ) {
 			$parts['path'] = '/';
 		}
-		// Invalid scheme
+		// Invalid scheme.
 		if ( ! in_array( $parts['scheme'], array( 'http', 'https' ), true ) ) {
 			return false;
 		}
@@ -396,18 +420,19 @@ if ( ! function_exists( 'normalize_url' ) ) {
 }
 
 /**
- * Get Scope
+ * Get Scope.
  *
- * @return array $scopes Array of Scopes or Null if Not Added at all
-*/
+ * @return array|null Array of Scopes or Null if Not Added at all.
+ */
 function indieauth_get_scopes() {
 	return apply_filters( 'indieauth_scopes', null );
 }
 
 /**
- * Check Scope
+ * Check Scope.
  *
- * @return boolean
+ * @param string $scope Scope to check.
+ * @return bool|null Whether scope is present.
  */
 function indieauth_check_scope( $scope ) {
 	$scopes = indieauth_get_scopes();
@@ -418,18 +443,18 @@ function indieauth_check_scope( $scope ) {
 }
 
 /**
- * Get Auth Response
+ * Get Auth Response.
  *
- * @return array $response Array with Response Token from IndieAuth endpoint
+ * @return array|null Array with Response Token from IndieAuth endpoint.
  */
 function indieauth_get_response() {
 	return apply_filters( 'indieauth_response', null );
 }
 
 /**
- * Get Client ID
+ * Get Client ID.
  *
- * @return string Client ID.
+ * @return string|null Client ID.
  */
 function indieauth_get_client_id() {
 	$response = indieauth_get_response();
@@ -440,9 +465,9 @@ function indieauth_get_client_id() {
 }
 
 /**
- * Get Client Data
+ * Get Client Data.
  *
- * @return string Client ID.
+ * @return array|WP_Error|null Client data or null.
  */
 function indieauth_get_client_data() {
 	$response = indieauth_get_response();
@@ -453,9 +478,9 @@ function indieauth_get_client_data() {
 }
 
 /**
- * Get Me
+ * Get Me.
  *
- * @return string|null The Me property for the current session
+ * @return string|null The Me property for the current session.
  */
 function indieauth_get_me() {
 	$response = indieauth_get_response();
@@ -465,10 +490,24 @@ function indieauth_get_me() {
 	return $response['me'];
 }
 
+/**
+ * Hash data using SHA256.
+ *
+ * @param string $data Data to hash.
+ * @return string Hashed data.
+ */
 function indieauth_hash( $data ) {
 	return hash( 'sha256', $data, true );
 }
 
+/**
+ * Verify PKCE code challenge.
+ *
+ * @param string $code_challenge Code challenge.
+ * @param string $code_verifier  Code verifier.
+ * @param string $method         Challenge method.
+ * @return bool Whether verification passed.
+ */
 function pkce_verifier( $code_challenge, $code_verifier, $method ) {
 	if ( 'S256' === $method ) {
 		$code_verifier = base64_urlencode( indieauth_hash( $code_verifier ) );
@@ -476,15 +515,21 @@ function pkce_verifier( $code_challenge, $code_verifier, $method ) {
 	return ( 0 === strcmp( $code_challenge, $code_verifier ) );
 }
 
-function base64_urlencode( $string ) {
-	return rtrim( strtr( base64_encode( $string ), '+/', '-_' ), '=' );
+/**
+ * URL-safe base64 encode.
+ *
+ * @param string $data String to encode.
+ * @return string Encoded string.
+ */
+function base64_urlencode( $data ) {
+	return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 }
 
-
-/* Returns IndieAuth profile user data
+/**
+ * Returns IndieAuth profile user data.
  *
- * @param int|WP_User User.
- * @param boolean $email Whether to return email or not.
+ * @param int|WP_User $user  User.
+ * @param bool        $email Whether to return email or not.
  * @return array User information or empty if none.
  */
 function indieauth_get_user( $user, $email = false ) {
@@ -509,7 +554,11 @@ function indieauth_get_user( $user, $email = false ) {
 	return array_filter( $return );
 }
 
-
+/**
+ * Get the root user for IndieAuth.
+ *
+ * @return int User ID or 0.
+ */
 function indieauth_get_root_user() {
 	$default = get_option( 'indieauth_root_user', null );
 	// Null is only returned if the setting does not exist.
@@ -540,10 +589,20 @@ function indieauth_get_root_user() {
 	return $single;
 }
 
+/**
+ * Get the metadata endpoint URL.
+ *
+ * @return string Metadata endpoint URL.
+ */
 function indieauth_get_metadata_endpoint() {
 	return IndieAuth_Plugin::$metadata->get_endpoint();
 }
 
+/**
+ * Get the issuer URL.
+ *
+ * @return string Issuer URL.
+ */
 function indieauth_get_issuer() {
 	return IndieAuth_Plugin::$metadata->get_issuer();
 }
@@ -575,13 +634,13 @@ function indieauth_validate_user_identifier( $url ) {
 		return false;
 	}
 
-	// path has single-dot or double-dot segments; not allowed
+	// Path has single-dot or double-dot segments; not allowed.
 	$paths = explode( '/', $parsed_url['path'] );
 	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
 		return false;
 	}
 
-	// If this is an IP address it is not permitted
+	// If this is an IP address it is not permitted.
 	$ip = filter_var( $parsed_url['host'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
 	if ( $ip ) {
 		return false;
@@ -616,7 +675,7 @@ function indieauth_validate_client_identifier( $url ) {
 		return false;
 	}
 
-	// path has single-dot or double-dot segments; not allowed
+	// Path has single-dot or double-dot segments; not allowed.
 	$paths = explode( '/', $parsed_url['path'] );
 	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
 		return false;
@@ -640,7 +699,7 @@ function indieauth_validate_client_identifier( $url ) {
 /**
  * Validate an Issuer Identifier.
  *
- * @param string $url Issuer Identiifier URL.
+ * @param string $url Issuer Identifier URL.
  * @return string|false URL or false on failure.
  */
 function indieauth_validate_issuer_identifier( $url ) {
@@ -656,7 +715,7 @@ function indieauth_validate_issuer_identifier( $url ) {
 
 	$parsed_url = wp_parse_url( $url );
 
-	// Issuer Identifiers MUST be https
+	// Issuer Identifiers MUST be https.
 	if ( ! isset( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] ) {
 		return false;
 	}
@@ -665,7 +724,7 @@ function indieauth_validate_issuer_identifier( $url ) {
 		return false;
 	}
 
-	// path has single-dot or double-dot segments; not allowed
+	// Path has single-dot or double-dot segments; not allowed.
 	$paths = explode( '/', $parsed_url['path'] );
 	if ( array_intersect( $paths, array( '.', '..' ) ) ) {
 		return false;

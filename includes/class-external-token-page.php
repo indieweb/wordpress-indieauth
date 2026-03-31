@@ -1,8 +1,14 @@
 <?php
 /**
- * Generates page for token UI.
+ * External Token Page class file.
  *
  * @package IndieAuth
+ */
+
+/**
+ * Generates page for external token UI.
+ *
+ * @since 1.0.0
  */
 class External_Token_Page {
 	/**

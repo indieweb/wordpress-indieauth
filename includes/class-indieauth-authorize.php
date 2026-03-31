@@ -1,29 +1,63 @@
 <?php
 /**
- * Authorize class
+ * IndieAuth Authorize class file.
+ *
+ * @package IndieAuth
+ */
+
+/**
+ * IndieAuth Authorize class.
+ *
+ * Handles token verification and authentication for IndieAuth.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Authorize {
 
-	public $error    = null;
-	public $scopes   = array();
+	/**
+	 * Error object.
+	 *
+	 * @var WP_Error|WP_OAuth_Response|null
+	 */
+	public $error = null;
+
+	/**
+	 * Current scopes.
+	 *
+	 * @var array
+	 */
+	public $scopes = array();
+
+	/**
+	 * Response data.
+	 *
+	 * @var array
+	 */
 	public $response = array();
 
-
+	/**
+	 * Constructor.
+	 *
+	 * @param bool $load Whether to load hooks.
+	 */
 	public function __construct( $load = true ) {
-		// Load the hooks for this class only if true. This allows for debugging of the functions
+		// Load the hooks for this class only if true. This allows for debugging of the functions.
 		if ( true === $load ) {
 			$this->load();
 		}
 	}
 
+	/**
+	 * Load hooks.
+	 */
 	public function load() {
-		// do not call in CLI environment
+		// Do not call in CLI environment.
 		if ( defined( 'WP_CLI' ) ) {
 			return;
 		}
 
-		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority
-		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
+		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority.
+		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority.
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 
@@ -34,8 +68,13 @@ class IndieAuth_Authorize {
 	}
 
 
-	/*
+	/**
 	 * Ensures responses to any IndieAuth endpoints are always OAuth Responses rather than WP_Error.
+	 *
+	 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response Result to send to the client.
+	 * @param array                                            $handler  Route handler used for the request.
+	 * @param WP_REST_Request                                  $request  Request used to generate the response.
+	 * @return WP_REST_Response|WP_OAuth_Response|mixed Modified response.
 	 */
 	public static function return_oauth_error( $response, $handler, $request ) {
 		if ( 0 !== strpos( $request->get_route(), '/indieauth/1.0/' ) ) {
@@ -54,8 +93,10 @@ class IndieAuth_Authorize {
 	 * We don't actually care about the `wp_rest_server_class` filter, it just
 	 * happens right after the constant we do care about is defined. This is taken from the Application Passwords plugin.
 	 *
+	 * @param string $class REST server class name.
+	 * @return string REST server class name.
 	 */
-	public static function wp_rest_server_class( $class ) {
+	public static function wp_rest_server_class( $class ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.classFound
 		global $current_user;
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && $current_user instanceof WP_User && 0 === $current_user->ID ) {
 			/*
@@ -70,10 +111,22 @@ class IndieAuth_Authorize {
 		return $class;
 	}
 
+	/**
+	 * Get IndieAuth scopes.
+	 *
+	 * @param array $scopes Existing scopes.
+	 * @return array Scopes.
+	 */
 	public function get_indieauth_scopes( $scopes ) {
 		return $scopes ? $scopes : $this->scopes;
 	}
 
+	/**
+	 * Get IndieAuth response.
+	 *
+	 * @param array $response Existing response.
+	 * @return array Response.
+	 */
 	public function get_indieauth_response( $response ) {
 		return $response ? $response : $this->response;
 	}
@@ -84,8 +137,7 @@ class IndieAuth_Authorize {
 	 * Attached to the rest_authentication_errors filter. Passes through existing
 	 * errors registered on the filter.
 	 *
-	 * @param WP_Error|null|true Current error, null or true.
-	 *
+	 * @param WP_Error|null|true $error Current error, null or true.
 	 * @return WP_Error|null|true Error if one is set, unchanged otherwise.
 	 */
 	public function rest_authentication_errors( $error = null ) {
@@ -114,12 +166,11 @@ class IndieAuth_Authorize {
 	 */
 	public function determine_current_user( $user_id ) {
 		$token = $this->get_provided_token();
-		// If there is not a token that means this is not an attempt to log in using IndieAuth
+		// If there is not a token that means this is not an attempt to log in using IndieAuth.
 		if ( ! isset( $token ) ) {
 			return $user_id;
 		}
-		// If there is a token and it is invalid then reject all logins
-
+		// If there is a token and it is invalid then reject all logins.
 		$params = $this->verify_access_token( $token );
 		if ( ! isset( $params ) ) {
 			return $user_id;
@@ -136,7 +187,7 @@ class IndieAuth_Authorize {
 
 			$this->response = $params;
 			$this->scopes   = explode( ' ', $params['scope'] );
-			// The User ID must be passed in the request
+			// The User ID must be passed in the request.
 			if ( isset( $params['user'] ) ) {
 				return (int) $params['user'];
 			}
@@ -166,13 +217,13 @@ class IndieAuth_Authorize {
 	public function get_authorization_header() {
 		$auth = null;
 		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
-			$auth = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+			$auth = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 			// When Apache speaks via FastCGI with PHP, then the authorization header is often available as REDIRECT_HTTP_AUTHORIZATION.
-			$auth = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+			$auth = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		} else {
 			$headers = getallheaders();
-			// Check for the authorization header case-insensitively
+			// Check for the authorization header case-insensitively.
 			foreach ( $headers as $key => $value ) {
 				if ( strtolower( $key ) === 'authorization' ) {
 					$auth = wp_unslash( $value );
@@ -227,7 +278,7 @@ class IndieAuth_Authorize {
 		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return null;
 		}
-		$token = $_POST['access_token']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$token = sanitize_text_field( wp_unslash( $_POST['access_token'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( is_string( $token ) ) {
 			return $token;
@@ -236,12 +287,11 @@ class IndieAuth_Authorize {
 	}
 
 	/**
-	 * Verifies Access Token
+	 * Verifies Access Token.
 	 *
-	 * @param string $token The token to verify
-	 *
-	 * @return array|WP_OAuth_Response Return either the token information or an OAuth Error Object
-	 **/
+	 * @param string $token The token to verify.
+	 * @return array|WP_OAuth_Response Return either the token information or an OAuth Error Object.
+	 */
 	public function verify_access_token( $token ) {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
@@ -256,7 +306,7 @@ class IndieAuth_Authorize {
 			return $return;
 		}
 		$return['last_accessed'] = time();
-		$return['last_ip']       = $_SERVER['REMOTE_ADDR'];
+		$return['last_ip']       = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$tokens->update( $token, $return );
 		if ( array_key_exists( 'exp', $return ) ) {
 			$return['expires_in'] = $return['exp'] - time();
@@ -265,12 +315,11 @@ class IndieAuth_Authorize {
 	}
 
 	/**
-	 * Verifies authorixation code.
+	 * Verifies authorization code.
 	 *
-	 * @param string $code Authorization Code
-	 *
-	 * @return array|WP_OAuth_Response Return either the code information or an OAuth Error object
-	 **/
+	 * @param string $code Authorization Code.
+	 * @return array|WP_OAuth_Response Return either the code information or an OAuth Error object.
+	 */
 	public static function verify_authorization_code( $code ) {
 		$tokens = new Token_User( '_indieauth_code_' );
 		$return = $tokens->get( $code );
@@ -281,7 +330,7 @@ class IndieAuth_Authorize {
 				401
 			);
 		}
-		// Once the code is verified destroy it
+		// Once the code is verified destroy it.
 		$tokens->destroy( $code );
 		return $return;
 	}

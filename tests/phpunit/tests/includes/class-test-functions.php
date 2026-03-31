@@ -16,37 +16,20 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 		self::delete_user( self::$author_id );
 	}
 
-	public function set_up() {
-		global $wp_rewrite;
-		parent::set_up();
-
-		// Set up pretty permalinks so author URLs work with get_user_by_identifier.
-		$wp_rewrite->set_permalink_structure( '/%postname%/' );
-		$wp_rewrite->flush_rules();
-	}
-
-	public function tear_down() {
-		global $wp_rewrite;
-		$wp_rewrite->set_permalink_structure( '' );
-		$wp_rewrite->flush_rules();
-		parent::tear_down();
-	}
-
-	// Test Getting the Author URL through get_user_by_identifier
+	// Test Getting the Author URL through get_user_by_identifier.
 	public function test_authorurl() {
-		$author_url = get_author_posts_url( static::$author_id );
+		// Remove port from site URL for IndieAuth URL validation compatibility.
+		$strip_port = function ( $url ) {
+			return preg_replace( '/:\d+/', '', $url );
+		};
+		add_filter( 'home_url', $strip_port );
+		add_filter( 'site_url', $strip_port );
 
-		// First verify url_to_author works (no validation).
-		$user_direct = url_to_author( $author_url );
-		$this->assertInstanceOf( WP_User::class, $user_direct, 'url_to_author failed for: ' . $author_url );
-
-		// Then verify get_user_by_identifier works (includes validation).
-		// Note: This may fail if the URL format doesn't pass indieauth_validate_user_identifier.
-		$result = get_user_by_identifier( $author_url );
-		if ( null === $result ) {
-			$this->markTestSkipped( 'Author URL format does not pass validation in test environment: ' . $author_url );
-		}
+		$result = get_user_by_identifier( get_author_posts_url( static::$author_id ) );
 		$this->assertSame( $result->ID, static::$author_id );
+
+		remove_filter( 'home_url', $strip_port );
+		remove_filter( 'site_url', $strip_port );
 	}
 
 	// Test Getting the Author URL through the url_to_author function directly
@@ -59,7 +42,7 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	public function test_profile_return() {
 
 		$author = get_user_by( 'ID', static::$author_id );
-		
+
 		$expected = array(
 			'name'  => $author->display_name,
 			'url'   => empty( $author->user_url ) ? get_author_posts_url( $author->ID ) : $author->user_url,
@@ -84,12 +67,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_user_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/username', 'https://example.com/users?id=100' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_user_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'mailto:user@example.com', // invalid scheme
 				'https://example.com/foo/./bar',  // single dot
@@ -104,12 +87,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_client_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/application', 'https://example.com/app?id=100', 'https://127.0.0.1', 'http://::1', 'https://localhost', 'https://example.com:8443' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_client_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'mailto:user@example.com', // invalid scheme
 				'https://example.com/foo/./bar',  // single dot
@@ -123,12 +106,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_issuer_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/application', 'https://127.0.0.1',  'https://localhost', 'https://example.com:8443' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_issuer_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'http://example.com', // http scheme
 				'mailto:user@example.com', // invalid scheme
