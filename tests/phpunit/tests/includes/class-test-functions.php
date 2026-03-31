@@ -3,17 +3,18 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 
 	protected static $author_id;
 
-        public static function wpSetUpBeforeClass( $factory ) {
-                static::$author_id = $factory->user->create(
-                        array(
-                                'role' => 'author',
-                        )
-                );
-        }
+	public static function wpSetUpBeforeClass( $factory ) {
+		static::$author_id = $factory->user->create(
+			array(
+				'role'          => 'author',
+				'user_nicename' => 'testauthor',
+			)
+		);
+	}
 
-        public static function wpTearDownAfterClass() {
-                self::delete_user( self::$author_id );
-        }
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$author_id );
+	}
 
 	// Test Getting the Author URL through get_user_by_identifier.
 	public function test_authorurl() {
@@ -41,7 +42,7 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	public function test_profile_return() {
 
 		$author = get_user_by( 'ID', static::$author_id );
-		
+
 		$expected = array(
 			'name'  => $author->display_name,
 			'url'   => empty( $author->user_url ) ? get_author_posts_url( $author->ID ) : $author->user_url,
@@ -66,12 +67,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_user_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/username', 'https://example.com/users?id=100' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_user_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'mailto:user@example.com', // invalid scheme
 				'https://example.com/foo/./bar',  // single dot
@@ -86,12 +87,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_client_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/application', 'https://example.com/app?id=100', 'https://127.0.0.1', 'http://::1', 'https://localhost', 'https://example.com:8443' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_client_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'mailto:user@example.com', // invalid scheme
 				'https://example.com/foo/./bar',  // single dot
@@ -105,12 +106,12 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
 	}
 
 	public function test_validate_issuer_identifier() {
-		foreach( 
+		foreach(
 			array( 'https://example.com/', 'https://example.com/application', 'https://127.0.0.1',  'https://localhost', 'https://example.com:8443' ) as $pass ) {
 			$this->assertNotEquals( false, indieauth_validate_issuer_identifier( $pass ) );
 		}
-		foreach( 
-			array( 
+		foreach(
+			array(
 				'example.com', // schemeless
 				'http://example.com', // http scheme
 				'mailto:user@example.com', // invalid scheme
