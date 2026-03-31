@@ -194,7 +194,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	 */
 	public static function scopes( $scope = 'all' ) {
 		$scopes = array(
-			// Micropub Scopes
+			// Micropub Scopes.
 			'post'     => __( 'Legacy Scope (Deprecated)', 'indieauth' ),
 			'draft'    => __( 'Allows the applicate to create posts in draft status only', 'indieauth' ),
 			'create'   => __( 'Allows the application to create posts and upload to the Media Endpoint', 'indieauth' ),
@@ -202,14 +202,14 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 			'delete'   => __( 'Allows the application to delete posts', 'indieauth' ),
 			'undelete' => __( 'Allows the application to undelete posts', 'indieauth' ),
 			'media'    => __( 'Allows the application to upload to the media endpoint', 'indieauth' ),
-			// Microsub Scopes
+			// Microsub Scopes.
 			'read'     => __( 'Allows the application read access to channels', 'indieauth' ),
 			'follow'   => __( 'Allows the application to manage a follow list', 'indieauth' ),
 			'mute'     => __( 'Allows the application to mute and unmute users', 'indieauth' ),
 			'block'    => __( 'Allows the application to block and unlock users', 'indieauth' ),
 			'channels' => __( 'Allows the application to manage channels', 'indieauth' ),
 			'save'     => __( 'Allows the application to save content for later retrieval', 'indieauth' ),
-			// Profile
+			// Profile.
 			'profile'  => __( 'Allows access to the users default profile information which includes name, photo, and url', 'indieauth' ),
 			'email'    => __( 'Allows access to the users email address', 'indieauth' ),
 		);
@@ -321,7 +321,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$required = array( 'redirect_uri', 'client_id', 'state' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
-				// translators: Name of missing parameter
+				// translators: Name of missing parameter.
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
@@ -417,7 +417,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
-				// translators: Name of missing parameter
+				// translators: Name of missing parameter.
 				return new WP_OAuth_Response( 'parameter_absent', sprintf( __( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
@@ -473,9 +473,9 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 			auth_redirect();
 		}
 
-		if ( 'GET' === $_SERVER['REQUEST_METHOD'] ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->authorize();
-		} elseif ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+		} elseif ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			$this->confirmed();
 		}
 		exit;
@@ -485,7 +485,6 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	 * Display the authorization form.
 	 */
 	public function authorize() {
-		$current_user = wp_get_current_user();
 		// phpcs:disable
 		$client_id     = esc_url_raw( wp_unslash( $_GET['client_id'] ) );
 		$client_term                 = IndieAuth_Client_Taxonomy::add_client( $client_id );
@@ -523,7 +522,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 				'action'
 			)
 		);
-		$url    = add_query_params_to_url( $args, wp_login_url() );
+		$url    = add_query_params_to_url( $args, wp_login_url() ); // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Used in included template.
 		if ( empty( $scopes ) || empty( array_diff( $scopes, array( 'profile', 'email' ) ) ) ) {
 			include plugin_dir_path( __DIR__ ) . 'templates/indieauth-authenticate-form.php';
 		} else {
@@ -537,7 +536,7 @@ class IndieAuth_Authorization_Endpoint extends IndieAuth_Endpoint {
 	 * Process confirmed authorization.
 	 */
 	public function confirmed() {
-		// Verify nonce for CSRF protection before processing any user input
+		// Verify nonce for CSRF protection before processing any user input.
 		$nonce = isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '';
 		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'indieauth_authorize' ) ) {
 			wp_die( esc_html__( 'Security check failed. Please try again.', 'indieauth' ) );

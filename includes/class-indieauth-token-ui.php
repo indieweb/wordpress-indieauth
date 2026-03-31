@@ -55,7 +55,7 @@ class IndieAuth_Token_UI {
 	 */
 	public function client_discovery() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
-				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_client_discovery' )
+				|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['indieauth_nonce'] ) ), 'indieauth_client_discovery' )
 		) {
 			esc_html_e( 'Invalid Nonce', 'indieauth' );
 			exit;
@@ -66,7 +66,7 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		header( 'Content-Type: application/json' );
-		$client_url = sanitize_text_field( $_REQUEST['client_url'] );
+		$client_url = sanitize_text_field( wp_unslash( $_REQUEST['client_url'] ) );
 		$client     = new IndieAuth_Client_Discovery( $client_url );
 		echo wp_json_encode( $client->export(), JSON_PRETTY_PRINT );
 		exit;
@@ -77,7 +77,7 @@ class IndieAuth_Token_UI {
 	 */
 	public function new_token() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
-				|| ! wp_verify_nonce( $_POST['indieauth_nonce'], 'indieauth_newtoken' )
+				|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['indieauth_nonce'] ) ), 'indieauth_newtoken' )
 		) {
 			esc_html_e( 'Invalid Nonce', 'indieauth' );
 			exit;
@@ -88,13 +88,14 @@ class IndieAuth_Token_UI {
 			exit;
 		}
 		require ABSPATH . 'wp-admin/admin-header.php';
-		$client_name = sanitize_text_field( $_REQUEST['client_name'] );
-		$scopes      = trim( implode( ' ', $_REQUEST['scopes'] ) );
+		$client_name = sanitize_text_field( wp_unslash( $_REQUEST['client_name'] ) );
+		$scopes      = isset( $_REQUEST['scopes'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_REQUEST['scopes'] ) ) : array();
+		$scopes      = trim( implode( ' ', $scopes ) );
 		if ( empty( $scopes ) ) {
 			$scopes = 'create update';
 		}
 		$scopes  = sanitize_text_field( $scopes );
-		$expires = sanitize_text_field( $_REQUEST['expires_in'] );
+		$expires = isset( $_REQUEST['expires_in'] ) ? absint( $_REQUEST['expires_in'] ) : 0;
 		$token   = self::generate_local_token( $client_name, $scopes, $expires );
 		?>
 	<p><?php esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>

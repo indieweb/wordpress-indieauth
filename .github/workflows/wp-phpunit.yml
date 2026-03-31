@@ -32,8 +32,8 @@ jobs:
     strategy:
       matrix:
         php-versions: ['7.2', '8.3', '8.5']
+        wp-version: ['latest']
         include:
-          - wp-version: latest
           - wp-version: '6.5'
             php-versions: '7.2'
           - wp-version: trunk

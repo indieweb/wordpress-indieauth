@@ -1,19 +1,29 @@
-# Directories
-/.wordpress-org export-ignore
-/.github export-ignore
-/vendor export-ignore
-/tests export-ignore
-/bin export-ignore
-/node-modules export-ignore
+# Distribution ignores (excluded from archives)
+# Dotfiles and directories
+/.claude/            export-ignore
+/.editorconfig       export-ignore
+/.gitattributes      export-ignore
+/.github/            export-ignore
+/.gitignore          export-ignore
+/.wordpress-org/     export-ignore
+/.wp-env.json        export-ignore
 
-# Files
-/.gitattributes export-ignore
-/.gitignore export-ignore
-/composer.json export-ignore
-/composer.lock export-ignore
-/package.json export-ignore
-/package-lock.json export-ignore
-/readme.md export-ignore
-/phpcs.xml export-ignore
-/phpunit.xml export-ignore
-/Gruntfile.js export-ignore
+# Build and config files
+/bin/                export-ignore
+/composer.json       export-ignore
+/composer.lock       export-ignore
+/package-lock.json   export-ignore
+/package.json        export-ignore
+/phpcs.xml           export-ignore
+/phpunit.xml.dist    export-ignore
+
+# Source and tests
+/node_modules/       export-ignore
+/tests/              export-ignore
+/vendor/             export-ignore
+
+# Documentation (readme.txt is kept for WordPress.org)
+/CLAUDE.md           export-ignore
+/LICENSE.md          export-ignore
+/README.md           export-ignore
+/readme.md           export-ignore

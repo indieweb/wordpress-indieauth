@@ -146,7 +146,7 @@ if ( ! function_exists( 'get_single_author' ) ) {
 		global $wpdb;
 		$single_author = get_transient( 'single_author' );
 		if ( false === $single_author ) {
-			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" );
+			$rows          = (array) $wpdb->get_col( "SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$single_author = 1 === count( $rows ) ? (int) $rows[0] : false;
 			set_transient( 'single_author', $single_author );
 		}
@@ -265,7 +265,7 @@ if ( ! function_exists( 'url_to_author' ) ) {
  * @param string|null          $key     Parameter key.
  * @return bool Whether URL is valid.
  */
-function rest_is_valid_url( $url, $request = null, $key = null ) {
+function rest_is_valid_url( $url, $request = null, $key = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	if ( ! is_string( $url ) || empty( $url ) ) {
 		return false;
 	}
@@ -288,7 +288,7 @@ function indieauth_rest_url( $path = '' ) {
 	return rest_url( $path );
 }
 
-// https://github.com/ralouphie/getallheaders
+// @see https://github.com/ralouphie/getallheaders.
 if ( ! function_exists( 'getallheaders' ) ) {
 
 	/**

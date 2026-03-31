@@ -34,10 +34,10 @@
 		"wp-cli/wp-cli-bundle": "^2.11"
 	},
 	"config": {
-		"allow-plugins": true
-	},
-	"allow-plugins": {
-		"composer/installers": true
+		"allow-plugins": {
+			"composer/installers": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	},
 	"extra": {
 		"installer-name": "indieauth"

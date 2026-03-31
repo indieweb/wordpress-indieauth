@@ -1,23 +1,42 @@
 <?php
 /**
- * IndieAuth Client
+ * IndieAuth Client class file.
+ *
+ * @package IndieAuth
+ */
+
+/**
+ * IndieAuth Client class.
  */
 class IndieAuth_Client {
 
-	/*
-	 * Metadata including endpoints
+	/**
+	 * Metadata including endpoints.
+	 *
+	 * @var array
 	 */
 	public $meta;
 
-	/*
+	/**
 	 * Client ID. Defaults to Home URL.
+	 *
+	 * @var string
 	 */
 	public $client_id;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		$this->client_id = trailingslashit( home_url() );
 	}
 
+	/**
+	 * Perform a remote GET request.
+	 *
+	 * @param string $url URL to request.
+	 * @return array|WP_OAuth_Response Response array or error.
+	 */
 	public function remote_get( $url ) {
 		$resp = wp_remote_get(
 			$url,
@@ -47,6 +66,13 @@ class IndieAuth_Client {
 		return $body;
 	}
 
+	/**
+	 * Perform a remote POST request.
+	 *
+	 * @param string $url       URL to request.
+	 * @param array  $post_args POST body arguments.
+	 * @return array|WP_OAuth_Response Response array or error.
+	 */
 	public function remote_post( $url, $post_args ) {
 		$resp = wp_remote_post(
 			$url,
@@ -62,7 +88,7 @@ class IndieAuth_Client {
 		$error = get_oauth_error( $resp );
 
 		if ( is_oauth_error( $error ) ) {
-			// Pass through well-formed error messages from the endpoint
+			// Pass through well-formed error messages from the endpoint.
 			return $error;
 		}
 
@@ -85,7 +111,8 @@ class IndieAuth_Client {
 	/**
 	 * Discover IndieAuth Metadata either from a Metadata Endpoint or Otherwise.
 	 *
-	 * @param string $url URL
+	 * @param string $url URL.
+	 * @return bool|WP_OAuth_Response True on success, false or error on failure.
 	 */
 	public function discover_endpoints( $url ) {
 		$endpoints = get_transient( 'indieauth_discovery_' . base64_urlencode( $url ) );
@@ -119,14 +146,14 @@ class IndieAuth_Client {
 		return false;
 	}
 
-	/*
-	 * Redeem Authorization Code
+	/**
+	 * Redeem Authorization Code.
 	 *
-	 * @param array $post_args {
+	 * @param array   $post_args {
 	 *  Array of Arguments to Be Passed to the the Redemption Request.
-	 *  @type string $code Authorizaton Code to be redeemed.
-	 *      @type string $redirect_uri The client's redirect URI
-	 *  @type string $code_verifier
+	 *  @type string $code Authorization Code to be redeemed.
+	 *  @type string $redirect_uri The client's redirect URI.
+	 *  @type string $code_verifier The code verifier.
 	 * }
 	 * @param boolean $token Redeem For a Token or User Profile.
 	 * @return WP_OAuth_Response|array Return Error or Response Array.
@@ -150,14 +177,14 @@ class IndieAuth_Client {
 		}
 
 		$response = $this->remote_post( $endpoint, $post_args );
-		if ( is_oauth_error( $error ) ) {
-			// Pass through well-formed error messages from the endpoint
-			return $error;
+		if ( is_oauth_error( $response ) ) {
+			// Pass through well-formed error messages from the endpoint.
+			return $response;
 		}
 
 		// The endpoint acknowledged that the authorization code is valid and returned a me property.
 		if ( isset( $response['me'] ) ) {
-			// If this redemption is at the token endpoint
+			// If this redemption is at the token endpoint.
 			if ( $token ) {
 				if ( ! array_key_exists( 'access_token', $response ) ) {
 					return new WP_OAuth_Response( 'unknown_error', __( 'Token Endpoint did Not Return a Token', 'indieauth' ), 500 );

@@ -1,12 +1,19 @@
 <?php
 /**
- * IndieAuth Admin Class
+ * IndieAuth Admin Class.
  *
- * @author Matthias Pfefferle
+ * @package IndieAuth
+ */
+
+/**
+ * Class for IndieAuth admin settings and pages.
  */
 class IndieAuth_Admin {
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
-		// initialize admin settings
+		// Initialize admin settings.
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'init', array( $this, 'settings' ) );
 		add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
@@ -14,6 +21,12 @@ class IndieAuth_Admin {
 		add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
 	}
 
+	/**
+	 * Add IndieAuth site health tests.
+	 *
+	 * @param array $tests Existing tests.
+	 * @return array Modified tests.
+	 */
 	public function add_indieauth_tests( $tests ) {
 		$tests['direct']['indieauth_header'] = array(
 			'label' => __( 'IndieAuth Test', 'indieauth' ),
@@ -27,6 +40,11 @@ class IndieAuth_Admin {
 	}
 
 
+	/**
+	 * Site health test for HTTPS.
+	 *
+	 * @return array Test result.
+	 */
 	public function site_health_https_test() {
 		$result = array(
 			'label'       => __( 'HTTPS Check Passed', 'indieauth' ),
@@ -56,6 +74,11 @@ class IndieAuth_Admin {
 		return $result;
 	}
 
+	/**
+	 * Site health test for authorization headers.
+	 *
+	 * @return array Test result.
+	 */
 	public function site_health_header_test() {
 		$result = array(
 			'label'       => __( 'Authorization Header Passed', 'indieauth' ),
@@ -85,9 +108,12 @@ class IndieAuth_Admin {
 		return $result;
 	}
 
+	/**
+	 * Handle the auth diagnostic login form.
+	 */
 	public function login_form_authdiag() {
 		$return = '';
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['HTTP_AUTHORIZATION'] ) {
 				$return = '<div class="notice notice-success"><p>' . esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
@@ -99,7 +125,7 @@ class IndieAuth_Admin {
 				$return = ob_get_contents();
 				ob_end_clean();
 			}
-			if ( 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
+			if ( isset( $_SERVER['HTTP_ACCEPT'] ) && 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
 				header( 'Content-Type: application/json' );
 				echo wp_json_encode( array( 'message' => esc_html( $return ) ) );
 				exit;
@@ -118,11 +144,14 @@ class IndieAuth_Admin {
 		$args = array(
 			'action' => 'authdiag',
 		);
-		$url  = add_query_params_to_url( $args, wp_login_url() );
+		$url  = add_query_params_to_url( $args, wp_login_url() ); // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Used in included template.
 		include plugin_dir_path( __DIR__ ) . 'templates/authdiagtest.php';
 		exit;
 	}
 
+	/**
+	 * Register plugin settings.
+	 */
 	public function settings() {
 		register_setting(
 			'indieauth',
@@ -156,6 +185,9 @@ class IndieAuth_Admin {
 	}
 
 
+	/**
+	 * Initialize admin settings fields.
+	 */
 	public function admin_init() {
 		add_settings_field( 'indieauth_general_settings', __( 'IndieAuth Settings', 'indieauth' ), array( $this, 'general_settings' ), 'general', 'default' );
 
@@ -181,11 +213,19 @@ class IndieAuth_Admin {
 		);
 	}
 
+	/**
+	 * Render endpoint settings section description.
+	 */
 	public static function endpoint_settings() {
 		esc_html_e( 'These settings control the behavior of the endpoints', 'indieauth' );
 	}
 
 
+	/**
+	 * Render a numeric settings field.
+	 *
+	 * @param array $args Field arguments.
+	 */
 	public static function numeric_field( $args ) {
 		$props = array();
 		if ( array_key_exists( 'min', $args ) && is_numeric( $args['min'] ) ) {
@@ -243,6 +283,11 @@ class IndieAuth_Admin {
 		add_action( 'load-' . $options_page, array( $this, 'add_help_tab' ) );
 	}
 
+	/**
+	 * Test if authorization headers pass through.
+	 *
+	 * @return string|false The diagnostic message or false on error.
+	 */
 	public function test_auth() {
 		$response = wp_remote_post(
 			add_query_params_to_url(
@@ -282,6 +327,9 @@ class IndieAuth_Admin {
 		load_template( plugin_dir_path( __DIR__ ) . '/templates/indieauth-settings.php' );
 	}
 
+	/**
+	 * Add help tabs to the settings page.
+	 */
 	public function add_help_tab() {
 		get_current_screen()->add_help_tab(
 			array(

@@ -151,10 +151,9 @@ class IndieAuth_Token_Endpoint extends IndieAuth_Endpoint {
 	 * @return WP_REST_Response|WP_OAuth_Response Response to return to the REST Server.
 	 */
 	public function get( $request ) {
-		$params = $request->get_params();
 		$header = $request->get_header( 'Authorization' );
 		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-			$header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+			$header = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {

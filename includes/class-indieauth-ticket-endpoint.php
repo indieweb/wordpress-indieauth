@@ -146,6 +146,10 @@ class IndieAuth_Ticket_Endpoint extends IndieAuth_Endpoint {
 			return $endpoints;
 		}
 
+		if ( ! wp_http_validate_url( $client->meta['token_endpoint'] ) ) {
+			return new WP_OAuth_Response( 'invalid_request', __( 'Invalid Token Endpoint URL', 'indieauth' ), 400 );
+		}
+
 		$return = $this->request_token( $client->meta['token_endpoint'], $params );
 
 		if ( is_oauth_error( $return ) ) {

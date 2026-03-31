@@ -129,11 +129,11 @@ abstract class Token_Generic {
 	/**
 	 * Hashes a token.
 	 *
-	 * @param string $string String to hash.
+	 * @param string $token_string String to hash.
 	 * @return string A hash of the string encoded to base64.
 	 */
-	protected function hash( $string ) {
-		return base64_encode( indieauth_hash( $string ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+	protected function hash( $token_string ) {
+		return base64_encode( indieauth_hash( $token_string ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 	}
 
 	/**

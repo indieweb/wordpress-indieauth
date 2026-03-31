@@ -41,7 +41,7 @@ class IndieAuth_Authorize {
 	 * @param bool $load Whether to load hooks.
 	 */
 	public function __construct( $load = true ) {
-		// Load the hooks for this class only if true. This allows for debugging of the functions
+		// Load the hooks for this class only if true. This allows for debugging of the functions.
 		if ( true === $load ) {
 			$this->load();
 		}
@@ -56,8 +56,8 @@ class IndieAuth_Authorize {
 			return;
 		}
 
-		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority
-		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority
+		// WordPress validates the auth cookie at priority 10 and this cannot be overridden by an earlier priority.
+		// It validates the logged in cookie at 20 and can be overridden by something with a higher priority.
 		add_filter( 'determine_current_user', array( $this, 'determine_current_user' ), 15 );
 		add_filter( 'rest_authentication_errors', array( $this, 'rest_authentication_errors' ) );
 
@@ -92,8 +92,11 @@ class IndieAuth_Authorize {
 	 *
 	 * We don't actually care about the `wp_rest_server_class` filter, it just
 	 * happens right after the constant we do care about is defined. This is taken from the Application Passwords plugin.
+	 *
+	 * @param string $class REST server class name.
+	 * @return string REST server class name.
 	 */
-	public static function wp_rest_server_class( $class ) {
+	public static function wp_rest_server_class( $class ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.classFound
 		global $current_user;
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && $current_user instanceof WP_User && 0 === $current_user->ID ) {
 			/*
@@ -214,13 +217,13 @@ class IndieAuth_Authorize {
 	public function get_authorization_header() {
 		$auth = null;
 		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
-			$auth = wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] );
+			$auth = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) );
 		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 			// When Apache speaks via FastCGI with PHP, then the authorization header is often available as REDIRECT_HTTP_AUTHORIZATION.
-			$auth = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+			$auth = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
 		} else {
 			$headers = getallheaders();
-			// Check for the authorization header case-insensitively
+			// Check for the authorization header case-insensitively.
 			foreach ( $headers as $key => $value ) {
 				if ( strtolower( $key ) === 'authorization' ) {
 					$auth = wp_unslash( $value );
@@ -275,7 +278,7 @@ class IndieAuth_Authorize {
 		if ( empty( $_POST['access_token'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return null;
 		}
-		$token = $_POST['access_token']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$token = sanitize_text_field( wp_unslash( $_POST['access_token'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( is_string( $token ) ) {
 			return $token;
@@ -303,7 +306,7 @@ class IndieAuth_Authorize {
 			return $return;
 		}
 		$return['last_accessed'] = time();
-		$return['last_ip']       = $_SERVER['REMOTE_ADDR'];
+		$return['last_ip']       = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$tokens->update( $token, $return );
 		if ( array_key_exists( 'exp', $return ) ) {
 			$return['expires_in'] = $return['exp'] - time();

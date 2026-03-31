@@ -15,10 +15,20 @@ class IndieAuthFunctionsTest extends WP_UnitTestCase {
                 self::delete_user( self::$author_id );
         }
 
-	// Test Getting the Author URL thorugh get_user_by_identifier
+	// Test Getting the Author URL through get_user_by_identifier.
 	public function test_authorurl() {
+		// Remove port from site URL for IndieAuth URL validation compatibility.
+		$strip_port = function ( $url ) {
+			return preg_replace( '/:\d+/', '', $url );
+		};
+		add_filter( 'home_url', $strip_port );
+		add_filter( 'site_url', $strip_port );
+
 		$result = get_user_by_identifier( get_author_posts_url( static::$author_id ) );
 		$this->assertSame( $result->ID, static::$author_id );
+
+		remove_filter( 'home_url', $strip_port );
+		remove_filter( 'site_url', $strip_port );
 	}
 
 	// Test Getting the Author URL through the url_to_author function directly

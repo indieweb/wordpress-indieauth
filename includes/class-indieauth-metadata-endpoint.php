@@ -72,8 +72,8 @@ class IndieAuth_Metadata_Endpoint {
 	 * @param WP_REST_Server            $server  Server instance.
 	 * @return bool Whether the request has been served.
 	 */
-	public static function serve_request( $served, $result, $request, $server ) {
-		if ( ! str_contains( $request->get_route(), '/indieauth/1.0' ) ) {
+	public static function serve_request( $served, $result, $request, $server ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		if ( false === strpos( $request->get_route(), '/indieauth/1.0' ) ) {
 			return $served;
 		}
 		static::set_http_header( static::get_endpoint(), 'indieauth-metadata' );
@@ -152,7 +152,7 @@ class IndieAuth_Metadata_Endpoint {
 	 * @param WP_REST_Request $request The Request Object.
 	 * @return WP_REST_Response Response to Return to the REST Server.
 	 */
-	public function metadata( $request ) {
+	public function metadata( $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$metadata = array(
 			'issuer'                           => indieauth_get_issuer(),
 			'scopes_supported'                 => IndieAuth_Plugin::$scopes->get_names(),

@@ -108,7 +108,7 @@ class Token_User extends Token_Generic {
 		if ( ! $this->user_id ) {
 			return false;
 		}
-		$meta = get_user_meta( $this->user_id, '' );
+		$meta = get_user_meta( $this->user_id, '' ); // phpcs:ignore WordPress.WP.GetMetaSingle.Missing -- Retrieving all meta keys.
 		foreach ( array_keys( $meta ) as $key ) {
 			if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
 				delete_user_meta( $this->user_id, $key );
@@ -131,7 +131,7 @@ class Token_User extends Token_Generic {
 
 		$tokens = array();
 		foreach ( $ids as $user_id ) {
-			$meta = get_user_meta( $user_id, '' );
+			$meta = get_user_meta( $user_id, '' ); // phpcs:ignore WordPress.WP.GetMetaSingle.Missing -- Retrieving all meta keys.
 			foreach ( $meta as $key => $value ) {
 				if ( 0 === strncmp( $key, $this->prefix, strlen( $this->prefix ) ) ) {
 					$value         = maybe_unserialize( array_pop( $value ) );
@@ -187,7 +187,7 @@ class Token_User extends Token_Generic {
 			'number'      => 1,
 			'count_total' => false,
 			'fields'      => 'ID',
-			'meta_query'  => array(
+			'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				array(
 					'key'     => $key,
 					'compare' => 'EXISTS',
@@ -231,7 +231,7 @@ class Token_User extends Token_Generic {
 			$key = $this->hash( $key );
 		}
 		$key = $this->prefix . $key;
-		$old = get_user_meta( $this->user_id, $key );
+		$old = get_user_meta( $this->user_id, $key, true );
 
 		// This function will only update if there is an existing value.
 		if ( ! $old ) {
@@ -256,7 +256,7 @@ class Token_User extends Token_Generic {
 			$args     = array(
 				'count_total' => false,
 				'fields'      => 'ID',
-				'meta_query'  => array(
+				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					array(
 						'key'         => $this->prefix,
 						'compare_key' => 'LIKE',

@@ -201,8 +201,8 @@ class Token_List_Table extends WP_List_Table {
 	 * @return string Client name HTML with row actions.
 	 */
 	public function column_client_name( $item ) {
-		$uri     = wp_doing_ajax() ? wp_get_referer() : $_SERVER['REQUEST_URI'];
-		$uri     = urlencode( wp_unslash( $uri ) );
+		$uri     = wp_doing_ajax() ? wp_get_referer() : sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+		$uri     = rawurlencode( $uri );
 		$actions = array(
 			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s">%3$s</a>', $item['token'], $uri, __( 'Retrieve Information', 'indieauth' ) ),
 		);
@@ -255,7 +255,7 @@ class Token_List_Table extends WP_List_Table {
 		$time      = (int) $item['last_accessed'];
 		$time_diff = time() - $time;
 		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-			// translators: Human time difference ago
+			// translators: Human time difference ago.
 			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
 		}
 		return date_i18n( get_option( 'date_format' ), $time );
@@ -280,7 +280,7 @@ class Token_List_Table extends WP_List_Table {
 		$time      = (int) $item['exp'];
 		$time_diff = time() - $time;
 		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-			// translators: Human time difference ago
+			// translators: Human time difference ago.
 			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
 		}
 		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $time );

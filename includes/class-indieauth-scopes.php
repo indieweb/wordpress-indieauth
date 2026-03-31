@@ -46,7 +46,7 @@ class IndieAuth_Scopes {
 	 * @param array    $args    Adds the context to the cap. Typically the object ID.
 	 * @return string[] $caps    Filtered array of user capabilities after factoring in the token permissions.
 	 */
-	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
+	public function map_meta_cap( $caps, $cap, $user_id, $args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		// If this is not null this is an IndieAuth response.
 		$response = indieauth_get_response();
 		if ( ! empty( $response ) ) {
@@ -58,8 +58,8 @@ class IndieAuth_Scopes {
 			// This check is only for certain capabilities.
 			if ( ! in_array( $cap, $this->map_caps(), true ) ) {
 				if ( WP_DEBUG ) {
-					/* translators: Capability */
-					error_log( sprintf( __( 'Unknown cap: %s', 'indieauth' ), $cap ) );
+					/* translators: %s: Capability name. */
+					error_log( sprintf( __( 'Unknown cap: %s', 'indieauth' ), $cap ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 				}
 				return $caps;
 			}
@@ -230,7 +230,7 @@ class IndieAuth_Scopes {
 	 * @param string $name Scope name.
 	 */
 	public function deregister_scope( $name ) {
-		unset( $this->scopes['name'] );
+		unset( $this->scopes[ $name ] );
 	}
 
 	/**
