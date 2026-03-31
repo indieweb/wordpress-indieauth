@@ -1,27 +1,47 @@
 name: ClassicPress Unit Testing
 on:
-    push:
-    pull_request:
+  push:
+    branches:
+      - trunk
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml.dist'
+      - 'phpcs.xml'
+      - '.github/workflows/cp-phpunit.yml'
+  pull_request:
+    paths:
+      - '**/*.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml.dist'
+      - 'phpcs.xml'
+      - '.github/workflows/cp-phpunit.yml'
 jobs:
-  phpcs:
+  phpunit:
     runs-on: ubuntu-latest
     services:
-     mysql:
-       image: mariadb:10.4
-       env:
-         MYSQL_ROOT_PASSWORD: root
-       ports:
-         - 3306:3306
-       options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=10s --health-retries=10
+      mysql:
+        image: mariadb:10.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=10s --health-retries=10
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.4', '8.3' ]
-        include:
-          - cp-version: latest
+        php-versions: ['7.4', '8.3']
+        cp-version: ['latest']
     steps:
+      - name: Install svn
+        run: |
+          sudo apt-get update
+          sudo apt-get install subversion
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -29,14 +49,14 @@ jobs:
           coverage: none
           tools: composer, phpunit-polyfills
           extensions: mysql
+
       - name: Install Composer dependencies for PHP
-        uses: "ramsey/composer-install@v2"
+        uses: ramsey/composer-install@v3
+
       - name: Setup Test Environment
-        run: |
-          sudo apt update
-          sudo apt install subversion
-          composer setup-cp-tests
+        run: bash bin/install-cp-tests.sh classicpress_test root root 127.0.0.1 ${{ matrix.cp-version }}
+
       - name: Unit Testing
-        run: composer phpunit
+        run: ./vendor/bin/phpunit
         env:
           PHP_VERSION: ${{ matrix.php-versions }}

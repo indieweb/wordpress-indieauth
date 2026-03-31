@@ -1,10 +1,27 @@
 <?php
+/**
+ * External User Token class file.
+ *
+ * @package IndieAuth
+ */
 
-/* Class for managing external tokens in user meta */
+/**
+ * Class for managing external tokens in user meta.
+ */
 class External_User_Token {
 
+	/**
+	 * User ID.
+	 *
+	 * @var int
+	 */
 	protected $user_id;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param int|null $user_id Optional user ID.
+	 */
 	public function __construct( $user_id = null ) {
 		if ( is_numeric( $user_id ) ) {
 			$this->user_id = $user_id;
@@ -14,13 +31,15 @@ class External_User_Token {
 	}
 
 	/**
+	 * Expire all tokens for all users.
 	 *
+	 * @return bool Whether tokens were expired.
 	 */
 	public function expire_all_tokens() {
 		$args     = array(
 			'count_total' => false,
 			'fields'      => 'ID',
-			'meta_query'  => array(
+			'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				array(
 					'key'         => 'indieauth_external_tokens',
 					'compare_key' => 'EXISTS',
@@ -41,7 +60,9 @@ class External_User_Token {
 	}
 
 	/**
+	 * Expire tokens for the current user.
 	 *
+	 * @return bool Whether tokens were expired.
 	 */
 	protected function expire_tokens() {
 		$tokens = get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
@@ -68,7 +89,10 @@ class External_User_Token {
 	}
 
 	/**
+	 * Refresh a token.
 	 *
+	 * @param array $token Token data.
+	 * @return array|false Refreshed token data or false on failure.
 	 */
 	protected function refresh_token( $token ) {
 		if ( ! array_key_exists( 'refresh_token', $token ) ) {
@@ -117,7 +141,7 @@ class External_User_Token {
 	/**
 	 * Retrieves a token
 	 *
-	 * @param string  $key token to retrieve.
+	 * @param string $key token to retrieve.
 	 * @return array|boolean Token data or false if not found
 	 */
 	public function get( $key ) {
@@ -139,10 +163,9 @@ class External_User_Token {
 	}
 
 	/**
-	 * Retrieves a token
+	 * Retrieves all tokens.
 	 *
-	 * @param string  $key token to retrieve.
-	 * @return array|boolean Token data or false if not found
+	 * @return array|boolean Token data or false if not found.
 	 */
 	public function get_all() {
 		if ( ! current_user_can( 'edit_user', $this->user_id ) ) {
@@ -193,8 +216,8 @@ class External_User_Token {
 	/**
 	 * Destroys a token.
 	 *
-	 * @param array|string $tokens Token to destroy. Will also accept an array of tokens to destroy.
-	 * @param boolean $revoke Whether to send revoke request to token endpoint.
+	 * @param array|string $destroy Token to destroy. Will also accept an array of tokens to destroy.
+	 * @param boolean      $revoke  Whether to send revoke request to token endpoint.
 	 */
 	public function destroy( $destroy, $revoke = true ) {
 		if ( ! current_user_can( 'edit_user', $this->user_id ) ) {
@@ -211,7 +234,7 @@ class External_User_Token {
 			if ( in_array( $token['access_token'], $destroy, true ) ) {
 				unset( $tokens[ $key ] );
 				if ( $revoke ) {
-					$resp = $this->revoke_external_token( $token );
+					$this->revoke_external_token( $token );
 				}
 			}
 		}
@@ -223,7 +246,6 @@ class External_User_Token {
 	 * Revokes an External token.
 	 *
 	 * @param array $token Token to destroy. This is the token info stored in the database.
-	 * @param boolean $revoke Whether to send revoke request to token endpoint.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */
 	protected function revoke_external_token( $token ) {
@@ -301,7 +323,7 @@ class External_User_Token {
 	/**
 	 * Is Expired.
 	 *
-	 * @param int $expiration Time to check against current time
+	 * @param int $expiration Time to check against current time.
 	 * @return boolean
 	 */
 	public function is_expired( $expiration ) {

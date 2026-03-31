@@ -1,15 +1,45 @@
 <?php
+/**
+ * IndieAuth Scope class file.
+ *
+ * @package IndieAuth
+ */
 
 /**
- * Class used to define a scope
+ * Class used to define a scope.
+ *
+ * @since 1.0.0
  */
 class IndieAuth_Scope {
-	public $name; // Name of the Scope
 
-	public $label; // Description of the Scope
+	/**
+	 * Name of the Scope.
+	 *
+	 * @var string
+	 */
+	public $name;
 
-	public $capabilities; // List of capabilities the scope contains.
+	/**
+	 * Description of the Scope.
+	 *
+	 * @var string
+	 */
+	public $label;
 
+	/**
+	 * List of capabilities the scope contains.
+	 *
+	 * @var array
+	 */
+	public $capabilities;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param string $name         Scope name.
+	 * @param string $label        Scope label/description.
+	 * @param array  $capabilities List of capabilities.
+	 */
 	public function __construct( $name, $label, $capabilities ) {
 		$this->name         = $name;
 		$this->label        = $label;
@@ -28,8 +58,8 @@ class IndieAuth_Scope {
 	/**
 	 * Removes a capability from a role.
 	 *
-	 *
-	* @param string $cap Capability name.                                      */
+	 * @param string $cap Capability name.
+	 */
 	public function remove_cap( $cap ) {
 		unset( $this->capabilities[ $cap ] );
 	}
@@ -44,12 +74,12 @@ class IndieAuth_Scope {
 	 *
 	 * @param string $cap Capability name.
 	 * @return bool True if the scope has the given capability. False otherwise.
-											*/
+	 */
 	public function has_cap( $cap ) {
 		/**
 		 * Filters which capabilities a scope has.
 		 *
-		 * @param array $capabilities Array of capabilities for the role.
+		 * @param array  $capabilities Array of capabilities for the role.
 		 * @param string $cap          Capability name.
 		 * @param string $name         Scope name.
 		 */

@@ -1,79 +1,70 @@
 {
-  "name": "indieweb/wordpress-indieauth",
-  "description": "IndieAuth Endpoints and Authentication for WordPress",
-  "type": "wordpress-plugin",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Matthias Pfefferle",
-      "homepage": "http://notiz.blog"
-    },
-    {
-      "name": "David Shanske",
-      "homepage": "https://david.shanske.com"
-    }
-  ],
-   "config": {
-     "allow-plugins": {
-       "composer/installers": true,
-       "dealerdirect/phpcodesniffer-composer-installer": true
-    }
-  },
-  "extra": {
-    "installer-name": "indieauth"
-  },
-  "require": {
-    "php": ">=5.6.0",
-    "composer/installers": "~1.0 || ~2.0"
-  },
-  "require-dev": {
-    "squizlabs/php_codesniffer": "^3.11",
-    "phpcompatibility/php-compatibility": "*",
-    "wp-coding-standards/wpcs": "*",
-    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-    "phpcompatibility/phpcompatibility-wp": "*",
-    "sebastian/phpcpd": "^3.0 || ^4.0 || ^6.0",
-    "yoast/phpunit-polyfills": "^4.0",
-    "mf2/mf2": "^0.5.0",
-    "sirbrillig/phpcs-variable-analysis": "^2.11",
-    "wp-cli/wp-cli": "^2.11",
-    "wp-cli/i18n-command": "^2.6",
-    "wpreadme2markdown/wp2md": "^4.1",
-    "wp-cli/wp-cli-bundle": "^2.11"
-  },
-  "scripts": {
-    "install-codestandards": [
-      "Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\Plugin::run"
-    ],
-    "post-install-cmd": [
-      "@install-codestandard",
-      "@copy-files"
-    ],
-    "setup-wp-tests": "bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest",
-    "setup-cp-tests": "bash bin/install-wp-tests.sh cpc_test root root 127.0.0.1 latest",
-    "phpunit": "./vendor/bin/phpunit",
-    "test": [
-      "composer update",
-      "bin/install-wp-tests.sh wordpress wordpress wordpress",
-      "vendor/bin/phpunit"
-    ],
-    "copy-files": [
-      "cp -u -r vendor/mf2/mf2/Mf2/Parser.php lib/mf2",
-      "cp -u -r vendor/mf2/mf2/*.md lib/mf2"
-    ],
-    "lint": [
-      "./vendor/bin/phpcs -n",
-      "@phpcpd"
-    ],
-    "release": [
-	"@phpcbf",
-	"@make-pot",
-	"@wp2md"
-    ],
-    "phpcs": "./vendor/bin/phpcs",
-    "phpcbf": "./vendor/bin/phpcbf",
-    "phpcpd": "./vendor/bin/phpcpd --fuzzy --exclude .git --exclude vendor --exclude tests --exclude node_modules .",
-    "make-pot": "./vendor/bin/wp i18n make-pot . languages/indieauth.pot",
-    "wp2md": "vendor/bin/wp2md -i readme.txt -o readme.md"
-  }
+	"name": "indieweb/wordpress-indieauth",
+	"description": "IndieAuth Endpoints and Authentication for WordPress",
+	"type": "wordpress-plugin",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Matthias Pfefferle",
+			"homepage": "http://notiz.blog"
+		},
+		{
+			"name": "David Shanske",
+			"homepage": "https://david.shanske.com"
+		}
+	],
+	"require": {
+		"php": ">=7.2",
+		"composer/installers": "^1.0 || ^2.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^8 || ^9",
+		"phpcompatibility/php-compatibility": "*",
+		"phpcompatibility/phpcompatibility-wp": "*",
+		"squizlabs/php_codesniffer": "3.*",
+		"wp-coding-standards/wpcs": "^3.0",
+		"yoast/phpunit-polyfills": "^4.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
+		"sirbrillig/phpcs-variable-analysis": "^2.11",
+		"phpcsstandards/phpcsextra": "^1.1.0",
+		"mf2/mf2": "^0.5.0",
+		"wp-cli/wp-cli": "^2.11",
+		"wp-cli/i18n-command": "^2.6",
+		"wpreadme2markdown/wp2md": "^4.1",
+		"wp-cli/wp-cli-bundle": "^2.11"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"extra": {
+		"installer-name": "indieauth"
+	},
+	"scripts": {
+		"post-install-cmd": [
+			"@copy-files"
+		],
+		"copy-files": [
+			"cp -u -r vendor/mf2/mf2/Mf2/Parser.php lib/mf2 || true",
+			"cp -u -r vendor/mf2/mf2/*.md lib/mf2 || true"
+		],
+		"test": [
+			"composer install",
+			"bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest true",
+			"vendor/bin/phpunit"
+		],
+		"test:wp-env": [
+			"wp-env run tests-cli --env-cwd=\"wp-content/plugins/indieauth\" vendor/bin/phpunit"
+		],
+		"lint": [
+			"vendor/bin/phpcs"
+		],
+		"lint:fix": [
+			"vendor/bin/phpcbf"
+		],
+		"make-pot": "./vendor/bin/wp i18n make-pot . languages/indieauth.pot",
+		"wp2md": "vendor/bin/wp2md -i readme.txt -o readme.md"
+	}
 }

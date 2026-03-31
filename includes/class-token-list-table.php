@@ -1,10 +1,28 @@
 <?php
+/**
+ * Token List Table class file.
+ *
+ * @package IndieAuth
+ */
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
-		require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
+/**
+ * Token List Table class.
+ *
+ * Displays IndieAuth tokens in a WordPress admin table.
+ *
+ * @since 1.0.0
+ */
 class Token_List_Table extends WP_List_Table {
+
+	/**
+	 * Get table columns.
+	 *
+	 * @return array Column definitions.
+	 */
 	public function get_columns() {
 		return array(
 			'cb'            => '<input type="checkbox" />',
@@ -18,6 +36,11 @@ class Token_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Get bulk actions.
+	 *
+	 * @return array Bulk action definitions.
+	 */
 	public function get_bulk_actions() {
 		return array(
 			'revoke'   => __( 'Revoke', 'indieauth' ),
@@ -26,10 +49,18 @@ class Token_List_Table extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Get sortable columns.
+	 *
+	 * @return array Sortable column definitions.
+	 */
 	public function get_sortable_columns() {
 		return array();
 	}
 
+	/**
+	 * Prepare items for display.
+	 */
 	public function prepare_items() {
 		$columns = $this->get_columns();
 		$hidden  = array();
@@ -53,14 +84,30 @@ class Token_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Default column output.
+	 *
+	 * @param array  $item        Row data.
+	 * @param string $column_name Column name.
+	 * @return mixed Column value.
+	 */
 	public function column_default( $item, $column_name ) {
 		return $item[ $column_name ];
 	}
 
+	/**
+	 * Checkbox column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Checkbox HTML.
+	 */
 	public function column_cb( $item ) {
 		return sprintf( '<input type="checkbox" name="tokens[]" value="%s" />', esc_attr( $item['token'] ) );
 	}
 
+	/**
+	 * Process bulk and row actions.
+	 */
 	public function process_action() {
 		$tokens = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
 		$t      = new Token_User( '_indieauth_token_', get_current_user_id() );
@@ -110,6 +157,12 @@ class Token_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Destroy tokens older than specified time period.
+	 *
+	 * @param Token_User $t          Token user instance.
+	 * @param string     $older_than Time period (year, month, week, day, hour).
+	 */
 	public function destroy_older_than( $t, $older_than = 'day' ) {
 		switch ( strtolower( $older_than ) ) {
 			case 'year':
@@ -141,9 +194,15 @@ class Token_List_Table extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Client name column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Client name HTML with row actions.
+	 */
 	public function column_client_name( $item ) {
-		$uri     = wp_doing_ajax() ? wp_get_referer() : $_SERVER['REQUEST_URI'];
-		$uri     = urlencode( wp_unslash( $uri ) );
+		$uri     = wp_doing_ajax() ? wp_get_referer() : sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
+		$uri     = rawurlencode( $uri );
 		$actions = array(
 			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s">%3$s</a>', $item['token'], $uri, __( 'Retrieve Information', 'indieauth' ) ),
 		);
@@ -162,6 +221,12 @@ class Token_List_Table extends WP_List_Table {
 		return sprintf( '%1$s  %2$s', $item['client_name'], $this->row_actions( $actions ) );
 	}
 
+	/**
+	 * Client icon column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Client icon HTML or 'None' text.
+	 */
 	public function column_client_icon( $item ) {
 		if ( empty( $item['client_icon'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
@@ -177,6 +242,12 @@ class Token_List_Table extends WP_List_Table {
 		return sprintf( '<img src="%1$s" height="48" width="48" />', $item['client_icon'] );
 	}
 
+	/**
+	 * Last accessed column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Human-readable time or 'Never'.
+	 */
 	public function column_last_accessed( $item ) {
 		if ( ! isset( $item['last_accessed'] ) ) {
 			return __( 'Never', 'indieauth' );
@@ -184,13 +255,19 @@ class Token_List_Table extends WP_List_Table {
 		$time      = (int) $item['last_accessed'];
 		$time_diff = time() - $time;
 		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-			// translators: Human time difference ago
+			// translators: Human time difference ago.
 			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
 		}
 		return date_i18n( get_option( 'date_format' ), $time );
 	}
 
 
+	/**
+	 * Expiration column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Expiration date or 'Never'.
+	 */
 	public function column_exp( $item ) {
 		// Check for old property.
 		if ( isset( $item['expiration'] ) ) {
@@ -203,13 +280,19 @@ class Token_List_Table extends WP_List_Table {
 		$time      = (int) $item['exp'];
 		$time_diff = time() - $time;
 		if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-			// translators: Human time difference ago
+			// translators: Human time difference ago.
 			return sprintf( __( '%s ago', 'indieauth' ), human_time_diff( $time ) );
 		}
 		return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $time );
 	}
 
 
+	/**
+	 * Issue date column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Formatted issue date.
+	 */
 	public function column_iat( $item ) {
 		// Check for old property.
 		if ( isset( $item['issued_at'] ) ) {
@@ -218,6 +301,12 @@ class Token_List_Table extends WP_List_Table {
 		return wp_date( get_option( 'date_format' ), $item['iat'] );
 	}
 
+	/**
+	 * Client ID column output.
+	 *
+	 * @param array $item Row data.
+	 * @return string Client ID host.
+	 */
 	public function column_client_id( $item ) {
 		return wp_parse_url( $item['client_id'], PHP_URL_HOST );
 	}

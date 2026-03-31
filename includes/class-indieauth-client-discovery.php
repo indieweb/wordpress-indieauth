@@ -1,22 +1,83 @@
 <?php
+/**
+ * IndieAuth Client Discovery class.
+ *
+ * @package IndieAuth
+ */
 
+/**
+ * Discovers information about an IndieAuth client from its client_id URL.
+ */
 class IndieAuth_Client_Discovery {
-	protected $rels     = array();
-	protected $html     = array();
-	protected $mf2      = array();
-	protected $json     = array();
-	public $client_id   = '';
-	public $client_name = '';
-	public $client_icon = '';
-	public $client_uri  = '';
 
+	/**
+	 * Discovered rel values.
+	 *
+	 * @var array
+	 */
+	protected $rels = array();
+
+	/**
+	 * Parsed HTML data.
+	 *
+	 * @var array
+	 */
+	protected $html = array();
+
+	/**
+	 * Parsed Microformats2 data.
+	 *
+	 * @var array
+	 */
+	protected $mf2 = array();
+
+	/**
+	 * Parsed JSON metadata.
+	 *
+	 * @var array
+	 */
+	protected $json = array();
+
+	/**
+	 * The client identifier URL.
+	 *
+	 * @var string
+	 */
+	public $client_id = '';
+
+	/**
+	 * The human-readable client name.
+	 *
+	 * @var string
+	 */
+	public $client_name = '';
+
+	/**
+	 * The client icon URL.
+	 *
+	 * @var string
+	 */
+	public $client_icon = '';
+
+	/**
+	 * The client URI.
+	 *
+	 * @var string
+	 */
+	public $client_uri = '';
+
+	/**
+	 * Constructor. Fetches and parses client information.
+	 *
+	 * @param string $client_id The client identifier URL.
+	 */
 	public function __construct( $client_id ) {
 		$this->client_id = $client_id;
 
 		if ( defined( 'INDIEAUTH_UNIT_TESTS' ) ) {
 			return;
 		}
-		// Validate if this is an IP address
+		// Validate if this is an IP address.
 		$ip         = filter_var( wp_parse_url( $client_id, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
 		$donotfetch = array(
 			'127.0.0.1',
@@ -32,15 +93,19 @@ class IndieAuth_Client_Discovery {
 		if ( 'localhost' === wp_parse_url( $client_id, PHP_URL_HOST ) ) {
 			return;
 		}
-		error_log( 'Pre-Parse' );
 		$response = self::parse( $client_id );
-		error_log( 'Post-Parse' );
 		if ( is_wp_error( $response ) ) {
-			error_log( __( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . wp_json_encode( $response ) ); // phpcs:ignore
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( __( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . wp_json_encode( $response ) );
 			return;
 		}
 	}
 
+	/**
+	 * Exports the discovered client information as an array.
+	 *
+	 * @return array The client information.
+	 */
 	public function export() {
 		return array(
 			'rels'        => $this->rels,
@@ -54,6 +119,12 @@ class IndieAuth_Client_Discovery {
 		);
 	}
 
+	/**
+	 * Fetches the client URL content.
+	 *
+	 * @param string $url The URL to fetch.
+	 * @return array|WP_Error The HTTP response or WP_Error on failure.
+	 */
 	private function fetch( $url ) {
 		$wp_version = get_bloginfo( 'version' );
 		$user_agent = apply_filters( 'http_headers_useragent', 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ) );
@@ -74,6 +145,12 @@ class IndieAuth_Client_Discovery {
 		return $response;
 	}
 
+	/**
+	 * Parses the client URL to extract client metadata.
+	 *
+	 * @param string $url The client URL to parse.
+	 * @return void|WP_Error Void on success, WP_Error on failure.
+	 */
 	private function parse( $url ) {
 		$response = self::fetch( $url );
 
@@ -96,7 +173,7 @@ class IndieAuth_Client_Discovery {
 			 *      @type string $logo_uri URL that references a logo or icon for the client. Optional.
 			 *      @type array $redirect_uris An array of redirect URIs. Optional.
 			 *  }
-			 **/
+			 */
 			if ( ! is_array( $this->json ) || empty( $this->json ) ) {
 					return new WP_Error( 'empty_json', __( 'Discovery Has Returned an Empty JSON Document', 'indieauth' ) );
 			}
@@ -140,6 +217,12 @@ class IndieAuth_Client_Discovery {
 		}
 	}
 
+	/**
+	 * Parses Microformats2 data from HTML content.
+	 *
+	 * @param string $input The HTML content to parse.
+	 * @param string $url   The URL of the content for resolving relative URLs.
+	 */
 	private function get_mf2( $input, $url ) {
 		if ( ! class_exists( 'Mf2\Parser' ) ) {
 			require_once plugin_dir_path( __DIR__ ) . 'lib/mf2/Parser.php';
@@ -158,6 +241,11 @@ class IndieAuth_Client_Discovery {
 		}
 	}
 
+	/**
+	 * Extracts HTML metadata from a DOMDocument.
+	 *
+	 * @param DOMDocument $input The parsed DOM document.
+	 */
 	private function get_html( $input ) {
 		$xpath = new DOMXPath( $input );
 		if ( ! empty( $xpath ) ) {
@@ -168,30 +256,53 @@ class IndieAuth_Client_Discovery {
 		}
 	}
 
-	private function ifset( $array, $key, $default = false ) {
-		if ( ! is_array( $array ) ) {
-			return $default;
+	/**
+	 * Returns a value from an array if it exists, or a default.
+	 *
+	 * @param array        $data          The array to check.
+	 * @param string|array $key           The key or keys to look for.
+	 * @param mixed        $default_value The default value if key is not found.
+	 * @return mixed The found value or default.
+	 */
+	private function ifset( $data, $key, $default_value = false ) {
+		if ( ! is_array( $data ) ) {
+			return $default_value;
 		}
 		if ( is_array( $key ) ) {
 			foreach ( $key as $k ) {
-				if ( isset( $array[ $k ] ) ) {
-					return $array[ $k ];
+				if ( isset( $data[ $k ] ) ) {
+					return $data[ $k ];
 				}
 			}
 		} else {
-			return isset( $array[ $key ] ) ? $array[ $key ] : $default;
+			return isset( $data[ $key ] ) ? $data[ $key ] : $default_value;
 		}
 	}
 
+	/**
+	 * Returns the client name.
+	 *
+	 * @return string The client name.
+	 */
 	public function get_name() {
 		return $this->client_name;
 	}
 
+	/**
+	 * Returns the client URI.
+	 *
+	 * @return string The client URI.
+	 */
 	public function get_uri() {
 		return $this->client_uri;
 	}
 
-	// Separate function for possible improved size picking later
+	/**
+	 * Determines the best icon URL from discovered rel values.
+	 *
+	 * @param array $input The rel values array.
+	 * @return string The icon URL or empty string.
+	 */
 	private function determine_icon( $input ) {
 		if ( ! is_array( $input ) || empty( $input ) ) {
 			return '';
@@ -221,6 +332,11 @@ class IndieAuth_Client_Discovery {
 		}
 	}
 
+	/**
+	 * Returns the client icon URL.
+	 *
+	 * @return string The client icon URL.
+	 */
 	public function get_icon() {
 		return $this->client_icon;
 	}

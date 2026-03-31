@@ -1,35 +1,56 @@
 <?php
 /**
+ * IndieAuth Endpoint base class file.
  *
- *
- * Implements Endpoint Functionality
+ * @package IndieAuth
  */
 
+/**
+ * Implements Endpoint Functionality.
+ *
+ * @since 1.0.0
+ */
 abstract class IndieAuth_Endpoint {
+
+	/**
+	 * Token storage.
+	 *
+	 * @var Token_User
+	 */
 	protected $tokens;
+
+	/**
+	 * Refresh token storage.
+	 *
+	 * @var Token_User
+	 */
 	protected $refresh_tokens;
+
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		$this->tokens         = new Token_User( '_indieauth_token_' );
 		$this->refresh_tokens = new Token_User( '_indieauth_refresh_' );
 	}
 
-	/*
+	/**
 	 * Outputs a marked up Http link header.
 	 *
-	 * @param string $url URL for the link
-	 * @param string $rel Rel property for the link
-	 * @param boolean $replace Passes the value of replace through to the header PHP
+	 * @param string $url     URL for the link.
+	 * @param string $rel     Rel property for the link.
+	 * @param bool   $replace Passes the value of replace through to the header PHP.
 	 */
 	public static function set_http_header( $url, $rel, $replace = false ) {
 		header( sprintf( 'Link: <%s>; rel="%s"', $url, $rel ), $replace );
 	}
 
-	/*
+	/**
 	 * Returns a marked up HTML link header.
 	 *
-	 * @param string $url URL for the link
-	 * @param string $rel Rel property for the link
-	 * @return string Marked up HTML link to add to head
+	 * @param string $url URL for the link.
+	 * @param string $rel Rel property for the link.
+	 * @return string Marked up HTML link to add to head.
 	 */
 	public static function get_html_header( $url, $rel ) {
 		return sprintf( '<link rel="%s" href="%s" />' . PHP_EOL, $rel, $url );
@@ -39,7 +60,6 @@ abstract class IndieAuth_Endpoint {
 	 * Extracts the token from the given authorization header.
 	 *
 	 * @param string $header Authorization header.
-	 *
 	 * @return string|null Token on success, null on failure.
 	 */
 	public function get_token_from_bearer_header( $header ) {
@@ -49,6 +69,14 @@ abstract class IndieAuth_Endpoint {
 		return null;
 	}
 
+	/**
+	 * Get a token by its ID.
+	 *
+	 * @param string      $token Token ID.
+	 * @param bool        $hash  Whether to hash the token.
+	 * @param string|null $type  Token type (access_token, refresh_token, or null for both).
+	 * @return array|false Token data or false.
+	 */
 	public function get_token( $token, $hash = true, $type = null ) {
 		switch ( $type ) {
 			case 'access_token':
@@ -65,6 +93,14 @@ abstract class IndieAuth_Endpoint {
 		}
 	}
 
+	/**
+	 * Delete a token.
+	 *
+	 * @param string      $id      Token ID.
+	 * @param int|null    $user_id User ID.
+	 * @param string|null $type    Token type.
+	 * @return bool|mixed Result of deletion.
+	 */
 	public function delete_token( $id, $user_id = null, $type = null ) {
 		switch ( $type ) {
 			case 'access_token':
@@ -84,7 +120,14 @@ abstract class IndieAuth_Endpoint {
 		}
 	}
 
-
+	/**
+	 * Set/store a token.
+	 *
+	 * @param array    $token      Token data.
+	 * @param int|null $expiration Expiration time.
+	 * @param int|null $user_id    User ID.
+	 * @return string|false Token key or false.
+	 */
 	public function set_token( $token, $expiration = null, $user_id = null ) {
 		if ( ! isset( $token['me'] ) ) {
 			return false;
@@ -103,10 +146,11 @@ abstract class IndieAuth_Endpoint {
 		return $this->tokens->set( $token, $expiration );
 	}
 
-	/*
+	/**
 	 * Sets a refresh token based on an access token.
+	 *
 	 * @param array $token Access Token Return.
-	 * @param int $user User ID.
+	 * @param int   $user  User ID.
 	 * @return string Refresh Token.
 	 */
 	public function set_refresh_token( $token, $user ) {
@@ -123,6 +167,13 @@ abstract class IndieAuth_Endpoint {
 		return $this->refresh_tokens->set( $refresh, $expires_in + 300 );
 	}
 
+	/**
+	 * Delete a refresh token.
+	 *
+	 * @param string   $id      Token ID.
+	 * @param int|null $user_id User ID.
+	 * @return bool Result of deletion.
+	 */
 	public function delete_refresh_token( $id, $user_id = null ) {
 		$this->refresh_tokens->set_user( $user_id );
 		return $this->refresh_tokens->destroy( $id );
