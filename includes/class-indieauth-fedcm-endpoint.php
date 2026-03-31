@@ -1,7 +1,11 @@
 <?php
 /**
- * FedCM Endpoint for IndieAuth
+ * FedCM Endpoint for IndieAuth file.
  *
+ * @package IndieAuth
+ */
+
+/**
  * Implements the Federated Credential Management (FedCM) API endpoints
  * for IndieAuth authentication.
  *

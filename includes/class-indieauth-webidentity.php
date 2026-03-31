@@ -1,7 +1,11 @@
 <?php
 /**
- * Web Identity Well-Known Handler
+ * Web Identity Well-Known Handler file.
  *
+ * @package IndieAuth
+ */
+
+/**
  * Handles the /.well-known/web-identity endpoint for FedCM discovery.
  *
  * @package IndieAuth
