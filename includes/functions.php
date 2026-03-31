@@ -319,7 +319,7 @@ if ( ! function_exists( 'getallheaders' ) ) {
 
 		if ( ! isset( $headers['Authorization'] ) ) {
 			if ( isset( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-				$headers['Authorization'] = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
+				$headers['Authorization'] = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			} elseif ( isset( $_SERVER['PHP_AUTH_USER'] ) ) {
 				$basic_pass               = isset( $_SERVER['PHP_AUTH_PW'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_PW'] ) ) : '';
 				$headers['Authorization'] = 'Basic ' . base64_encode( sanitize_text_field( wp_unslash( $_SERVER['PHP_AUTH_USER'] ) ) . ':' . $basic_pass ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode

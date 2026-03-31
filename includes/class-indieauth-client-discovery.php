@@ -93,11 +93,7 @@ class IndieAuth_Client_Discovery {
 		if ( 'localhost' === wp_parse_url( $client_id, PHP_URL_HOST ) ) {
 			return;
 		}
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Pre-Parse' );
 		$response = self::parse( $client_id );
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( 'Post-Parse' );
 		if ( is_wp_error( $response ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( __( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . wp_json_encode( $response ) );

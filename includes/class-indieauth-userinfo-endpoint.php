@@ -80,7 +80,7 @@ class IndieAuth_Userinfo_Endpoint extends IndieAuth_Endpoint {
 	public function userinfo( $request ) {
 		$header = $request->get_header( 'Authorization' );
 		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-			$header = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
+			$header = wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
