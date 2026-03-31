@@ -208,8 +208,12 @@ class Token_List_Table extends WP_List_Table {
 		);
 		if ( ! isset( $item['client_name'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
-				$client              = IndieAuth_Client_Taxonomy::get_client( $item['client_id'] );
-				$item['client_name'] = $client['name'];
+				$client = IndieAuth_Client_Taxonomy::get_client( $item['client_id'] );
+				if ( is_wp_error( $client ) ) {
+					$item['client_name'] = __( 'Unknown', 'indieauth' );
+				} else {
+					$item['client_name'] = $client['name'];
+				}
 			} else {
 				$item['client_name'] = __( 'Not Provided', 'indieauth' );
 			}
