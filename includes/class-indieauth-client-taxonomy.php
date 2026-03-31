@@ -321,7 +321,7 @@ final class IndieAuth_Client_Taxonomy {
 	 * @return string Filepath.
 	 */
 	public static function icon_url_to_filepath( $url ) {
-		if ( false === strpos( self::upload_directory( '', true ), $url ) ) {
+		if ( false === strpos( $url, self::upload_directory( '', true ) ) ) {
 			return false;
 		}
 		$path = str_replace( self::upload_directory( '', true ), '', $url );
@@ -356,7 +356,7 @@ final class IndieAuth_Client_Taxonomy {
 	 */
 	public static function sideload_icon( $url, $client_id ) {
 		// If the URL is inside the upload directory.
-		if ( false !== strpos( self::upload_directory( '', true ), $url ) ) {
+		if ( false !== strpos( $url, self::upload_directory( '', true ) ) ) {
 			return $url;
 		}
 
