@@ -43,8 +43,10 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 				$account_id = $request->get_param( 'account_id' );
 				// Allow test URLs that contain the author ID.
 				if ( $account_id === static::$author_url ) {
-					// Clear the error and let the request proceed.
-					return null;
+					// Only clear the error if account_id is the only invalid param.
+					if ( 1 === count( $error_data['params'] ) ) {
+						return null;
+					}
 				}
 			}
 		}
@@ -376,10 +378,10 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'rest_invalid_param', $data['code'] );
+		$this->assertEquals( 'rest_invalid_param', $data['error'] );
 	}
 
 	/**
@@ -412,7 +414,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'rest_invalid_param', $data['code'] );
+		$this->assertEquals( 'rest_invalid_param', $data['error'] );
 	}
 
 	/**
@@ -438,7 +440,7 @@ class FedCMEndpointTest extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'rest_invalid_param', $data['code'] );
+		$this->assertEquals( 'rest_invalid_param', $data['error'] );
 	}
 
 	/**
