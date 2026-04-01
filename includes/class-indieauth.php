@@ -141,11 +141,21 @@ class IndieAuth {
 	 * Register hooks.
 	 */
 	private function register_hooks() {
+		\add_action( 'init', array( $this, 'init_plugin' ), 2 );
+	}
+
+	/**
+	 * Initialize plugin components on init hook.
+	 *
+	 * Runs at priority 2 to match original plugin behavior. Components that
+	 * use translations or register filters must be created on init, not earlier.
+	 */
+	public function init_plugin() {
 		static::$scopes = new Scopes();
-		\add_action( 'init', array( static::$scopes, 'init' ) );
+		static::$scopes->init();
 
 		new Authorize();
-		\add_action( 'init', array( Client_Taxonomy::class, 'init' ) );
+		Client_Taxonomy::init();
 		new Web_Signin();
 
 		if ( \WP_DEBUG ) {
