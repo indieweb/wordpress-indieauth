@@ -1,5 +1,5 @@
 <?php
-class DiscoveryTest extends WP_UnitTestCase {
+class Test_Discovery extends WP_UnitTestCase {
 
 	public function headers( $link ) {
 		$headers = array(

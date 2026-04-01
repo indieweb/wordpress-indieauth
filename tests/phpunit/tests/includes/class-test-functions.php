@@ -1,5 +1,5 @@
 <?php
-class IndieAuthFunctionsTest extends WP_UnitTestCase {
+class Test_Functions extends WP_UnitTestCase {
 
 	protected static $author_id;
 

@@ -5,6 +5,8 @@
  * @package IndieAuth
  */
 
+namespace IndieAuth;
+
 // phpcs:disable Universal.Files.SeparateFunctionsFromOO.Mixed
 
 /**
@@ -12,7 +14,7 @@
  *
  * @since 1.0.0
  */
-class WP_OAuth_Response extends WP_REST_Response {
+class OAuth_Response extends \WP_REST_Response {
 
 	/**
 	 * Constructor.
@@ -34,7 +36,7 @@ class WP_OAuth_Response extends WP_REST_Response {
 			$this->set_debug( $debug );
 		}
 		if ( WP_DEBUG ) {
-			error_log( $this->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			\error_log( $this->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
 
@@ -51,7 +53,7 @@ class WP_OAuth_Response extends WP_REST_Response {
 	/**
 	 * Convert to WP_Error.
 	 *
-	 * @return WP_Error The error object.
+	 * @return \WP_Error The error object.
 	 */
 	public function to_wp_error() {
 		$data              = $this->get_data();
@@ -60,7 +62,7 @@ class WP_OAuth_Response extends WP_REST_Response {
 		unset( $data['error'] );
 		unset( $data['error_description'] );
 		$status = $this->get_status();
-		return new WP_Error(
+		return new \WP_Error(
 			$error,
 			$error_description,
 			array(
@@ -78,62 +80,6 @@ class WP_OAuth_Response extends WP_REST_Response {
 	public function to_log() {
 		$data   = $this->get_data();
 		$status = $this->get_status();
-		return sprintf( 'IndieAuth Error: %1$s %2$s - %3$s %4$s', $status, $data['error'], $data['error_description'], wp_json_encode( $data ) );
+		return sprintf( 'IndieAuth Error: %1$s %2$s - %3$s %4$s', $status, $data['error'], $data['error_description'], \wp_json_encode( $data ) );
 	}
-}
-
-/**
- * Get OAuth error from response.
- *
- * @param mixed $obj Response object or array.
- * @return WP_OAuth_Response|false OAuth response or false.
- */
-function get_oauth_error( $obj ) {
-	if ( is_array( $obj ) ) {
-		// When checking the result of wp_remote_post.
-		if ( isset( $obj['body'] ) ) {
-			$body = json_decode( $obj['body'], true );
-			if ( isset( $body['error'] ) ) {
-				return new WP_OAuth_Response(
-					$body['error'],
-					isset( $body['error_description'] ) ? $body['error_description'] : null,
-					$obj['response']['code']
-				);
-			}
-		}
-	} elseif ( is_object( $obj ) && 'WP_OAuth_Response' === get_class( $obj ) ) {
-		$data = $obj->get_data();
-		if ( isset( $data['error'] ) ) {
-			return $obj;
-		}
-	}
-	return false;
-}
-
-/**
- * Check if object is an OAuth error.
- *
- * @param mixed $obj Object to check.
- * @return bool True if OAuth error.
- */
-function is_oauth_error( $obj ) {
-	return ( $obj instanceof WP_OAuth_Response );
-}
-
-/**
- * Convert WP_Error to OAuth response.
- *
- * @param WP_Error $error The WordPress error.
- * @return WP_OAuth_Response|null OAuth response or null.
- */
-function wp_error_to_oauth_response( $error ) {
-	if ( is_wp_error( $error ) ) {
-		$data   = $error->get_error_data();
-		$status = isset( $data['status'] ) ? $data['status'] : 200;
-		if ( is_array( $data ) ) {
-			unset( $data['status'] );
-		}
-		return new WP_OAuth_Response( $error->get_error_code(), $error->get_error_message(), $status, $data );
-	}
-	return null;
 }

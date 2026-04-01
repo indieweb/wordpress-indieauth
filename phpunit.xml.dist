@@ -8,9 +8,9 @@
 			<directory prefix="class-test-" suffix=".php">./tests/phpunit/tests</directory>
 		</testsuite>
 	</testsuites>
-	<filter>
-		<whitelist>
+	<coverage>
+		<include>
 			<directory suffix=".php">./includes</directory>
-		</whitelist>
-	</filter>
+		</include>
+	</coverage>
 </phpunit>

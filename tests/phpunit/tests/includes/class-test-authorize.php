@@ -1,5 +1,9 @@
 <?php
-class AuthorizeTest extends WP_UnitTestCase {
+
+use IndieAuth\Token\User as Token_User;
+use IndieAuth\Authorize as Indieauth_Authorize;
+
+class Test_Authorize extends WP_UnitTestCase {
 
 	protected static $author_id;
 	protected static $subscriber_id;
