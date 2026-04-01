@@ -28,8 +28,14 @@ class Scopes {
 	 */
 	public function __construct() {
 		$this->scopes = array();
-		$this->register_builtin_scopes();
 		\add_filter( 'map_meta_cap', array( $this, 'map_meta_cap' ), 20, 4 );
+	}
+
+	/**
+	 * Initialize builtin scopes. Called on init to avoid early translation loading.
+	 */
+	public function init() {
+		$this->register_builtin_scopes();
 	}
 
 	/**

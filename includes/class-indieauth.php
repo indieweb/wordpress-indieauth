@@ -141,7 +141,8 @@ class IndieAuth {
 	 * Register hooks.
 	 */
 	private function register_hooks() {
-		\add_action( 'init', array( $this, 'init_scopes' ) );
+		static::$scopes = new Scopes();
+		\add_action( 'init', array( static::$scopes, 'init' ) );
 
 		new Authorize();
 		\add_action( 'init', array( Client_Taxonomy::class, 'init' ) );
@@ -150,13 +151,6 @@ class IndieAuth {
 		if ( \WP_DEBUG ) {
 			new Debug();
 		}
-	}
-
-	/**
-	 * Initialize scopes. Runs on init hook to avoid early translation loading.
-	 */
-	public function init_scopes() {
-		static::$scopes = new Scopes();
 	}
 
 	/**
