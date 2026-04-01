@@ -76,8 +76,8 @@ class Authorize {
 	 * Ensures responses to any IndieAuth endpoints are always OAuth Responses rather than WP_Error.
 	 *
 	 * @param \WP_REST_Response|\WP_HTTP_Response|\WP_Error|mixed $response Result to send to the client.
-	 * @param array                                                $handler  Route handler used for the request.
-	 * @param \WP_REST_Request                                     $request  Request used to generate the response.
+	 * @param array                                               $handler  Route handler used for the request.
+	 * @param \WP_REST_Request                                    $request  Request used to generate the response.
 	 * @return \WP_REST_Response|OAuth_Response|mixed Modified response.
 	 */
 	public static function return_oauth_error( $response, $handler, $request ) {

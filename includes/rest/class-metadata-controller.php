@@ -53,10 +53,10 @@ class Metadata_Controller extends \WP_REST_Controller {
 	/**
 	 * Hooks into the REST API output to add a metadata header to the Issuer URL.
 	 *
-	 * @param bool                      $served  Whether the request has already been served.
+	 * @param bool                       $served  Whether the request has already been served.
 	 * @param \WP_HTTP_ResponseInterface $result  Result to send to the client. Usually a WP_REST_Response.
-	 * @param \WP_REST_Request          $request Request used to generate the response.
-	 * @param \WP_REST_Server           $server  Server instance.
+	 * @param \WP_REST_Request           $request Request used to generate the response.
+	 * @param \WP_REST_Server            $server  Server instance.
 	 * @return bool Whether the request has been served.
 	 */
 	public function serve_request( $served, $result, $request, $server ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable

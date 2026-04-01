@@ -166,7 +166,7 @@ class Admin {
 				'<p>%s</p>',
 				\__( 'You are not serving your site via HTTPS. This is a security risk if running IndieAuth.', 'indieauth' )
 			);
-			$result['actions']     = \__( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
+			$result['actions']        = \__( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
 		}
 
 		return $result;

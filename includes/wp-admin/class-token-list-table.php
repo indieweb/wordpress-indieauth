@@ -167,7 +167,7 @@ class Token_List_Table extends \WP_List_Table {
 	 * Destroy tokens older than specified time period.
 	 *
 	 * @param Token_User $t          Token user instance.
-	 * @param string $older_than Time period (year, month, week, day, hour).
+	 * @param string     $older_than Time period (year, month, week, day, hour).
 	 */
 	public function destroy_older_than( $t, $older_than = 'day' ) {
 		switch ( strtolower( $older_than ) ) {

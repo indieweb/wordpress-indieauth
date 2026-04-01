@@ -262,9 +262,9 @@ if ( ! function_exists( 'IndieAuth\url_to_author' ) ) {
 /**
  * Returns if valid URL for REST validation.
  *
- * @param string               $url     URL to validate.
+ * @param string                $url     URL to validate.
  * @param \WP_REST_Request|null $request REST request object.
- * @param string|null          $key     Parameter key.
+ * @param string|null           $key     Parameter key.
  * @return bool Whether URL is valid.
  */
 function rest_is_valid_url( $url, $request = null, $key = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
