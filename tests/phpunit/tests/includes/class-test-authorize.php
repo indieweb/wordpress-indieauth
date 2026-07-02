@@ -50,7 +50,12 @@ class Test_Authorize extends WP_UnitTestCase {
 		return $tokens->set( static::$test_token );
 	}
 
-	public function test_authorize() {
+	/*
+	 * Do not name this method `test_authorize`. A method with the same name as the class
+	 * (case-insensitive) is treated as a PHP4-style constructor on PHP < 8.0, which
+	 * bypasses the PHPUnit TestCase constructor and breaks the whole test class.
+	 */
+	public function test_authorize_with_access_token() {
 		$token = self::set_token();
 		$_REQUEST['micropub']       = 'endpoint';
 		$_POST['access_token'] = $token;
