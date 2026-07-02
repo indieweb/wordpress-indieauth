@@ -22,8 +22,5 @@
 /tests/              export-ignore
 /vendor/             export-ignore
 
-# Documentation (readme.txt is kept for WordPress.org)
-/CLAUDE.md           export-ignore
+# Documentation (readme.md is kept for WordPress.org)
 /LICENSE.md          export-ignore
-/README.md           export-ignore
-/readme.md           export-ignore
