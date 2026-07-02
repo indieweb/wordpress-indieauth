@@ -103,7 +103,7 @@ class Token_UI {
 		}
 		$scopes  = \sanitize_text_field( $scopes );
 		$expires = isset( $_REQUEST['expires_in'] ) ? \absint( $_REQUEST['expires_in'] ) : 0;
-		$token   = self::generate_local_token( $client_name, $scopes, $expires );
+		$token   = $this->generate_local_token( $client_name, $scopes, $expires );
 		?>
 	<p><?php \esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
 	<h3><?php echo $token; // phpcs:ignore
@@ -174,7 +174,7 @@ class Token_UI {
 		<?php \wp_nonce_field( 'indieauth_newtoken', 'indieauth_nonce' ); ?>
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
 			<h4><?php \esc_html_e( 'Scopes', 'indieauth' ); ?></h4>
-			<?php echo \esc_html( $this->scopes() ); ?>
+			<?php $this->scopes(); ?>
 			<p><label><?php \esc_html_e( 'Set Expiry Time in Seconds(0 to disable)', 'indieauth' ); ?></label>
 			<input type="number" name="expires_in" id="expires_in" min="0" value="3600" />
 			</p>

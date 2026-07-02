@@ -360,7 +360,7 @@ class IndieAuth {
 		$t->get_all();
 		$t = new Token_User( '_indieauth_code_' );
 		$t->get_all();
-		$t = new Token_User( '_indieauth_refresh_token_' );
+		$t = new Token_User( '_indieauth_refresh_' );
 		$t->get_all();
 		if ( INDIEAUTH_TICKET_ENDPOINT ) {
 			$t = new External_User_Token();

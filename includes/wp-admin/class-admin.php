@@ -81,7 +81,14 @@ class Admin {
 		} else {
 			$path = 'options-general.php?page=indieauth';
 		}
-		\printf( \__( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ), $path ); // phpcs:ignore
+		\printf(
+			\wp_kses(
+				/* translators: %1$s: URL of the IndieAuth settings page. */
+				\__( 'Based on your feedback and to improve the user experience, we decided to move the settings to a separate <a href="%1$s">settings-page</a>.', 'indieauth' ),
+				array( 'a' => array( 'href' => true ) )
+			),
+			\esc_url( \admin_url( $path ) )
+		);
 	}
 
 	/**
@@ -210,7 +217,7 @@ class Admin {
 	/**
 	 * Test if authorization headers pass through.
 	 *
-	 * @return string|false The diagnostic message or false on error.
+	 * @return bool True if authorization headers pass through, false otherwise.
 	 */
 	public static function test_auth() {
 		$response = \wp_remote_post(
@@ -228,24 +235,26 @@ class Admin {
 				),
 			)
 		);
-		if ( ! \is_wp_error( $response ) ) {
-			$json = json_decode( \wp_remote_retrieve_body( $response ) );
-			return \wp_specialchars_decode( $json->message );
-		} else {
+		if ( \is_wp_error( $response ) ) {
 			return false;
 		}
+		$json = json_decode( \wp_remote_retrieve_body( $response ) );
+		return ! empty( $json->success );
 	}
 
 	/**
 	 * Handle the auth diagnostic login form.
 	 */
 	public function login_form_authdiag() {
-		$return = '';
+		$return  = '';
+		$success = false;
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['HTTP_AUTHORIZATION'] ) {
-				$return = '<div class="notice notice-success"><p>' . \esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				$return  = '<div class="notice notice-success"><p>' . \esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				$success = true;
 			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				$return = '<div class="notice-success"><p>' . \esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				$return  = '<div class="notice-success"><p>' . \esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
+				$success = true;
 			}
 			if ( empty( $return ) ) {
 				\ob_start();
@@ -255,7 +264,12 @@ class Admin {
 			}
 			if ( isset( $_SERVER['HTTP_ACCEPT'] ) && 'application/json' === $_SERVER['HTTP_ACCEPT'] ) {
 				\header( 'Content-Type: application/json' );
-				echo \wp_json_encode( array( 'message' => \esc_html( $return ) ) );
+				echo \wp_json_encode(
+					array(
+						'success' => $success,
+						'message' => \esc_html( $return ),
+					)
+				);
 				exit;
 			}
 			echo \wp_kses(
