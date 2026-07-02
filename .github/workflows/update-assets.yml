@@ -1,17 +1,26 @@
 name: Plugin asset/readme update
+
 on:
   push:
     branches:
-    - trunk
+      - trunk
+    paths:
+      - '.wordpress-org/**'
+      - 'readme.md'
+      - 'readme.txt'
+
 jobs:
-  trunk:
-    name: Push to trunk
+  update-assets:
+    name: Update plugin assets
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - name: WordPress.org plugin asset/readme update
-      uses: 10up/action-wordpress-plugin-asset-update@stable
-      env:
-        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-        SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-        SLUG: indieauth
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: WordPress.org plugin asset/readme update
+        uses: 10up/action-wordpress-plugin-asset-update@stable
+        env:
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SLUG: indieauth
+          README_NAME: readme.md
