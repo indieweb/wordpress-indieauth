@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.0
-- Stable tag: 4.5.5
+- Stable tag: 4.6.0
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -188,6 +188,12 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.6.0
+
+* Add FedCM (Federated Credential Management) support
+* Fix critical error when client is not found in the taxonomy
+* Raise minimum required PHP version to 7.4
 
 ### 4.5.5
 
