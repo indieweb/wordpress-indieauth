@@ -296,8 +296,27 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 */
 	public function get( $request ) {
 		$params = $request->get_params();
-		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
+
+		/*
+		 * The response_type parameter is required as of IndieAuth 1.1 and `id` was removed
+		 * from the specification. Both are still accepted for older clients, but are
+		 * deprecated. The REST API fills in the registered default of `code`, so a request
+		 * that omitted the parameter is only visible in the raw query parameters.
+		 */
+		$raw_params = $request->get_query_params();
+		if ( ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'] ) {
+			\_doing_it_wrong(
+				'IndieAuth\Rest\Authorization_Controller::get',
+				\esc_html__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
+				'indieauth 4.7.0'
+			);
 			$params['response_type'] = 'code';
+			$response                = $this->code( $params );
+			if ( $response instanceof \WP_REST_Response ) {
+				$response->header( 'Deprecation', 'true' );
+				$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
+			}
+			return $response;
 		}
 		if ( 'code' === $params['response_type'] ) {
 			return $this->code( $params );

@@ -189,6 +189,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+### Unreleased
+
+* Deprecate legacy endpoint behaviors removed from the IndieAuth specification: `response_type=id` (and omitted `response_type`), token verification via GET on the token endpoint, and token revocation via `action=revoke`. These still work but now send a `Deprecation` header and log a `_doing_it_wrong()` notice; use the introspection and revocation endpoints instead.
+
 ### 4.6.0
 
 * Add FedCM (Federated Credential Management) support

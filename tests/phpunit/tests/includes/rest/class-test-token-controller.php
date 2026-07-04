@@ -256,7 +256,11 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 
-	// Sets a token and verifies it using Access Token Verification
+	/**
+	 * Sets a token and verifies it using Access Token Verification.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 */
 	public function test_token_verification() {
 		$token   = self::set_access_token();
 		$response = $this->create_form( 
@@ -270,6 +274,26 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );
+	}
+
+	/**
+	 * Token verification via GET is no longer part of the spec and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 */
+	public function test_token_verification_sends_deprecation_signals() {
+		$token    = self::set_access_token();
+		$response = $this->create_form(
+				'GET',
+				array(),
+				array(
+					'Authorization' => 'Bearer ' . $token
+				)
+			);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
 	// To Make Sure that Revokation Works, Test the Helper Function First.
@@ -296,7 +320,31 @@ class Test_Token_Controller extends WP_UnitTestCase {
 
 
 
-	// Sets a token, revokes it, then verifies it is not there.
+	/**
+	 * Token revocation via action=revoke is no longer part of the spec and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 */
+	public function test_token_revocation_action_sends_deprecation_signals() {
+		$token    = self::set_access_token();
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+				'token'  => $token,
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+		$this->assertFalse( self::get_access_token( $token ) );
+	}
+
+	/**
+	 * Sets a token, revokes it, then verifies it is not there.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 */
 	public function test_token_revokation() {
 		$token   = self::set_access_token();
 		$response = $this->create_form( 'POST', 

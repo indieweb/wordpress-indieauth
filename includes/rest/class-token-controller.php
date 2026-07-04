@@ -148,6 +148,11 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|OAuth_Response Response to return to the REST Server.
 	 */
 	public function get( $request ) {
+		\_doing_it_wrong(
+			'IndieAuth\Rest\Token_Controller::get',
+			\esc_html__( 'Token verification via a GET request to the token endpoint was removed from the IndieAuth specification. Use the introspection endpoint instead.', 'indieauth' ),
+			'indieauth 4.7.0'
+		);
 		$header = $request->get_header( 'Authorization' );
 		if ( ! $header && ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 			$header = \wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -169,7 +174,10 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
 		}
 		$token['active'] = 'true';
-		return \rest_ensure_response( $token );
+		$response        = \rest_ensure_response( $token );
+		$response->header( 'Deprecation', 'true' );
+		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
+		return $response;
 	}
 
 	/**
@@ -193,9 +201,17 @@ class Token_Controller extends \WP_REST_Controller {
 			switch ( $params['action'] ) {
 				// Revoke Token.
 				case 'revoke':
+					\_doing_it_wrong(
+						'IndieAuth\Rest\Token_Controller::revoke_action',
+						\esc_html__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
+						'indieauth 4.7.0'
+					);
 					if ( isset( $params['token'] ) ) {
 						$this->delete_token( $params['token'] );
-						return \__( 'The Token Provided is No Longer Valid', 'indieauth' );
+						$response = \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) );
+						$response->header( 'Deprecation', 'true' );
+						$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
+						return $response;
 					} else {
 						return new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
 					}

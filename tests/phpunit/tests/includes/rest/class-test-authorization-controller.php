@@ -52,6 +52,72 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	}
 
 
+	// Authorization Request via GET.
+	public function create_get( $params = array() ) {
+		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/auth' );
+		$request->set_query_params( $params );
+		return rest_get_server()->dispatch( $request );
+	}
+
+	/**
+	 * Omitting response_type was only valid before IndieAuth 1.1 and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Authorization_Controller::get
+	 */
+	public function test_missing_response_type_sends_deprecation_signals() {
+		$response = $this->create_get(
+			array(
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://app.example.com/redirect',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
+	/**
+	 * The response_type=id flow was removed from the IndieAuth specification and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Authorization_Controller::get
+	 */
+	public function test_response_type_id_sends_deprecation_signals() {
+		$response = $this->create_get(
+			array(
+				'response_type'         => 'id',
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://app.example.com/redirect',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
+	// A spec-conforming request must not carry deprecation signals.
+	public function test_response_type_code_sends_no_deprecation_signals() {
+		$response = $this->create_get(
+			array(
+				'response_type'         => 'code',
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://app.example.com/redirect',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayNotHasKey( 'Deprecation', $response->get_headers() );
+	}
+
 	// Check For an Invalid Grant Type.
 	public function test_invalid_grant_type() {
 		$code = $this->set_auth_code();
