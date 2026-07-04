@@ -10,6 +10,7 @@ namespace IndieAuth\Rest;
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\OAuth_Response;
 use IndieAuth\Client_Taxonomy;
+use IndieAuth\Client_Discovery;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\indieauth_validate_user_identifier;
 use function IndieAuth\rest_is_valid_url;
@@ -339,6 +340,10 @@ class Authorization_Controller extends \WP_REST_Controller {
 				return new OAuth_Response( 'parameter_absent', sprintf( \__( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
 		}
+
+		if ( ! self::verify_redirect_uri( $params['client_id'], $params['redirect_uri'] ) ) {
+			return new OAuth_Response( 'invalid_request', \__( 'The redirect_uri does not match the client_id and is not published by the client', 'indieauth' ), 400 );
+		}
 		$url  = \wp_login_url( $params['redirect_uri'], true );
 		$args = array_filter(
 			array(
@@ -367,6 +372,67 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$url = add_query_params_to_url( $args, $url );
 
 		return new \WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
+	}
+
+	/**
+	 * Get the redirect URIs published by a client.
+	 *
+	 * @param string $client_id The client identifier URL.
+	 * @return array The published redirect URIs.
+	 */
+	public static function get_client_redirect_uris( $client_id ) {
+		/**
+		 * Short-circuit client redirect URI discovery.
+		 *
+		 * Return an array of redirect URIs to skip fetching the client information
+		 * document, for example to serve them from a cache or a static registration.
+		 *
+		 * @param array|null $redirect_uris The redirect URIs or null to discover them.
+		 * @param string     $client_id     The client identifier URL.
+		 */
+		$redirect_uris = \apply_filters( 'pre_indieauth_client_redirect_uris', null, $client_id );
+		if ( null !== $redirect_uris ) {
+			return (array) $redirect_uris;
+		}
+
+		$discovery = new Client_Discovery( $client_id );
+		return $discovery->get_redirect_uris();
+	}
+
+	/**
+	 * Verify that a redirect_uri belongs to the client.
+	 *
+	 * If the URL scheme, host or port of the redirect_uri differ from the
+	 * client_id, the redirect_uri has to match one of the redirect URLs
+	 * published by the client.
+	 *
+	 * @param string $client_id    The client identifier URL.
+	 * @param string $redirect_uri The redirect URI to verify.
+	 * @return bool Whether the redirect URI is valid for this client.
+	 */
+	public static function verify_redirect_uri( $client_id, $redirect_uri ) {
+		$client   = \wp_parse_url( $client_id );
+		$redirect = \wp_parse_url( $redirect_uri );
+
+		$valid = (
+			isset( $client['scheme'], $client['host'], $redirect['scheme'], $redirect['host'] )
+			&& $client['scheme'] === $redirect['scheme']
+			&& $client['host'] === $redirect['host']
+			&& ( isset( $client['port'] ) ? $client['port'] : null ) === ( isset( $redirect['port'] ) ? $redirect['port'] : null )
+		);
+
+		if ( ! $valid ) {
+			$valid = in_array( $redirect_uri, self::get_client_redirect_uris( $client_id ), true );
+		}
+
+		/**
+		 * Filter the result of the redirect URI verification.
+		 *
+		 * @param bool   $valid        Whether the redirect URI was verified.
+		 * @param string $redirect_uri The redirect URI.
+		 * @param string $client_id    The client identifier URL.
+		 */
+		return \apply_filters( 'indieauth_verify_redirect_uri', $valid, $redirect_uri, $client_id );
 	}
 
 	/**
@@ -564,6 +630,11 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? \wp_unslash( $_POST['code_challenge'] ) : null;
 		$code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? \wp_unslash( $_POST['code_challenge_method'] ) : null;
+
+		// The consent form can be reached without passing through the REST endpoint, so verify the redirect_uri here as well.
+		if ( empty( $redirect_uri ) || ! self::verify_redirect_uri( $client_id, $redirect_uri ) ) {
+			\wp_die( \esc_html__( 'The redirect_uri does not match the client_id and is not published by the client.', 'indieauth' ) );
+		}
 
 		// Do not allow the post scope as deprecated.
 		// For compatibility, instead update the offering to the more limited but functionally identical create/update.

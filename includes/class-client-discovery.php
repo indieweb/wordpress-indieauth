@@ -69,6 +69,13 @@ class Client_Discovery {
 	public $client_uri = '';
 
 	/**
+	 * The redirect URIs published by the client.
+	 *
+	 * @var array
+	 */
+	protected $redirect_uris = array();
+
+	/**
 	 * Constructor. Fetches and parses client information.
 	 *
 	 * @param string $client_id The client identifier URL.
@@ -79,8 +86,16 @@ class Client_Discovery {
 		if ( defined( 'INDIEAUTH_UNIT_TESTS' ) ) {
 			return;
 		}
+
+		$this->discover();
+	}
+
+	/**
+	 * Fetches and parses the client information document.
+	 */
+	public function discover() {
 		// Validate if this is an IP address.
-		$ip         = filter_var( \wp_parse_url( $client_id, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
+		$ip         = filter_var( \wp_parse_url( $this->client_id, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
 		$donotfetch = array(
 			'127.0.0.1',
 			'0000:0000:0000:0000:0000:0000:0000:0001',
@@ -92,10 +107,10 @@ class Client_Discovery {
 			return;
 		}
 
-		if ( 'localhost' === \wp_parse_url( $client_id, PHP_URL_HOST ) ) {
+		if ( 'localhost' === \wp_parse_url( $this->client_id, PHP_URL_HOST ) ) {
 			return;
 		}
-		$response = self::parse( $client_id );
+		$response = self::parse( $this->client_id );
 		if ( \is_wp_error( $response ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			\error_log( \__( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . \wp_json_encode( $response ) );
@@ -160,6 +175,8 @@ class Client_Discovery {
 			return $response;
 		}
 
+		$this->redirect_uris = self::parse_redirect_uris_from_link_headers( $response, $url );
+
 		$content_type = \wp_remote_retrieve_header( $response, 'content-type' );
 		if ( 'application/json' === $content_type ) {
 			$this->json = json_decode( \wp_remote_retrieve_body( $response ), true );
@@ -192,6 +209,9 @@ class Client_Discovery {
 			if ( array_key_exists( 'client_uri', $this->json ) ) {
 				$this->client_uri = $this->json['client_uri'];
 			}
+			if ( array_key_exists( 'redirect_uris', $this->json ) && is_array( $this->json['redirect_uris'] ) ) {
+				$this->redirect_uris = array_merge( $this->redirect_uris, $this->json['redirect_uris'] );
+			}
 		} elseif ( 'text/html' === $content_type ) {
 			$content = \wp_remote_retrieve_body( $response );
 			$this->get_mf2( $content, $url );
@@ -207,10 +227,15 @@ class Client_Discovery {
 					}
 				}
 			} else {
-				$domdocument       = new \DOMDocument( \wp_remote_retrieve_body( $response ) );
+				$domdocument = new \DOMDocument();
+				\libxml_use_internal_errors( true );
+				$domdocument->loadHTML( $content );
+				\libxml_clear_errors();
 				$this->client_icon = $this->determine_icon( $this->rels );
 				$this->get_html( $domdocument );
-				$this->client_name = $this->html['title'];
+				if ( ! empty( $this->html['title'] ) ) {
+					$this->client_name = $this->html['title'];
+				}
 			}
 
 			if ( ! empty( $this->client_icon ) ) {
@@ -229,9 +254,12 @@ class Client_Discovery {
 		if ( ! class_exists( 'Mf2\Parser' ) ) {
 			require_once \plugin_dir_path( __DIR__ ) . 'lib/mf2/Parser.php';
 		}
-		$mf = Mf2\parse( $input, $url );
+		$mf = \Mf2\parse( $input, $url );
 		if ( array_key_exists( 'rels', $mf ) ) {
-			$this->rels = \wp_array_slice_assoc( $mf['rels'], array( 'apple-touch-icon', 'icon', 'mask-icon' ) );
+			$this->rels = \wp_array_slice_assoc( $mf['rels'], array( 'apple-touch-icon', 'icon', 'mask-icon', 'redirect_uri' ) );
+			if ( ! empty( $this->rels['redirect_uri'] ) ) {
+				$this->redirect_uris = array_merge( $this->redirect_uris, (array) $this->rels['redirect_uri'] );
+			}
 		}
 		if ( array_key_exists( 'items', $mf ) ) {
 			foreach ( $mf['items'] as $item ) {
@@ -252,7 +280,7 @@ class Client_Discovery {
 		$xpath = new \DOMXPath( $input );
 		if ( ! empty( $xpath ) ) {
 			$title = $xpath->query( '//title' );
-			if ( ! empty( $title ) ) {
+			if ( $title instanceof \DOMNodeList && $title->length > 0 ) {
 				$this->html['title'] = $title->item( 0 )->textContent;
 			}
 		}
@@ -321,6 +349,10 @@ class Client_Discovery {
 			$icons = $input['icon'];
 		}
 
+		if ( empty( $icons ) ) {
+			return '';
+		}
+
 		if ( is_array( $icons ) && ! \wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
 			return $icons['url'];
 		} elseif ( is_string( $icons[0] ) ) {
@@ -341,5 +373,42 @@ class Client_Discovery {
 	 */
 	public function get_icon() {
 		return $this->client_icon;
+	}
+
+	/**
+	 * Returns the redirect URIs published by the client.
+	 *
+	 * @return array The published redirect URIs.
+	 */
+	public function get_redirect_uris() {
+		return array_values( array_unique( $this->redirect_uris ) );
+	}
+
+	/**
+	 * Extracts redirect URIs from Link headers of a response.
+	 *
+	 * A client MAY publish one or more Link HTTP headers with a rel attribute
+	 * of redirect_uri at the client_id URL.
+	 *
+	 * @param array  $response The HTTP response.
+	 * @param string $url      The requested URL, used to make relative URLs absolute.
+	 * @return array The redirect URIs found in Link headers.
+	 */
+	private static function parse_redirect_uris_from_link_headers( $response, $url ) {
+		$redirect_uris = array();
+		$links         = \wp_remote_retrieve_header( $response, 'link' );
+		if ( empty( $links ) ) {
+			return $redirect_uris;
+		}
+		// Multiple Link headers are returned as an array, a single one as a string that may hold comma-separated values.
+		if ( is_string( $links ) ) {
+			$links = explode( ',', $links );
+		}
+		foreach ( (array) $links as $link ) {
+			if ( preg_match( '/<\s*([^>]+)\s*>\s*;\s*rel\s*=\s*"?redirect_uri"?/i', $link, $matches ) ) {
+				$redirect_uris[] = \WP_Http::make_absolute_url( trim( $matches[1] ), $url );
+			}
+		}
+		return $redirect_uris;
 	}
 }

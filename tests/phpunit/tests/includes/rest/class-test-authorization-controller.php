@@ -118,6 +118,60 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'Deprecation', $response->get_headers() );
 	}
 
+	/**
+	 * A redirect_uri on a different host than the client_id must be rejected
+	 * when the client does not publish it as one of its redirect URLs.
+	 */
+	public function test_rejects_cross_host_redirect_uri_not_published_by_client() {
+		$response = $this->create_get(
+			array(
+				'response_type'         => 'code',
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://evil.example.net/redirect',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_request', $data['error'], wp_json_encode( $data ) );
+	}
+
+	/**
+	 * A redirect_uri on a different host than the client_id must be accepted
+	 * when the client publishes it as one of its redirect URLs.
+	 */
+	public function test_allows_cross_host_redirect_uri_published_by_client() {
+		add_filter(
+			'pre_indieauth_client_redirect_uris',
+			function () {
+				return array( 'https://other.example.net/redirect' );
+			}
+		);
+		$response = $this->create_get(
+			array(
+				'response_type'         => 'code',
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://other.example.net/redirect',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		remove_all_filters( 'pre_indieauth_client_redirect_uris' );
+		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	// Verifies the same scheme/host/port comparison directly.
+	public function test_verify_redirect_uri_same_origin() {
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'https://app.example.com/callback' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'http://app.example.com/callback' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://app.example.com:8443/callback' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://evil.example.net/callback' ) );
+	}
+
 	// Check For an Invalid Grant Type.
 	public function test_invalid_grant_type() {
 		$code = $this->set_auth_code();

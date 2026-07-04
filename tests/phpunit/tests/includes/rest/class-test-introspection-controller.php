@@ -102,8 +102,9 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 	// Sets a token and verifies it using Access Token Introspection
 	public function test_token_introspection() {
 		$token   = self::set_access_token();
+		wp_set_current_user( self::$author_id );
 		$response = $this->create_form( 'POST',
-				array( 
+				array(
 					'token' => $token
 				)
 			);
@@ -112,5 +113,34 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );
+	}
+
+	// The introspection endpoint MUST require some form of authorization.
+	public function test_token_introspection_requires_authorization() {
+		$token    = self::set_access_token();
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	// Unauthenticated introspection can be re-enabled by filtering the supported auth methods to none.
+	public function test_token_introspection_unauthenticated_when_none_allowed() {
+		add_filter(
+			'indieauth_introspection_auth_methods_supported',
+			function () {
+				return array( 'none' );
+			}
+		);
+		$token    = self::set_access_token();
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+		remove_all_filters( 'indieauth_introspection_auth_methods_supported' );
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 }

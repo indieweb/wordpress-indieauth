@@ -49,10 +49,29 @@ class Introspection_Controller extends \WP_REST_Controller {
 	/**
 	 * Get supported authentication methods for introspection.
 	 *
+	 * The endpoint MUST require some form of authorization, so the default is a
+	 * Bearer access token issued by this site. Filtering this to `none` restores
+	 * unauthenticated introspection.
+	 *
 	 * @return array Supported authentication methods.
 	 */
 	public function auth_methods_supported() {
-		return array_unique( \apply_filters( 'indieauth_introspection_auth_methods_supported', array( 'none' ) ) );
+		return array_unique( \apply_filters( 'indieauth_introspection_auth_methods_supported', array( 'Bearer' ) ) );
+	}
+
+	/**
+	 * Permission callback for the introspection endpoint.
+	 *
+	 * Any authentication that establishes a WordPress user is accepted: an
+	 * IndieAuth Bearer token, an application password, or a logged-in session.
+	 *
+	 * @return bool Whether the request is authorized.
+	 */
+	public function permission_callback() {
+		if ( in_array( 'none', $this->auth_methods_supported(), true ) ) {
+			return true;
+		}
+		return \is_user_logged_in();
 	}
 
 	/**
@@ -97,7 +116,7 @@ class Introspection_Controller extends \WP_REST_Controller {
 							'default' => 'all',
 						), // A hint about the type of the token submitted for revocation, options are access_token or refresh_token.
 					),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'permission_callback' ),
 				),
 			)
 		);
