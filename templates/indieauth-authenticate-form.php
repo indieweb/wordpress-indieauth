@@ -8,8 +8,8 @@ login_header(
 );
 $user_website = esc_url( get_url_from_user( $current_user->ID ) );
 if ( ! $user_website ) {
-	esc_html_e( 'The application cannot sign you in as WordPress cannot determine the current user', 'indieauth' );
-	login_footer();
+	\esc_html_e( 'The application cannot sign you in as WordPress cannot determine the current user', 'indieauth' );
+	\login_footer();
 	exit;
 }
 
