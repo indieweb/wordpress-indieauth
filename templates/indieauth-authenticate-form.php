@@ -6,7 +6,7 @@ login_header(
 	'',
 	$login_errors
 );
-$user_website = esc_url( get_url_from_user( $current_user->ID ) );
+$user_website = esc_url( get_url_from_user( wp_get_current_user()?->ID ) );
 if ( ! $user_website ) {
 	__e( 'The application cannot sign you in as WordPress cannot determine the current user', 'indieauth' );
 	exit;
