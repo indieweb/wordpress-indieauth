@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.0
-- Stable tag: 4.6.0
+- Stable tag: 4.7.0
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -188,6 +188,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.7.0
+
+* Fix fatal error on the authorization form when the current user cannot be determined
+* Modernize codebase with namespaces, an autoloader and a new folder structure (all global functions keep working)
 
 ### 4.6.0
 
