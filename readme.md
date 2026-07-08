@@ -192,6 +192,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 ### 4.7.0
 
 * Fix fatal error on the authorization form when the current user cannot be determined
+* Fix user detection on the authorization form by calling `wp_get_current_user()` instead of relying on the global variable
 * Modernize codebase with namespaces, an autoloader and a new folder structure (all global functions keep working)
 
 ### 4.6.0
