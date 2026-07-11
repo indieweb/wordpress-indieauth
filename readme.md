@@ -189,6 +189,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+### 4.7.1
+
+* Restore the pre-4.7.0 global class names as aliases of their namespaced replacements, fixing plugins like Micropub that check for `IndieAuth_Plugin` before initializing (#319). The abstract `IndieAuth_Endpoint` class is the only exception, as it was replaced by a trait.
+
 ### 4.7.0
 
 * Fix fatal error on the authorization form when the current user cannot be determined

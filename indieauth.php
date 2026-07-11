@@ -36,6 +36,9 @@ require_once __DIR__ . '/includes/functions-api.php';
 
 Autoloader::register_path( __NAMESPACE__, __DIR__ . '/includes' );
 
+// Backward compatibility aliases for pre-4.7.0 class names.
+require_once __DIR__ . '/includes/compat.php';
+
 // Initialize the plugin.
 $indieauth = IndieAuth::get_instance();
 $indieauth->init();
