@@ -78,6 +78,21 @@ class Test_Compat extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The data provider intentionally duplicates the map as an independent pin
+	 * of the pre-4.7.0 public surface: removing an alias from production must
+	 * fail here. This assertion covers the other direction, so an alias added
+	 * to production cannot silently miss test coverage.
+	 */
+	public function test_compat_map_matches_legacy_class_provider() {
+		$expected = array();
+		foreach ( $this->legacy_class_provider() as $row ) {
+			$expected[ $row[0] ] = $row[1];
+		}
+
+		$this->assertSame( $expected, \IndieAuth\COMPAT_CLASS_MAP );
+	}
+
+	/**
 	 * The Micropub plugin gates its whole initialization on this check.
 	 *
 	 * @see https://github.com/indieweb/wordpress-indieauth/issues/319

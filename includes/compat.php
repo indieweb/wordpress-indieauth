@@ -67,6 +67,10 @@ const COMPAT_CLASS_MAP = array(
 /*
  * Micropub gates its whole initialization on `class_exists( 'IndieAuth_Plugin' )`,
  * and other plugins may check with autoloading disabled, so this alias is
- * registered eagerly instead of through the autoloader above.
+ * registered eagerly instead of through the autoloader above. Guarded, because
+ * sites may have defined the class themselves as a workaround for the 4.7.0
+ * breakage, and `class_alias()` warns when the name is already taken.
  */
-\class_alias( IndieAuth::class, 'IndieAuth_Plugin' );
+if ( ! \class_exists( 'IndieAuth_Plugin', false ) ) {
+	\class_alias( IndieAuth::class, 'IndieAuth_Plugin' );
+}
