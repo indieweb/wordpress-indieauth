@@ -55,7 +55,10 @@ const COMPAT_CLASS_MAP = array(
 			return;
 		}
 
-		\_deprecated_class( $class_name, '4.7.0', COMPAT_CLASS_MAP[ $class_name ] );
+		// `_deprecated_class()` requires WordPress 6.4.
+		if ( \function_exists( '_deprecated_class' ) ) {
+			\_deprecated_class( $class_name, '4.7.0', COMPAT_CLASS_MAP[ $class_name ] );
+		}
 
 		\class_alias( COMPAT_CLASS_MAP[ $class_name ], $class_name );
 	}
