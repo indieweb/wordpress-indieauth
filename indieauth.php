@@ -3,7 +3,7 @@
  * Plugin Name: IndieAuth
  * Plugin URI: https://github.com/indieweb/wordpress-indieauth/
  * Description: IndieAuth is a way to allow users to use their own domain to sign into other websites and services
- * Version: 4.7.0
+ * Version: 4.7.1
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Requires CP: 2.1
@@ -19,7 +19,7 @@
 
 namespace IndieAuth;
 
-\define( 'INDIEAUTH_PLUGIN_VERSION', '4.7.0' );
+\define( 'INDIEAUTH_PLUGIN_VERSION', '4.7.1' );
 \define( 'INDIEAUTH_PLUGIN_DIR', \plugin_dir_path( __FILE__ ) );
 \define( 'INDIEAUTH_PLUGIN_BASENAME', \plugin_basename( __FILE__ ) );
 \define( 'INDIEAUTH_PLUGIN_FILE', INDIEAUTH_PLUGIN_DIR . \basename( __FILE__ ) );

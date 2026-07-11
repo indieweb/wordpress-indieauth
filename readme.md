@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.0
-- Stable tag: 4.7.0
+- Stable tag: 4.7.1
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
