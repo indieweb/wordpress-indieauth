@@ -61,6 +61,15 @@ class Test_Compat extends WP_UnitTestCase {
 	 * @param string $current Namespaced replacement class.
 	 */
 	public function test_legacy_class_alias( $legacy, $current ) {
+		/*
+		 * Lazily aliased classes must trigger a deprecation notice on first use.
+		 * `IndieAuth_Plugin` is aliased eagerly and stays notice-free, because
+		 * plugins like Micropub use it for feature detection.
+		 */
+		if ( ! class_exists( $legacy, false ) ) {
+			$this->setExpectedDeprecated( $legacy );
+		}
+
 		$this->assertTrue( class_exists( $legacy ), "Legacy class {$legacy} does not exist." );
 
 		$reflection = new ReflectionClass( $legacy );

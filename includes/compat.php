@@ -51,9 +51,13 @@ const COMPAT_CLASS_MAP = array(
 
 \spl_autoload_register(
 	function ( $class_name ) {
-		if ( isset( COMPAT_CLASS_MAP[ $class_name ] ) ) {
-			\class_alias( COMPAT_CLASS_MAP[ $class_name ], $class_name );
+		if ( ! isset( COMPAT_CLASS_MAP[ $class_name ] ) ) {
+			return;
 		}
+
+		\_deprecated_class( $class_name, '4.7.0', COMPAT_CLASS_MAP[ $class_name ] );
+
+		\class_alias( COMPAT_CLASS_MAP[ $class_name ], $class_name );
 	}
 );
 

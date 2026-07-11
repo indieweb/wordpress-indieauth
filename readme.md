@@ -192,6 +192,8 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 ### 4.7.1
 
 * Restore the pre-4.7.0 global class names as aliases of their namespaced replacements, fixing plugins like Micropub that check for `IndieAuth_Plugin` before initializing (#319). The abstract `IndieAuth_Endpoint` class is the only exception, as it was replaced by a trait.
+* Trigger a deprecation notice when one of the old class names is used, except for `IndieAuth_Plugin`, which plugins use for feature detection
+* Raise the minimum required WordPress version to 6.4
 
 ### 4.7.0
 
