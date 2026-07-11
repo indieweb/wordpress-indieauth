@@ -64,9 +64,10 @@ class Test_Compat extends WP_UnitTestCase {
 		/*
 		 * Lazily aliased classes must trigger a deprecation notice on first use.
 		 * `IndieAuth_Plugin` is aliased eagerly and stays notice-free, because
-		 * plugins like Micropub use it for feature detection.
+		 * plugins like Micropub use it for feature detection. ClassicPress does
+		 * not have `_deprecated_class()`, so no notice is triggered there.
 		 */
-		if ( ! class_exists( $legacy, false ) ) {
+		if ( ! class_exists( $legacy, false ) && function_exists( '_deprecated_class' ) ) {
 			$this->setExpectedDeprecated( $legacy );
 		}
 
