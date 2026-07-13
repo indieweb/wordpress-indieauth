@@ -28,23 +28,16 @@ class Test_Compat extends WP_UnitTestCase {
 			array( 'External_Token_Table', \IndieAuth\WP_Admin\External_Token_List_Table::class ),
 			array( 'External_User_Token', \IndieAuth\Ticket\External_User_Token::class ),
 			array( 'IndieAuth_Admin', \IndieAuth\WP_Admin\Admin::class ),
-			array( 'IndieAuth_Authorization_Endpoint', \IndieAuth\Rest\Authorization_Controller::class ),
 			array( 'IndieAuth_Authorize', \IndieAuth\Authorize::class ),
 			array( 'IndieAuth_Client', \IndieAuth\Client::class ),
 			array( 'IndieAuth_Client_Discovery', \IndieAuth\Client_Discovery::class ),
 			array( 'IndieAuth_Client_Taxonomy', \IndieAuth\Client_Taxonomy::class ),
 			array( 'IndieAuth_Debug', \IndieAuth\Debug::class ),
 			array( 'IndieAuth_FedCM_Endpoint', \IndieAuth\Rest\FedCM_Controller::class ),
-			array( 'IndieAuth_Introspection_Endpoint', \IndieAuth\Rest\Introspection_Controller::class ),
-			array( 'IndieAuth_Metadata_Endpoint', \IndieAuth\Rest\Metadata_Controller::class ),
 			array( 'IndieAuth_Plugin', \IndieAuth\IndieAuth::class ),
-			array( 'IndieAuth_Revocation_Endpoint', \IndieAuth\Rest\Revocation_Controller::class ),
 			array( 'IndieAuth_Scope', \IndieAuth\Scope\Scope::class ),
 			array( 'IndieAuth_Scopes', \IndieAuth\Scopes::class ),
-			array( 'IndieAuth_Ticket_Endpoint', \IndieAuth\Rest\Ticket_Controller::class ),
-			array( 'IndieAuth_Token_Endpoint', \IndieAuth\Rest\Token_Controller::class ),
 			array( 'IndieAuth_Token_UI', \IndieAuth\WP_Admin\Token_UI::class ),
-			array( 'IndieAuth_Userinfo_Endpoint', \IndieAuth\Rest\Userinfo_Controller::class ),
 			array( 'IndieAuth_WebIdentity', \IndieAuth\WebIdentity::class ),
 			array( 'Token_Generic', \IndieAuth\Token\Generic::class ),
 			array( 'Token_List_Table', \IndieAuth\WP_Admin\Token_List_Table::class ),
@@ -93,6 +86,35 @@ class Test_Compat extends WP_UnitTestCase {
 		}
 
 		$this->assertSame( $expected, \IndieAuth\COMPAT_CLASS_MAP );
+	}
+
+	/**
+	 * Endpoint classes whose legacy static API is not preserved by the new
+	 * controllers must not be exposed as misleading aliases.
+	 *
+	 * @return array
+	 */
+	public function incompatible_endpoint_class_provider() {
+		return array(
+			array( 'IndieAuth_Authorization_Endpoint' ),
+			array( 'IndieAuth_Introspection_Endpoint' ),
+			array( 'IndieAuth_Metadata_Endpoint' ),
+			array( 'IndieAuth_Revocation_Endpoint' ),
+			array( 'IndieAuth_Ticket_Endpoint' ),
+			array( 'IndieAuth_Token_Endpoint' ),
+			array( 'IndieAuth_Userinfo_Endpoint' ),
+		);
+	}
+
+	/**
+	 * Ensure incompatible endpoint controllers are not registered as aliases.
+	 *
+	 * @dataProvider incompatible_endpoint_class_provider
+	 *
+	 * @param string $legacy Pre-4.7.0 endpoint class name.
+	 */
+	public function test_incompatible_endpoint_class_is_not_aliased( $legacy ) {
+		$this->assertFalse( class_exists( $legacy ), "Incompatible endpoint class {$legacy} must not be aliased." );
 	}
 
 }
