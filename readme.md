@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.0
-- Stable tag: 4.7.0
+- Stable tag: 4.7.1
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -188,6 +188,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.7.1
+
+* Restore compatible pre-4.7.0 global class names as aliases of their namespaced replacements, fixing plugins like Micropub that check for `IndieAuth_Plugin` before initializing (#319). The abstract `IndieAuth_Endpoint` and endpoint classes whose legacy static API is not preserved are intentionally excluded.
+* Trigger a deprecation notice when an aliased legacy class name is used, except for `IndieAuth_Plugin`, which plugins use for feature detection
 
 ### 4.7.0
 
