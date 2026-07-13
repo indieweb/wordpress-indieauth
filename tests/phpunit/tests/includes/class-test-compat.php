@@ -9,6 +9,9 @@ class Test_Compat extends WP_UnitTestCase {
 	/**
 	 * The IndieAuth_Plugin alias must exist without triggering the autoloader,
 	 * so that `class_exists( 'IndieAuth_Plugin', false )` checks also work.
+	 * The Micropub plugin gates its whole initialization on this class.
+	 *
+	 * @see https://github.com/indieweb/wordpress-indieauth/issues/319
 	 */
 	public function test_indieauth_plugin_alias_is_registered_eagerly() {
 		$this->assertTrue( class_exists( 'IndieAuth_Plugin', false ) );
@@ -92,12 +95,4 @@ class Test_Compat extends WP_UnitTestCase {
 		$this->assertSame( $expected, \IndieAuth\COMPAT_CLASS_MAP );
 	}
 
-	/**
-	 * The Micropub plugin gates its whole initialization on this check.
-	 *
-	 * @see https://github.com/indieweb/wordpress-indieauth/issues/319
-	 */
-	public function test_micropub_indieauth_detection() {
-		$this->assertTrue( \class_exists( 'IndieAuth_Plugin' ) );
-	}
 }
