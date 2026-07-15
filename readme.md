@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.0
-- Stable tag: 4.7.0
+- Stable tag: 4.7.1
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -195,6 +195,11 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification.
 * Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Filter `indieauth_introspection_auth_methods_supported` to `none` to restore unauthenticated introspection.
 * Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
+
+### 4.7.1
+
+* Restore compatible pre-4.7.0 global class names as aliases of their namespaced replacements, fixing plugins like Micropub that check for `IndieAuth_Plugin` before initializing (#319). The abstract `IndieAuth_Endpoint` and endpoint classes whose legacy static API is not preserved are intentionally excluded.
+* Trigger a deprecation notice when an aliased legacy class name is used, except for `IndieAuth_Plugin`, which plugins use for feature detection
 
 ### 4.7.0
 
