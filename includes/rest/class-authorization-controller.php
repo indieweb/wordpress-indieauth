@@ -436,7 +436,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 			$bound_params[] = 'redirect_uri';
 		}
 		$params = \wp_array_slice_assoc( $params, $bound_params );
-		$user = \get_user_by( 'id', $token['user'] );
+		$user   = \get_user_by( 'id', $token['user'] );
 		if ( $token['exp'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
 			return new OAuth_Response( 'invalid_grant', \__( 'The authorization code expired', 'indieauth' ), 400 );
