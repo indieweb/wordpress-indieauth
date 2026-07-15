@@ -15,9 +15,13 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	protected static $author_id;
 	protected static $author_url;
 
+	protected $original_request_uri;
+
 	public function set_up() {
 		global $wp_rest_server;
 		parent::set_up();
+
+		$this->original_request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
 
 		$wp_rest_server = new Spy_REST_Server();
 		do_action( 'rest_api_init', $wp_rest_server );
@@ -59,6 +63,9 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		global $wp_rewrite;
 		$wp_rewrite->set_permalink_structure( '' );
 		$wp_rewrite->flush_rules();
+		unset( $GLOBALS['wp_rest_auth_cookie'] );
+		unset( $_SERVER['HTTP_SEC_FETCH_DEST'] );
+		$_SERVER['REQUEST_URI'] = $this->original_request_uri;
 		parent::tear_down();
 	}
 
@@ -105,6 +112,45 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Send an assertion request with valid PKCE parameters and FedCM headers.
+	 *
+	 * @param array  $body_overrides   Overrides merged into the request body.
+	 * @param array  $params_overrides Overrides merged into the JSON params field.
+	 * @param string $origin           Origin header value.
+	 * @return WP_REST_Response
+	 */
+	public function assertion_request( $body_overrides = array(), $params_overrides = array(), $origin = 'https://app.example.com' ) {
+		$code_verifier = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
+
+		$params = wp_json_encode(
+			array_merge(
+				array(
+					'code_challenge'        => base64_urlencode( hash( 'sha256', $code_verifier, true ) ),
+					'code_challenge_method' => 'S256',
+				),
+				$params_overrides
+			)
+		);
+
+		return $this->create_request(
+			'POST',
+			'assertion',
+			array_merge(
+				array(
+					'client_id'  => 'https://app.example.com/',
+					'account_id' => self::$author_url,
+					'params'     => $params,
+				),
+				$body_overrides
+			),
+			array(
+				'Sec-Fetch-Dest' => 'webidentity',
+				'Origin'         => $origin,
+			)
+		);
+	}
+
+	/**
 	 * Test config endpoint returns valid configuration.
 	 */
 	public function test_config_endpoint_returns_valid_config() {
@@ -123,6 +169,38 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertStringStartsWith( 'http', $data['accounts_endpoint'] );
 		$this->assertStringStartsWith( 'http', $data['client_metadata_endpoint'] );
 		$this->assertStringStartsWith( 'http', $data['id_assertion_endpoint'] );
+	}
+
+	/**
+	 * Test config endpoint sends public CORS headers without credentials.
+	 */
+	public function test_config_endpoint_uses_public_cors() {
+		$response = $this->create_request(
+			'GET',
+			'config.json',
+			array(),
+			array( 'Origin' => 'https://app.example.com' )
+		);
+
+		$headers = $response->get_headers();
+		$this->assertEquals( '*', $headers['Access-Control-Allow-Origin'] );
+		$this->assertArrayNotHasKey( 'Access-Control-Allow-Credentials', $headers );
+	}
+
+	/**
+	 * Test client_metadata endpoint sends public CORS headers without credentials.
+	 */
+	public function test_client_metadata_endpoint_uses_public_cors() {
+		$response = $this->create_request(
+			'GET',
+			'client_metadata',
+			array( 'client_id' => 'https://unknown-client.example.com/' ),
+			array( 'Origin' => 'https://app.example.com' )
+		);
+
+		$headers = $response->get_headers();
+		$this->assertEquals( '*', $headers['Access-Control-Allow-Origin'] );
+		$this->assertArrayNotHasKey( 'Access-Control-Allow-Credentials', $headers );
 	}
 
 	/**
@@ -225,7 +303,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Missing or invalid Sec-Fetch-Dest header', $data['error'] );
+		$this->assertEquals( 'invalid_request', $data['error']['code'] );
 	}
 
 	/**
@@ -258,7 +336,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Origin mismatch', $data['error'] );
+		$this->assertEquals( 'unauthorized_client', $data['error']['code'] );
 	}
 
 	/**
@@ -291,7 +369,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Origin mismatch', $data['error'] );
+		$this->assertEquals( 'unauthorized_client', $data['error']['code'] );
 	}
 
 	/**
@@ -324,7 +402,21 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Origin mismatch', $data['error'] );
+		$this->assertEquals( 'unauthorized_client', $data['error']['code'] );
+	}
+
+	/**
+	 * Test assertion endpoint treats an explicit default port as equal to no port.
+	 *
+	 * Browsers omit default ports from the Origin header, so a client_id
+	 * registered as https://app.example.com:443/ must still match.
+	 */
+	public function test_assertion_endpoint_accepts_explicit_default_port() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request( array( 'client_id' => 'https://app.example.com:443/' ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 
 	/**
@@ -357,7 +449,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Not logged in', $data['error'] );
+		$this->assertEquals( 'access_denied', $data['error']['code'] );
 	}
 
 	/**
@@ -451,29 +543,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	public function test_assertion_endpoint_issues_authorization_code() {
 		wp_set_current_user( self::$author_id );
 
-		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
-		$code_challenge = base64_urlencode( hash( 'sha256', $code_verifier, true ) );
-
-		$params = wp_json_encode(
-			array(
-				'code_challenge'        => $code_challenge,
-				'code_challenge_method' => 'S256',
-			)
-		);
-
-		$response = $this->create_request(
-			'POST',
-			'assertion',
-			array(
-				'client_id'  => 'https://app.example.com/',
-				'account_id' => self::$author_url,
-				'params'     => $params,
-			),
-			array(
-				'Sec-Fetch-Dest' => 'webidentity',
-				'Origin'         => 'https://app.example.com',
-			)
-		);
+		$response = $this->assertion_request();
 
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
@@ -516,7 +586,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 403, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
 		$data = $response->get_data();
-		$this->assertEquals( 'Account mismatch', $data['error'] );
+		$this->assertEquals( 'access_denied', $data['error']['code'] );
 	}
 
 	/**
@@ -525,30 +595,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	public function test_assertion_endpoint_stores_nonce() {
 		wp_set_current_user( self::$author_id );
 
-		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
-		$code_challenge = base64_urlencode( hash( 'sha256', $code_verifier, true ) );
-
-		$params = wp_json_encode(
-			array(
-				'code_challenge'        => $code_challenge,
-				'code_challenge_method' => 'S256',
-			)
-		);
-
-		$response = $this->create_request(
-			'POST',
-			'assertion',
-			array(
-				'client_id'  => 'https://app.example.com/',
-				'account_id' => self::$author_url,
-				'params'     => $params,
-				'nonce'      => 'test-nonce-12345',
-			),
-			array(
-				'Sec-Fetch-Dest' => 'webidentity',
-				'Origin'         => 'https://app.example.com',
-			)
-		);
+		$response = $this->assertion_request( array( 'nonce' => 'test-nonce-12345' ) );
 
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 
@@ -564,34 +611,78 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test assertion endpoint clamps RP-requested scopes to identity scopes.
+	 *
+	 * The FedCM browser UI never displays scopes, so scopes beyond
+	 * profile/email must not be granted without a real consent screen.
+	 */
+	public function test_assertion_endpoint_clamps_scope_to_identity_scopes() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request( array(), array( 'scope' => 'create update profile email' ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data       = $response->get_data();
+		$token_data = json_decode( $data['token'], true );
+
+		$tokens    = new Token_User( '_indieauth_code_' );
+		$code_data = $tokens->get( $token_data['code'] );
+
+		$this->assertEquals( 'profile email', $code_data['scope'] );
+	}
+
+	/**
+	 * Data provider for the REST nonce exemption checks.
+	 *
+	 * @return array[] Sec-Fetch-Dest header (null to omit), request URI, whether the cookie user is kept.
+	 */
+	public function rest_nonce_exemption_provider() {
+		return array(
+			'FedCM request to a FedCM route is exempt'    => array( 'webidentity', '/wp-json/indieauth/1.0/fedcm/accounts', true ),
+			'request without FedCM header is not exempt'  => array( null, '/wp-json/wp/v2/posts', false ),
+			'FedCM header on another route is not exempt' => array( 'webidentity', '/wp-json/wp/v2/posts', false ),
+		);
+	}
+
+	/**
+	 * Test which cookie-authenticated requests without a nonce keep their user.
+	 *
+	 * The browser's FedCM machinery cannot send a REST nonce, so FedCM
+	 * requests to FedCM routes are exempt from the nonce check; everything
+	 * else must stay unauthenticated.
+	 *
+	 * @dataProvider rest_nonce_exemption_provider
+	 *
+	 * @param string|null $sec_fetch_dest Sec-Fetch-Dest header value, or null to omit the header.
+	 * @param string      $request_uri    The request URI.
+	 * @param bool        $exempt         Whether the cookie-authenticated user should be kept.
+	 */
+	public function test_rest_nonce_exemption( $sec_fetch_dest, $request_uri, $exempt ) {
+		wp_set_current_user( self::$author_id );
+
+		// Simulate a cookie-authenticated request without a nonce.
+		$GLOBALS['wp_rest_auth_cookie'] = true;
+		if ( null === $sec_fetch_dest ) {
+			unset( $_SERVER['HTTP_SEC_FETCH_DEST'] );
+		} else {
+			$_SERVER['HTTP_SEC_FETCH_DEST'] = $sec_fetch_dest;
+		}
+		$_SERVER['REQUEST_URI'] = $request_uri;
+
+		$result = apply_filters( 'rest_authentication_errors', null );
+
+		$this->assertTrue( $result );
+		$this->assertEquals( $exempt ? self::$author_id : 0, get_current_user_id() );
+	}
+
+	/**
 	 * Test that FedCM-issued codes are marked as such.
 	 */
 	public function test_assertion_endpoint_marks_code_as_fedcm() {
 		wp_set_current_user( self::$author_id );
 
-		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
-		$code_challenge = base64_urlencode( hash( 'sha256', $code_verifier, true ) );
-
-		$params = wp_json_encode(
-			array(
-				'code_challenge'        => $code_challenge,
-				'code_challenge_method' => 'S256',
-			)
-		);
-
-		$response = $this->create_request(
-			'POST',
-			'assertion',
-			array(
-				'client_id'  => 'https://app.example.com/',
-				'account_id' => self::$author_url,
-				'params'     => $params,
-			),
-			array(
-				'Sec-Fetch-Dest' => 'webidentity',
-				'Origin'         => 'https://app.example.com',
-			)
-		);
+		$response = $this->assertion_request();
 
 		$this->assertEquals( 200, $response->get_status() );
 

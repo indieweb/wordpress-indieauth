@@ -409,7 +409,8 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 * @return array|OAuth_Response Response to return to the REST Server.
 	 */
 	public function authorization_code( $params ) {
-		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
+		// redirect_uri is required conditionally below; FedCM codes are issued without one.
+		$required = array( 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter.
@@ -419,13 +420,22 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 		$code          = $params['code'];
 		$code_verifier = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
-		$params        = \wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$token         = $this->get_code( $code );
 		$scopes        = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		if ( ! $token ) {
 			return new OAuth_Response( 'invalid_grant', \__( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
+
+		$bound_params = array( 'client_id' );
+		if ( empty( $token['fedcm'] ) ) {
+			if ( ! isset( $params['redirect_uri'] ) ) {
+				// translators: Name of missing parameter.
+				return new OAuth_Response( 'parameter_absent', sprintf( \__( 'Missing Parameter: %1$s', 'indieauth' ), 'redirect_uri' ), 400 );
+			}
+			$bound_params[] = 'redirect_uri';
+		}
+		$params = \wp_array_slice_assoc( $params, $bound_params );
 		$user = \get_user_by( 'id', $token['user'] );
 		if ( $token['exp'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );

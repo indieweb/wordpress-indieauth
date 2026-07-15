@@ -257,14 +257,15 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
 	public function authorization_code( $params ) {
-		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
+		// redirect_uri is validated against the stored code, which knows whether one was used.
+		$diff = array_diff( array( 'code', 'client_id' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new OAuth_Response( 'invalid_request', \__( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$args     = array_filter(
 			array(
 				'code'          => $params['code'],
-				'redirect_uri'  => $params['redirect_uri'],
+				'redirect_uri'  => isset( $params['redirect_uri'] ) ? $params['redirect_uri'] : null,
 				'client_id'     => $params['client_id'],
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
@@ -377,6 +378,15 @@ class Token_Controller extends \WP_REST_Controller {
 		$return = $codes->get( $args['code'] );
 		if ( ! $return ) {
 			return new OAuth_Response( 'invalid_code', \__( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		if ( ! isset( $args['client_id'] ) || ! isset( $return['client_id'] ) || $return['client_id'] !== $args['client_id'] ) {
+			$codes->destroy( $args['code'] );
+			return new OAuth_Response( 'invalid_grant', \__( 'The client_id does not match the authorization request', 'indieauth' ), 400 );
+		}
+		// FedCM codes are issued without a redirect_uri; every other code is bound to one.
+		if ( empty( $return['fedcm'] ) && ( ! isset( $args['redirect_uri'] ) || ! isset( $return['redirect_uri'] ) || $return['redirect_uri'] !== $args['redirect_uri'] ) ) {
+			$codes->destroy( $args['code'] );
+			return new OAuth_Response( 'invalid_grant', \__( 'The redirect_uri does not match the authorization request', 'indieauth' ), 400 );
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {

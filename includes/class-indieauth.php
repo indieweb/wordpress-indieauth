@@ -209,6 +209,7 @@ class IndieAuth {
 
 		// FedCM Controller hooks.
 		\add_action( 'rest_api_init', array( $this->fedcm, 'register_routes' ) );
+		\add_filter( 'rest_authentication_errors', array( $this->fedcm, 'rest_authentication_errors' ) );
 		\add_filter( 'indieauth_metadata', array( $this->fedcm, 'metadata' ) );
 		\add_filter( 'rest_index_indieauth_endpoints', array( $this->fedcm, 'rest_index' ) );
 		\add_action( 'set_logged_in_cookie', array( $this->fedcm, 'set_login_status_logged_in' ) );

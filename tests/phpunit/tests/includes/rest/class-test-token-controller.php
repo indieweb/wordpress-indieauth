@@ -157,6 +157,75 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		);
 	}
 
+	// Redemption must fail when the client_id does not match the stored code.
+	public function test_auth_code_redemption_rejects_client_id_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://evil.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
+	// Redemption must fail when the redirect_uri does not match the stored code.
+	public function test_auth_code_redemption_rejects_redirect_uri_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://evil.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
+	// FedCM codes are issued without a redirect, so redemption works without redirect_uri.
+	public function test_fedcm_auth_code_redemption_without_redirect_uri() {
+		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
+		$code_challenge = base64_urlencode( hash( 'sha256', $code_verifier, true ) );
+
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		$code = $tokens->set(
+			array(
+				'client_id'             => 'https://app.example.com/',
+				'scope'                 => 'profile',
+				'me'                    => get_author_posts_url( static::$author_id ),
+				'user'                  => static::$author_id,
+				'code_challenge'        => $code_challenge,
+				'code_challenge_method' => 'S256',
+				'fedcm'                 => true,
+			),
+			600
+		);
+
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'    => 'authorization_code',
+				'code'          => $code,
+				'client_id'     => 'https://app.example.com/',
+				'code_verifier' => $code_verifier,
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'access_token', $data );
+		$this->assertEquals( 'profile', $data['scope'] );
+	}
+
 	// Sets an Auth Code and Redeems it at the Token Endpoint with Profile
 	public function test_auth_code_redemption_with_profile() {
 		static::$test_auth_code['scope'] = 'create profile';

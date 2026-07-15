@@ -306,6 +306,35 @@ class FedCM_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Exempt FedCM requests from the REST cookie nonce check.
+	 *
+	 * The browser's FedCM machinery sends the auth cookie but cannot include a
+	 * REST nonce, so `rest_cookie_check_errors()` would treat the request as
+	 * unauthenticated. `Sec-` prefixed headers are forbidden for cross-site
+	 * JavaScript, so requiring `Sec-Fetch-Dest: webidentity` rules out CSRF.
+	 *
+	 * @param \WP_Error|null|true $result Current authentication result.
+	 * @return \WP_Error|null|true True for FedCM requests to FedCM routes, unchanged otherwise.
+	 */
+	public function rest_authentication_errors( $result ) {
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		if ( ! isset( $_SERVER['HTTP_SEC_FETCH_DEST'] ) || 'webidentity' !== $_SERVER['HTTP_SEC_FETCH_DEST'] ) {
+			return $result;
+		}
+
+		// Only exempt this plugin's FedCM routes.
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? \sanitize_text_field( \wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		if ( false === strpos( $request_uri, $this->namespace . '/' . $this->rest_base . '/' ) ) {
+			return $result;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Validate Origin header matches client_id scheme, hostname, and port.
 	 *
 	 * Per FedCM spec, the full origin (scheme + host + port) must match.
@@ -329,10 +358,8 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		$origin_scheme    = isset( $origin_parts['scheme'] ) ? $origin_parts['scheme'] : null;
 		$origin_host      = isset( $origin_parts['host'] ) ? $origin_parts['host'] : null;
-		$origin_port      = isset( $origin_parts['port'] ) ? (int) $origin_parts['port'] : null;
 		$client_id_scheme = isset( $client_id_parts['scheme'] ) ? $client_id_parts['scheme'] : null;
 		$client_id_host   = isset( $client_id_parts['host'] ) ? $client_id_parts['host'] : null;
-		$client_id_port   = isset( $client_id_parts['port'] ) ? (int) $client_id_parts['port'] : null;
 
 		if ( null === $origin_scheme || null === $origin_host || null === $client_id_scheme || null === $client_id_host ) {
 			return false;
@@ -343,12 +370,32 @@ class FedCM_Controller extends \WP_REST_Controller {
 			return false;
 		}
 
-		// Port must match (null means default port for scheme).
+		// Port must match; a missing port means the default port for the scheme.
+		$defaults       = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+		$default_port   = isset( $defaults[ $origin_scheme ] ) ? $defaults[ $origin_scheme ] : null;
+		$origin_port    = isset( $origin_parts['port'] ) ? (int) $origin_parts['port'] : $default_port;
+		$client_id_port = isset( $client_id_parts['port'] ) ? (int) $client_id_parts['port'] : $default_port;
+
 		return $origin_port === $client_id_port;
 	}
 
 	/**
-	 * Add CORS headers for FedCM responses.
+	 * Add public CORS headers for endpoints that serve no user data.
+	 *
+	 * @param \WP_REST_Response $response The response object.
+	 * @return \WP_REST_Response Modified response.
+	 */
+	private function add_public_cors_headers( $response ) {
+		$response->header( 'Access-Control-Allow-Origin', '*' );
+
+		return $response;
+	}
+
+	/**
+	 * Add credentialed CORS headers for FedCM responses.
 	 *
 	 * @param \WP_REST_Response $response The response object.
 	 * @param \WP_REST_Request  $request  The request object.
@@ -392,7 +439,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 		$response = new \WP_REST_Response( $config, 200 );
 
 		// Config endpoint must be accessible cross-origin per FedCM spec.
-		return $this->add_cors_headers( $response, $request );
+		return $this->add_public_cors_headers( $response );
 	}
 
 	/**
@@ -500,7 +547,27 @@ class FedCM_Controller extends \WP_REST_Controller {
 			array()
 		);
 
-		return $this->add_cors_headers( $response, $request );
+		return $this->add_public_cors_headers( $response );
+	}
+
+	/**
+	 * Build an ID assertion error response per the FedCM Error API.
+	 *
+	 * @see https://fedidcg.github.io/FedCM/#idp-api-error-response
+	 *
+	 * @param string $code   One of the error codes defined by the FedCM specification.
+	 * @param int    $status HTTP status code.
+	 * @return \WP_REST_Response The error response.
+	 */
+	private function assertion_error( $code, $status ) {
+		return new \WP_REST_Response(
+			array(
+				'error' => array(
+					'code' => $code,
+				),
+			),
+			$status
+		);
 	}
 
 	/**
@@ -514,10 +581,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 	public function assertion( $request ) {
 		// Validate FedCM request header.
 		if ( ! $this->is_valid_fedcm_request( $request ) ) {
-			return new \WP_REST_Response(
-				array( 'error' => 'Missing or invalid Sec-Fetch-Dest header' ),
-				400
-			);
+			return $this->assertion_error( 'invalid_request', 400 );
 		}
 
 		$client_id  = $request->get_param( 'client_id' );
@@ -527,18 +591,12 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		// Validate origin.
 		if ( ! $this->validate_origin( $request, $client_id ) ) {
-			return new \WP_REST_Response(
-				array( 'error' => 'Origin mismatch' ),
-				403
-			);
+			return $this->assertion_error( 'unauthorized_client', 403 );
 		}
 
 		// Check if user is logged in.
 		if ( ! \is_user_logged_in() ) {
-			return new \WP_REST_Response(
-				array( 'error' => 'Not logged in' ),
-				401
-			);
+			return $this->assertion_error( 'access_denied', 401 );
 		}
 
 		$user = \wp_get_current_user();
@@ -546,10 +604,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		// Verify account_id matches the current user.
 		if ( normalize_url( $account_id ) !== normalize_url( $me ) ) {
-			return new \WP_REST_Response(
-				array( 'error' => 'Account mismatch' ),
-				403
-			);
+			return $this->assertion_error( 'access_denied', 403 );
 		}
 
 		// Parse PKCE params (already validated by validate_params callback).
@@ -566,11 +621,21 @@ class FedCM_Controller extends \WP_REST_Controller {
 		// Determine scope - default to 'profile' for FedCM.
 		$scope = 'profile';
 		if ( is_array( $params ) && isset( $params['scope'] ) ) {
-			$scope = \sanitize_text_field( $params['scope'] );
+			// The FedCM browser UI never displays scopes, so only identity
+			// scopes may be granted without a real consent screen.
+			$requested = array_filter( explode( ' ', \sanitize_text_field( $params['scope'] ) ) );
+			$granted   = array_values( array_intersect( $requested, array( 'profile', 'email' ) ) );
+			if ( $granted ) {
+				$scope = implode( ' ', $granted );
+			}
 		}
 
 		/**
 		 * Filter the scope used for FedCM-issued authorization codes.
+		 *
+		 * Scopes requested by the client are clamped to 'profile' and 'email'
+		 * before this filter runs, because the FedCM flow has no consent
+		 * screen where a user could review other scopes.
 		 *
 		 * @param string           $scope   The scope to be stored with the authorization code.
 		 * @param \WP_REST_Request $request The REST request object.
@@ -581,14 +646,13 @@ class FedCM_Controller extends \WP_REST_Controller {
 		$token = array(
 			'response_type'         => 'code',
 			'client_id'             => $client_id,
-			'redirect_uri'          => 'urn:ietf:wg:oauth:2.0:oob', // FedCM doesn't redirect; use OOB constant.
 			'scope'                 => $scope,
 			'me'                    => $me,
 			'code_challenge'        => $code_challenge,
 			'code_challenge_method' => $code_challenge_method,
 			'user'                  => $user->ID,
 			'uuid'                  => $uuid,
-			'fedcm'                 => true, // Mark as FedCM-issued code.
+			'fedcm'                 => true, // Mark as FedCM-issued code; these are not bound to a redirect_uri.
 		);
 
 		if ( $nonce ) {
