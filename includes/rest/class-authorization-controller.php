@@ -19,6 +19,8 @@ use function IndieAuth\indieauth_get_user;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\add_query_params_to_url;
 use function IndieAuth\get_url_from_user;
+use function IndieAuth\same_origin;
+use function IndieAuth\add_deprecation_headers;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -305,25 +307,25 @@ class Authorization_Controller extends \WP_REST_Controller {
 		 * that omitted the parameter is only visible in the raw query parameters.
 		 */
 		$raw_params = $request->get_query_params();
-		if ( ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'] ) {
+		$deprecated = ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'];
+		if ( $deprecated ) {
 			\_doing_it_wrong(
 				'IndieAuth\Rest\Authorization_Controller::get',
 				\esc_html__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
 				'indieauth 4.7.0'
 			);
 			$params['response_type'] = 'code';
-			$response                = $this->code( $params );
-			if ( $response instanceof \WP_REST_Response ) {
-				$response->header( 'Deprecation', 'true' );
-				$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
-			}
-			return $response;
-		}
-		if ( 'code' === $params['response_type'] ) {
-			return $this->code( $params );
 		}
 
-		return new OAuth_Response( 'unsupported_response_type', \__( 'Unsupported Response Type', 'indieauth' ), 400 );
+		if ( 'code' !== $params['response_type'] ) {
+			return new OAuth_Response( 'unsupported_response_type', \__( 'Unsupported Response Type', 'indieauth' ), 400 );
+		}
+
+		$response = $this->code( $params );
+		if ( $deprecated && $response instanceof \WP_REST_Response ) {
+			add_deprecation_headers( $response );
+		}
+		return $response;
 	}
 
 	/**
@@ -395,8 +397,19 @@ class Authorization_Controller extends \WP_REST_Controller {
 			return (array) $redirect_uris;
 		}
 
-		$discovery = new Client_Discovery( $client_id );
-		return $discovery->get_redirect_uris();
+		// The authorization flow verifies twice (authorization request and consent
+		// submission); cache briefly so the client document is fetched only once.
+		$cache_key     = 'indieauth_client_redirect_uris_' . md5( $client_id );
+		$redirect_uris = \get_transient( $cache_key );
+		if ( false !== $redirect_uris ) {
+			return (array) $redirect_uris;
+		}
+
+		$discovery     = new Client_Discovery( $client_id );
+		$redirect_uris = $discovery->get_redirect_uris();
+		\set_transient( $cache_key, $redirect_uris, 5 * MINUTE_IN_SECONDS );
+
+		return $redirect_uris;
 	}
 
 	/**
@@ -411,15 +424,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 * @return bool Whether the redirect URI is valid for this client.
 	 */
 	public static function verify_redirect_uri( $client_id, $redirect_uri ) {
-		$client   = \wp_parse_url( $client_id );
-		$redirect = \wp_parse_url( $redirect_uri );
-
-		$valid = (
-			isset( $client['scheme'], $client['host'], $redirect['scheme'], $redirect['host'] )
-			&& $client['scheme'] === $redirect['scheme']
-			&& $client['host'] === $redirect['host']
-			&& ( isset( $client['port'] ) ? $client['port'] : null ) === ( isset( $redirect['port'] ) ? $redirect['port'] : null )
-		);
+		$valid = same_origin( $client_id, $redirect_uri );
 
 		if ( ! $valid ) {
 			$valid = in_array( $redirect_uri, self::get_client_redirect_uris( $client_id ), true );

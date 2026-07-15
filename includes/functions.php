@@ -387,6 +387,59 @@ if ( ! function_exists( 'IndieAuth\build_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\same_origin' ) ) {
+	/**
+	 * Check whether two URLs share the same origin.
+	 *
+	 * The origin is the scheme, host and port; a missing port counts as the
+	 * default port for the scheme.
+	 *
+	 * @param string $url1 First URL.
+	 * @param string $url2 Second URL.
+	 * @return bool Whether both URLs have the same origin.
+	 */
+	function same_origin( $url1, $url2 ) {
+		$parts1 = \wp_parse_url( $url1 );
+		$parts2 = \wp_parse_url( $url2 );
+
+		if ( ! isset( $parts1['scheme'], $parts1['host'], $parts2['scheme'], $parts2['host'] ) ) {
+			return false;
+		}
+
+		if ( $parts1['scheme'] !== $parts2['scheme'] || $parts1['host'] !== $parts2['host'] ) {
+			return false;
+		}
+
+		$defaults     = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+		$default_port = isset( $defaults[ $parts1['scheme'] ] ) ? $defaults[ $parts1['scheme'] ] : null;
+		$port1        = isset( $parts1['port'] ) ? (int) $parts1['port'] : $default_port;
+		$port2        = isset( $parts2['port'] ) ? (int) $parts2['port'] : $default_port;
+
+		return $port1 === $port2;
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\add_deprecation_headers' ) ) {
+	/**
+	 * Add deprecation headers to a REST response.
+	 *
+	 * Used by endpoints that still accept behavior removed from the IndieAuth
+	 * specification.
+	 *
+	 * @param \WP_REST_Response $response The response object.
+	 * @return \WP_REST_Response The response with deprecation headers added.
+	 */
+	function add_deprecation_headers( $response ) {
+		$response->header( 'Deprecation', 'true' );
+		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
+
+		return $response;
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.

@@ -60,42 +60,39 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Omitting response_type was only valid before IndieAuth 1.1 and must send deprecation signals.
+	 * Data provider for legacy response_type values.
 	 *
-	 * @expectedIncorrectUsage IndieAuth\Rest\Authorization_Controller::get
+	 * @return array[] The response_type to send, or null to omit the parameter.
 	 */
-	public function test_missing_response_type_sends_deprecation_signals() {
-		$response = $this->create_get(
-			array(
-				'client_id'             => 'https://app.example.com',
-				'redirect_uri'          => 'https://app.example.com/redirect',
-				'state'                 => '12345',
-				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
-				'code_challenge_method' => 'S256',
-			)
+	public function legacy_response_type_provider() {
+		return array(
+			'omitted response_type (pre IndieAuth 1.1)' => array( null ),
+			'removed response_type=id flow'             => array( 'id' ),
 		);
-		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
-		$headers = $response->get_headers();
-		$this->assertArrayHasKey( 'Deprecation', $headers );
-		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
 	/**
-	 * The response_type=id flow was removed from the IndieAuth specification and must send deprecation signals.
+	 * Legacy response_type requests must still work but send deprecation signals.
 	 *
+	 * @dataProvider legacy_response_type_provider
 	 * @expectedIncorrectUsage IndieAuth\Rest\Authorization_Controller::get
+	 *
+	 * @param string|null $response_type The response_type to send, or null to omit it.
 	 */
-	public function test_response_type_id_sends_deprecation_signals() {
-		$response = $this->create_get(
-			array(
-				'response_type'         => 'id',
-				'client_id'             => 'https://app.example.com',
-				'redirect_uri'          => 'https://app.example.com/redirect',
-				'state'                 => '12345',
-				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
-				'code_challenge_method' => 'S256',
-			)
+	public function test_legacy_response_type_sends_deprecation_signals( $response_type ) {
+		$params = array(
+			'client_id'             => 'https://app.example.com',
+			'redirect_uri'          => 'https://app.example.com/redirect',
+			'state'                 => '12345',
+			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+			'code_challenge_method' => 'S256',
 		);
+		if ( null !== $response_type ) {
+			$params['response_type'] = $response_type;
+		}
+
+		$response = $this->create_get( $params );
+
 		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$headers = $response->get_headers();
 		$this->assertArrayHasKey( 'Deprecation', $headers );

@@ -16,6 +16,7 @@ use function IndieAuth\get_user_by_identifier;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\rest_is_valid_url;
+use function IndieAuth\add_deprecation_headers;
 
 /**
  * IndieAuth Token Controller class.
@@ -174,10 +175,7 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
 		}
 		$token['active'] = 'true';
-		$response        = \rest_ensure_response( $token );
-		$response->header( 'Deprecation', 'true' );
-		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
-		return $response;
+		return add_deprecation_headers( \rest_ensure_response( $token ) );
 	}
 
 	/**
@@ -208,10 +206,7 @@ class Token_Controller extends \WP_REST_Controller {
 					);
 					if ( isset( $params['token'] ) ) {
 						$this->delete_token( $params['token'] );
-						$response = \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) );
-						$response->header( 'Deprecation', 'true' );
-						$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
-						return $response;
+						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );
 					} else {
 						return new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
 					}
