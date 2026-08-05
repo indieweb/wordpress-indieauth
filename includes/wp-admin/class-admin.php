@@ -42,7 +42,7 @@ class Admin {
 			'indieauth',
 			'indieauth_root_user',
 			array(
-				'type'              => 'int',
+				'type'              => 'integer',
 				'description'       => \__( 'User Who is Represented by the Site URL', 'indieauth' ),
 				'show_in_rest'      => true,
 				'sanitize_callback' => 'absint',
