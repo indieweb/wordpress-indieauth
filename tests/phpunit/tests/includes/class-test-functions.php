@@ -32,6 +32,46 @@ class Test_Functions extends WP_UnitTestCase {
 		remove_filter( 'site_url', $strip_port );
 	}
 
+	// The "None" choice in the Site User dropdown is stored as the string '0'.
+	public function test_root_user_is_int_when_set_to_none() {
+		update_option( 'indieauth_root_user', '0' );
+
+		$this->assertSame( 0, indieauth_get_root_user() );
+	}
+
+	// With no Site User set, the site URL must still fall through to the user_url lookup.
+	public function test_siteurl_with_no_root_user() {
+		// Remove port from site URL for IndieAuth URL validation compatibility.
+		$strip_port = function ( $url ) {
+			return preg_replace( '/:\d+/', '', $url );
+		};
+		add_filter( 'home_url', $strip_port );
+		add_filter( 'site_url', $strip_port );
+
+		update_option( 'indieauth_root_user', '0' );
+		wp_update_user(
+			array(
+				'ID'       => static::$author_id,
+				'user_url' => home_url( '/' ),
+			)
+		);
+
+		$result = get_user_by_identifier( home_url( '/' ) );
+
+		remove_filter( 'home_url', $strip_port );
+		remove_filter( 'site_url', $strip_port );
+
+		$this->assertInstanceOf( 'WP_User', $result );
+		$this->assertSame( static::$author_id, $result->ID );
+	}
+
+	// A logged-out user must not inherit the site URL when no Site User is set.
+	public function test_url_from_user_without_a_user() {
+		update_option( 'indieauth_root_user', '0' );
+
+		$this->assertNull( get_url_from_user( 0 ) );
+	}
+
 	// Test Getting the Author URL through the url_to_author function directly
 	public function test_urltoauthor() {
 		$result = url_to_author( get_author_posts_url( static::$author_id ) );

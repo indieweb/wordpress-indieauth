@@ -176,9 +176,14 @@ if ( ! function_exists( 'IndieAuth\get_user_by_identifier' ) ) {
 		// Try to save the expense of a search query if the URL is the site URL.
 		if ( \home_url( '/' ) === $identifier ) {
 			// Use the settings to set the root user.
-			if ( 0 !== indieauth_get_root_user() ) {
-				return \get_user_by( 'id', (int) \get_option( 'indieauth_root_user' ) );
+			$root_user = indieauth_get_root_user();
+			if ( 0 !== $root_user ) {
+				$user = \get_user_by( 'id', $root_user );
+				if ( $user instanceof \WP_User ) {
+					return $user;
+				}
 			}
+			// No root user, or the configured one no longer exists, so fall through to the lookups below.
 		}
 
 		// Check if this is a author post URL.
@@ -209,11 +214,12 @@ if ( ! function_exists( 'IndieAuth\get_url_from_user' ) ) {
 	 * @return string|null URL or null.
 	 */
 	function get_url_from_user( $user_id ) {
-		if ( (int) indieauth_get_root_user() === $user_id ) {
-			return \home_url( '/' );
-		}
+		$user_id = (int) $user_id;
 		if ( ! $user_id ) {
 			return null;
+		}
+		if ( indieauth_get_root_user() === $user_id ) {
+			return \home_url( '/' );
 		}
 		return \get_author_posts_url( $user_id );
 	}
@@ -559,17 +565,19 @@ function indieauth_get_user( $user, $email = false ) {
 /**
  * Get the root user for IndieAuth.
  *
- * @return int User ID or 0.
+ * This is the user whose identity is the site's home URL rather than their author URL.
+ *
+ * @return int User ID, or 0 if no user represents the site URL.
  */
 function indieauth_get_root_user() {
 	$default = \get_option( 'indieauth_root_user', null );
-	// Null is only returned if the setting does not exist.
+	// Null is only returned if the setting does not exist. The dropdown stores "None" as the string '0'.
 	if ( ! is_null( $default ) ) {
-		return $default;
+		return (int) $default;
 	}
 	$default = \get_option( 'iw_default_author', null );
 	if ( $default ) {
-		return $default;
+		return (int) $default;
 	}
 	$users = \get_users(
 		array(
