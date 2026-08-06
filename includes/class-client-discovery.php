@@ -163,6 +163,33 @@ class Client_Discovery {
 	}
 
 	/**
+	 * Get the media type of a response, without any parameters.
+	 *
+	 * Servers usually send something like "application/json; charset=utf-8", so
+	 * the raw header cannot be compared to a media type directly.
+	 *
+	 * @param array|\WP_Error $response The HTTP response.
+	 * @return string The lowercased media type, or an empty string if there is none.
+	 */
+	private static function parse_content_type( $response ) {
+		$content_type = \wp_remote_retrieve_header( $response, 'content-type' );
+
+		// A repeated header comes back as an array.
+		if ( is_array( $content_type ) ) {
+			$content_type = end( $content_type );
+		}
+
+		if ( ! is_string( $content_type ) ) {
+			return '';
+		}
+
+		// Drop parameters like "; charset=utf-8". The type itself is case-insensitive.
+		$parts = explode( ';', $content_type );
+
+		return strtolower( trim( $parts[0] ) );
+	}
+
+	/**
 	 * Parses the client URL to extract client metadata.
 	 *
 	 * @param string $url The client URL to parse.
@@ -177,7 +204,7 @@ class Client_Discovery {
 
 		$this->redirect_uris = self::parse_redirect_uris_from_link_headers( $response, $url );
 
-		$content_type = \wp_remote_retrieve_header( $response, 'content-type' );
+		$content_type = self::parse_content_type( $response );
 		if ( 'application/json' === $content_type ) {
 			$this->json = json_decode( \wp_remote_retrieve_body( $response ), true );
 			/**
