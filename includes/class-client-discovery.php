@@ -255,9 +255,11 @@ class Client_Discovery {
 				}
 			} else {
 				$domdocument = new \DOMDocument();
-				\libxml_use_internal_errors( true );
+				// This is a global setting, so put it back the way it was.
+				$libxml_previous = \libxml_use_internal_errors( true );
 				$domdocument->loadHTML( $content );
 				\libxml_clear_errors();
+				\libxml_use_internal_errors( $libxml_previous );
 				$this->client_icon = $this->determine_icon( $this->rels );
 				$this->get_html( $domdocument );
 				if ( ! empty( $this->html['title'] ) ) {
