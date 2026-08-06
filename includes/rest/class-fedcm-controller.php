@@ -318,8 +318,12 @@ class FedCM_Controller extends \WP_REST_Controller {
 	 * one of this plugin's FedCM routes. Everything else falls through to the
 	 * normal REST authentication pipeline.
 	 *
+	 * Core's nonce check is removed rather than answering `true`, because `true`
+	 * would end the whole filter chain and silently skip any other plugin's REST
+	 * authentication policy, not just the nonce check.
+	 *
 	 * @param \WP_Error|null|true $result Current authentication result.
-	 * @return \WP_Error|null|true True for cookie-authenticated FedCM requests to FedCM routes, unchanged otherwise.
+	 * @return \WP_Error|null|true The result, unchanged.
 	 */
 	public function rest_authentication_errors( $result ) {
 		global $wp_rest_auth_cookie;
@@ -345,7 +349,12 @@ class FedCM_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
-		return true;
+		// Only core's nonce check gets skipped. Everything else on this filter
+		// still runs, and the request is left unauthenticated so far as this
+		// callback is concerned.
+		\remove_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
+
+		return $result;
 	}
 
 	/**
@@ -411,6 +420,30 @@ class FedCM_Controller extends \WP_REST_Controller {
 		$client_id_port = isset( $client_id_parts['port'] ) ? (int) $client_id_parts['port'] : $default_port;
 
 		return $origin_port === $client_id_port;
+	}
+
+	/**
+	 * Let the FedCM routes send their own CORS headers.
+	 *
+	 * Core's `rest_send_cors_headers()` runs on `rest_pre_serve_request`, which
+	 * fires after the response's own headers have gone out, and it echoes the
+	 * request Origin with `Access-Control-Allow-Credentials: true`. That would
+	 * overwrite whatever these endpoints set, so it is taken out of the way for
+	 * FedCM routes only. Removing it here affects just the request being served.
+	 *
+	 * @param mixed            $result  Response to replace the requested version with.
+	 * @param \WP_REST_Server  $server  Server instance.
+	 * @param \WP_REST_Request $request Request used to generate the response.
+	 * @return mixed The result, unchanged.
+	 */
+	public function rest_pre_dispatch( $result, $server, $request ) {
+		$prefix = '/' . $this->namespace . '/' . $this->rest_base . '/';
+
+		if ( 0 === strpos( $request->get_route(), $prefix ) ) {
+			\remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+		}
+
+		return $result;
 	}
 
 	/**
@@ -586,12 +619,13 @@ class FedCM_Controller extends \WP_REST_Controller {
 	 *
 	 * @see https://fedidcg.github.io/FedCM/#idp-api-error-response
 	 *
-	 * @param string $code   One of the error codes defined by the FedCM specification.
-	 * @param int    $status HTTP status code.
+	 * @param string           $code    One of the error codes defined by the FedCM specification.
+	 * @param int              $status  HTTP status code.
+	 * @param \WP_REST_Request $request The request object.
 	 * @return \WP_REST_Response The error response.
 	 */
-	private function assertion_error( $code, $status ) {
-		return new \WP_REST_Response(
+	private function assertion_error( $code, $status, $request ) {
+		$response = new \WP_REST_Response(
 			array(
 				'error' => array(
 					'code' => $code,
@@ -599,6 +633,9 @@ class FedCM_Controller extends \WP_REST_Controller {
 			),
 			$status
 		);
+
+		// The browser drops the body without these, so the error never surfaces.
+		return $this->add_cors_headers( $response, $request );
 	}
 
 	/**
@@ -612,7 +649,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 	public function assertion( $request ) {
 		// Validate FedCM request header.
 		if ( ! $this->is_valid_fedcm_request( $request ) ) {
-			return $this->assertion_error( 'invalid_request', 400 );
+			return $this->assertion_error( 'invalid_request', 400, $request );
 		}
 
 		$client_id  = $request->get_param( 'client_id' );
@@ -622,12 +659,12 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		// Validate origin.
 		if ( ! $this->validate_origin( $request, $client_id ) ) {
-			return $this->assertion_error( 'unauthorized_client', 403 );
+			return $this->assertion_error( 'unauthorized_client', 403, $request );
 		}
 
 		// Check if user is logged in.
 		if ( ! \is_user_logged_in() ) {
-			return $this->assertion_error( 'access_denied', 401 );
+			return $this->assertion_error( 'access_denied', 401, $request );
 		}
 
 		$user = \wp_get_current_user();
@@ -635,7 +672,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		// Verify account_id matches the current user.
 		if ( normalize_url( $account_id ) !== normalize_url( $me ) ) {
-			return $this->assertion_error( 'access_denied', 403 );
+			return $this->assertion_error( 'access_denied', 403, $request );
 		}
 
 		// Parse PKCE params (already validated by validate_params callback).
@@ -649,7 +686,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 		// Generate authorization code.
 		$uuid = \wp_generate_uuid4();
 
-		// Determine scope - default to 'profile' for FedCM.
+		// Determine scope - default to 'profile' when the client does not ask.
 		$scope = 'profile';
 		if ( is_array( $params ) && isset( $params['scope'] ) ) {
 			// The FedCM browser UI never displays scopes, so only identity
@@ -657,9 +694,11 @@ class FedCM_Controller extends \WP_REST_Controller {
 			$requested = array_filter( explode( ' ', \sanitize_text_field( $params['scope'] ) ) );
 			// array_intersect() keeps every occurrence, so a repeated scope has to be dropped.
 			$granted = array_values( array_unique( array_intersect( $requested, array( 'profile', 'email' ) ) ) );
-			if ( $granted ) {
-				$scope = implode( ' ', $granted );
-			}
+
+			// Whatever the client asked for, it only gets what survived the clamp.
+			// An empty result means no access token at all, rather than a
+			// profile token the client never requested.
+			$scope = implode( ' ', $granted );
 		}
 
 		/**

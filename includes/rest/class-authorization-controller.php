@@ -18,6 +18,7 @@ use function IndieAuth\indieauth_get_user;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\add_query_params_to_url;
 use function IndieAuth\get_url_from_user;
+use function IndieAuth\same_url;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -468,6 +469,11 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 			return $return;
 		}
+
+		// The token endpoint destroys a code that fails this same binding check.
+		// This endpoint accepts the same codes, so it has to do the same, or the
+		// code could simply be probed here instead.
+		$this->delete_code( $code, $token['user'] );
 		return new OAuth_Response( 'invalid_grant', \__( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
 	}
 

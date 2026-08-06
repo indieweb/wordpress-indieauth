@@ -653,6 +653,51 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * An explicit empty scope must not turn into a profile access token.
+	 *
+	 * A client that asks for nothing gets an identity response, the same as
+	 * before the clamp existed. Falling back to 'profile' would hand out a
+	 * bearer token the client never requested.
+	 */
+	public function test_assertion_endpoint_grants_no_scope_when_none_requested() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request( array(), array( 'scope' => '' ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data       = $response->get_data();
+		$token_data = json_decode( $data['token'], true );
+
+		$tokens    = new Token_User( '_indieauth_code_' );
+		$code_data = $tokens->get( $token_data['code'] );
+
+		$this->assertArrayNotHasKey( 'scope', $code_data );
+	}
+
+	/**
+	 * A request for only non-identity scopes must not become a profile token.
+	 *
+	 * The clamp cannot grant 'create', and quietly substituting 'profile'
+	 * hands the client authority it did not ask for.
+	 */
+	public function test_assertion_endpoint_grants_no_scope_when_none_survive_the_clamp() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request( array(), array( 'scope' => 'create update' ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data       = $response->get_data();
+		$token_data = json_decode( $data['token'], true );
+
+		$tokens    = new Token_User( '_indieauth_code_' );
+		$code_data = $tokens->get( $token_data['code'] );
+
+		$this->assertArrayNotHasKey( 'scope', $code_data );
+	}
+
+	/**
 	 * Test the stored scope is canonical when a scope is requested twice.
 	 *
 	 * A repeated scope grants nothing extra, so it must not end up in the
@@ -718,7 +763,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 
 		$result = apply_filters( 'rest_authentication_errors', null );
 
-		$this->assertTrue( $result );
+		$this->assertNotWPError( $result );
 		$this->assertEquals( $exempt ? self::$author_id : 0, get_current_user_id() );
 	}
 
@@ -738,14 +783,45 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 
 		// No valid auth cookie was collected for this request.
 		unset( $GLOBALS['wp_rest_auth_cookie'] );
-		$this->assertNull( $controller->rest_authentication_errors( null ) );
+		$controller->rest_authentication_errors( null );
+		$this->assertNotFalse( has_filter( 'rest_authentication_errors', 'rest_cookie_check_errors' ) );
 
 		// A cookie that failed validation must not qualify either.
 		$GLOBALS['wp_rest_auth_cookie'] = 'bad_hash';
-		$this->assertNull( $controller->rest_authentication_errors( null ) );
+		$controller->rest_authentication_errors( null );
+		$this->assertNotFalse( has_filter( 'rest_authentication_errors', 'rest_cookie_check_errors' ) );
 
 		$GLOBALS['wp_rest_auth_cookie'] = true;
-		$this->assertTrue( $controller->rest_authentication_errors( null ) );
+		$controller->rest_authentication_errors( null );
+		$this->assertFalse( has_filter( 'rest_authentication_errors', 'rest_cookie_check_errors' ) );
+	}
+
+	/**
+	 * The exemption must not end the filter chain for other plugins.
+	 *
+	 * Returning true from rest_authentication_errors stops every later callback,
+	 * which would silently skip a REST hardening plugin's policy on FedCM routes.
+	 */
+	public function test_rest_nonce_exemption_leaves_other_auth_filters_running() {
+		$controller = new IndieAuth\Rest\FedCM_Controller();
+
+		wp_set_current_user( self::$author_id );
+		$_SERVER['HTTP_SEC_FETCH_DEST']          = 'webidentity';
+		$GLOBALS['wp']->query_vars['rest_route'] = '/indieauth/1.0/fedcm/accounts';
+		$GLOBALS['wp_rest_auth_cookie']          = true;
+
+		$denied = new WP_Error( 'rest_forbidden', 'Blocked by policy.' );
+		$deny   = function () use ( $denied ) {
+			return $denied;
+		};
+		add_filter( 'rest_authentication_errors', $deny, 20 );
+
+		$result = apply_filters( 'rest_authentication_errors', null );
+
+		remove_filter( 'rest_authentication_errors', $deny, 20 );
+
+		$this->assertWPError( $result );
+		$this->assertEquals( 'rest_forbidden', $result->get_error_code() );
 	}
 
 	/**

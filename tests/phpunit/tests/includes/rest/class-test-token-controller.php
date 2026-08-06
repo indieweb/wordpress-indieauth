@@ -192,12 +192,14 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A missing redirect_uri is a client mistake, not a leaked code.
+	 * A missing redirect_uri must destroy the code, like any other binding failure.
 	 *
-	 * It has to come back as invalid_request, and the code must survive so the
-	 * client can retry once it sends the parameter.
+	 * Answering differently for a live code than for a dead one, without
+	 * spending the code, would let anyone holding a stolen code confirm it is
+	 * still redeemable and keep probing. client_id is the client's public URL,
+	 * so that probe costs an attacker nothing.
 	 */
-	public function test_auth_code_survives_missing_redirect_uri() {
+	public function test_auth_code_destroyed_when_redirect_uri_missing() {
 		$code     = $this->set_auth_code();
 		$response = $this->create_form(
 			'POST',
@@ -209,20 +211,56 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		);
 		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$data = $response->get_data();
-		$this->assertEquals( 'invalid_request', $data['error'], wp_json_encode( $data ) );
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
 
-		// The code is still there, and redeeming it properly works.
-		$this->assertNotFalse( $this->get_auth_code( $code ) );
-		$retry = $this->create_form(
+	/**
+	 * The probe must not be repeatable.
+	 *
+	 * A single request can still tell a live code from one that never existed,
+	 * the same as any other binding failure. What matters is that the attempt
+	 * spends the code, so an attacker cannot poll a set of harvested codes and
+	 * keep the live ones intact for later.
+	 */
+	public function test_missing_redirect_uri_probe_is_not_repeatable() {
+		$code = $this->set_auth_code();
+
+		$probe = function ( $candidate ) {
+			return $this->create_form(
+				'POST',
+				array(
+					'grant_type' => 'authorization_code',
+					'code'       => $candidate,
+					'client_id'  => 'https://app.example.com',
+				)
+			);
+		};
+
+		$probe( $code );
+
+		// The code is gone, so a second probe looks like one for a code that
+		// was never issued.
+		$second      = $probe( $code );
+		$nonexistent = $probe( 'a-code-that-was-never-issued' );
+
+		$this->assertEquals( $nonexistent->get_status(), $second->get_status() );
+		$this->assertEquals( $nonexistent->get_data()['error'], $second->get_data()['error'] );
+	}
+
+	// A cosmetic client_id difference is the same URL and must still redeem.
+	public function test_auth_code_redemption_tolerates_equivalent_client_id() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
 			'POST',
 			array(
 				'grant_type'   => 'authorization_code',
 				'code'         => $code,
-				'client_id'    => 'https://app.example.com',
+				'client_id'    => 'https://app.example.com/',
 				'redirect_uri' => 'https://app.example.com/redirect',
 			)
 		);
-		$this->assertEquals( 200, $retry->get_status(), 'Response: ' . wp_json_encode( $retry ) );
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 
 	// An actual mismatch may mean the code leaked, so the code is destroyed.

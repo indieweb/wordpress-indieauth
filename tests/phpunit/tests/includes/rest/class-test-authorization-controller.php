@@ -212,4 +212,29 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	 	$code_verifier  = "a612878371009ghja1d388e2e98b6ae8221ac31aca31959e59512c59f5";
 		$this->assertFalse( pkce_verifier( $code_challenge, $code_verifier, 'S256' ) );
 	}
+	/**
+	 * This endpoint must destroy a code on a binding failure too.
+	 *
+	 * It accepts the same codes as the token endpoint. If only that one
+	 * revoked, an attacker could simply probe client_id and redirect_uri here
+	 * instead, without ever spending the code.
+	 */
+	public function test_auth_code_destroyed_on_binding_failure() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://evil.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
+
 }
