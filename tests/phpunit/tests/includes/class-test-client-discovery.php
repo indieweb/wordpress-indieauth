@@ -297,4 +297,51 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 		$this->assertFalse( $discovery->is_discovered() );
 		$this->assertSame( array(), $discovery->get_redirect_uris() );
 	}
+
+	public function no_fetch_host_provider() {
+		return array(
+			'ipv4 loopback'     => array( 'http://127.0.0.1:8080/' ),
+			'ipv4 loopback alt' => array( 'http://127.0.0.53/' ),
+			'ipv6 loopback'     => array( 'http://[::1]:8080/' ),
+			'localhost'         => array( 'http://localhost:8080/' ),
+			'uppercase host'    => array( 'http://LOCALHOST:8080/' ),
+			'public ip literal' => array( 'https://93.184.216.34/' ),
+		);
+	}
+
+	/**
+	 * Hosts that must never be fetched.
+	 *
+	 * A bare IP address serves no client information document, and the request
+	 * would be blocked or fail anyway. The old guard did the opposite of what its
+	 * comment said and fetched loopback addresses.
+	 *
+	 * @dataProvider no_fetch_host_provider
+	 *
+	 * @param string $client_id The client identifier.
+	 */
+	public function test_does_not_fetch_ip_or_localhost_client_ids( $client_id ) {
+		$fetched         = false;
+		$this->http_mock = function () use ( &$fetched ) {
+			$fetched = true;
+			return array(
+				'headers'  => array( 'content-type' => 'text/html' ),
+				'body'     => '<html><head><link rel="redirect_uri" href="https://evil.example.net/cb" /></head><body></body></html>',
+				'response' => array(
+					'code'    => 200,
+					'message' => 'OK',
+				),
+				'cookies'  => array(),
+				'filename' => null,
+			);
+		};
+		add_filter( 'pre_http_request', $this->http_mock, 10, 3 );
+
+		$discovery = new Client_Discovery( $client_id );
+		$discovery->discover();
+
+		$this->assertFalse( $fetched, 'No request should be made for ' . $client_id );
+		$this->assertSame( array(), $discovery->get_redirect_uris() );
+		$this->assertFalse( $discovery->is_discovered() );
+	}
 }

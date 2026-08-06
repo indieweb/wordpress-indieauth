@@ -101,20 +101,17 @@ class Client_Discovery {
 	 * Fetches and parses the client information document.
 	 */
 	public function discover() {
-		// Validate if this is an IP address.
-		$ip         = filter_var( \wp_parse_url( $this->client_id, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
-		$donotfetch = array(
-			'127.0.0.1',
-			'0000:0000:0000:0000:0000:0000:0000:0001',
-			'::1',
-		);
+		// An IPv6 host arrives bracketed.
+		$host = trim( (string) \wp_parse_url( $this->client_id, PHP_URL_HOST ), '[]' );
 
-		// If this is an IP address on the donotfetch list then do not fetch.
-		if ( $ip && ! in_array( $ip, $donotfetch, true ) ) {
+		// Never fetch a bare IP address. Only loopback addresses are valid client
+		// identifiers, and a native app listening on one serves no client
+		// information document; anything else is not a valid identifier at all.
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
 			return;
 		}
 
-		if ( 'localhost' === \wp_parse_url( $this->client_id, PHP_URL_HOST ) ) {
+		if ( 'localhost' === strtolower( $host ) ) {
 			return;
 		}
 		$response = $this->parse( $this->client_id );
