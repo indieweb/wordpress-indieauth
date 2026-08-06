@@ -386,10 +386,11 @@ class FedCM_Controller extends \WP_REST_Controller {
 			return false;
 		}
 
-		$origin_scheme    = isset( $origin_parts['scheme'] ) ? $origin_parts['scheme'] : null;
-		$origin_host      = isset( $origin_parts['host'] ) ? $origin_parts['host'] : null;
-		$client_id_scheme = isset( $client_id_parts['scheme'] ) ? $client_id_parts['scheme'] : null;
-		$client_id_host   = isset( $client_id_parts['host'] ) ? $client_id_parts['host'] : null;
+		// Schemes and hosts are case-insensitive.
+		$origin_scheme    = isset( $origin_parts['scheme'] ) ? strtolower( $origin_parts['scheme'] ) : null;
+		$origin_host      = isset( $origin_parts['host'] ) ? strtolower( $origin_parts['host'] ) : null;
+		$client_id_scheme = isset( $client_id_parts['scheme'] ) ? strtolower( $client_id_parts['scheme'] ) : null;
+		$client_id_host   = isset( $client_id_parts['host'] ) ? strtolower( $client_id_parts['host'] ) : null;
 
 		if ( null === $origin_scheme || null === $origin_host || null === $client_id_scheme || null === $client_id_host ) {
 			return false;

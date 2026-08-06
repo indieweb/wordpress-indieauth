@@ -407,6 +407,25 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test assertion endpoint matches the origin case-insensitively.
+	 *
+	 * Browsers send a lowercased Origin, but a client can register a client_id
+	 * with any casing. Schemes and hosts are case-insensitive, so the two still
+	 * have to be treated as the same origin.
+	 */
+	public function test_assertion_endpoint_matches_origin_case_insensitively() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request(
+			array( 'client_id' => 'HTTPS://App.Example.com/' ),
+			array(),
+			'https://app.example.com'
+		);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
 	 * Test assertion endpoint treats an explicit default port as equal to no port.
 	 *
 	 * Browsers omit default ports from the Origin header, so a client_id
