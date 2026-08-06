@@ -293,6 +293,22 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$headers = $response->get_headers();
 		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
+	/**
+	 * The deprecation signals belong on the error responses too, not only on success.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 */
+	public function test_token_verification_sends_deprecation_signals_on_error() {
+		$response = $this->create_form( 'GET' );
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
 		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
@@ -336,8 +352,28 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$headers = $response->get_headers();
 		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
 		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 		$this->assertFalse( self::get_access_token( $token ) );
+	}
+
+	/**
+	 * A revoke call without a token is still a deprecated call and must say so.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 */
+	public function test_token_revocation_action_sends_deprecation_signals_on_error() {
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+			)
+		);
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
 	/**

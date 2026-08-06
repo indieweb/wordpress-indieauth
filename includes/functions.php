@@ -406,7 +406,11 @@ if ( ! function_exists( 'IndieAuth\same_origin' ) ) {
 			return false;
 		}
 
-		if ( $parts1['scheme'] !== $parts2['scheme'] || $parts1['host'] !== $parts2['host'] ) {
+		// Schemes and hosts are case-insensitive.
+		$scheme1 = strtolower( $parts1['scheme'] );
+		$scheme2 = strtolower( $parts2['scheme'] );
+
+		if ( $scheme1 !== $scheme2 || strtolower( $parts1['host'] ) !== strtolower( $parts2['host'] ) ) {
 			return false;
 		}
 
@@ -414,7 +418,7 @@ if ( ! function_exists( 'IndieAuth\same_origin' ) ) {
 			'http'  => 80,
 			'https' => 443,
 		);
-		$default_port = isset( $defaults[ $parts1['scheme'] ] ) ? $defaults[ $parts1['scheme'] ] : null;
+		$default_port = isset( $defaults[ $scheme1 ] ) ? $defaults[ $scheme1 ] : null;
 		$port1        = isset( $parts1['port'] ) ? (int) $parts1['port'] : $default_port;
 		$port2        = isset( $parts2['port'] ) ? (int) $parts2['port'] : $default_port;
 
@@ -434,7 +438,8 @@ if ( ! function_exists( 'IndieAuth\add_deprecation_headers' ) ) {
 	 */
 	function add_deprecation_headers( $response ) {
 		$response->header( 'Deprecation', 'true' );
-		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"' );
+		// Append, so an existing Link header is not dropped.
+		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"', false );
 
 		return $response;
 	}

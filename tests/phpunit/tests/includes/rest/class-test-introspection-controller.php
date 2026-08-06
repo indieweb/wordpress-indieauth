@@ -128,19 +128,17 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 
 	// Unauthenticated introspection can be re-enabled by filtering the supported auth methods to none.
 	public function test_token_introspection_unauthenticated_when_none_allowed() {
-		add_filter(
-			'indieauth_introspection_auth_methods_supported',
-			function () {
-				return array( 'none' );
-			}
-		);
+		$allow_none = function () {
+			return array( 'none' );
+		};
+		add_filter( 'indieauth_introspection_auth_methods_supported', $allow_none );
 		$token    = self::set_access_token();
 		$response = $this->create_form( 'POST',
 				array(
 					'token' => $token
 				)
 			);
-		remove_all_filters( 'indieauth_introspection_auth_methods_supported' );
+		remove_filter( 'indieauth_introspection_auth_methods_supported', $allow_none );
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 }

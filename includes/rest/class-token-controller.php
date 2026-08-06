@@ -160,19 +160,21 @@ class Token_Controller extends \WP_REST_Controller {
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
-			return new OAuth_Response(
-				'parameter_absent',
-				\__(
-					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
+			return add_deprecation_headers(
+				new OAuth_Response(
+					'parameter_absent',
+					\__(
+						'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
 				IndieAuth Settings Page',
-					'indieauth'
-				),
-				400
+						'indieauth'
+					),
+					400
+				)
 			);
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
+			return add_deprecation_headers( new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 ) );
 		}
 		$token['active'] = 'true';
 		return add_deprecation_headers( \rest_ensure_response( $token ) );
@@ -208,7 +210,7 @@ class Token_Controller extends \WP_REST_Controller {
 						$this->delete_token( $params['token'] );
 						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );
 					} else {
-						return new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
+						return add_deprecation_headers( new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 ) );
 					}
 				default:
 					$resp = new OAuth_Response( 'unsupported_action', \__( 'Unsupported Action', 'indieauth' ), 400 );

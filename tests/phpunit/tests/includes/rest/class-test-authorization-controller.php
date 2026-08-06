@@ -96,6 +96,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$headers = $response->get_headers();
 		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
 		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
@@ -140,12 +141,10 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	 * when the client publishes it as one of its redirect URLs.
 	 */
 	public function test_allows_cross_host_redirect_uri_published_by_client() {
-		add_filter(
-			'pre_indieauth_client_redirect_uris',
-			function () {
-				return array( 'https://other.example.net/redirect' );
-			}
-		);
+		$published_uris = function () {
+			return array( 'https://other.example.net/redirect' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
 		$response = $this->create_get(
 			array(
 				'response_type'         => 'code',
@@ -156,7 +155,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 				'code_challenge_method' => 'S256',
 			)
 		);
-		remove_all_filters( 'pre_indieauth_client_redirect_uris' );
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
 		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 

@@ -110,7 +110,7 @@ class Client_Discovery {
 		if ( 'localhost' === \wp_parse_url( $this->client_id, PHP_URL_HOST ) ) {
 			return;
 		}
-		$response = self::parse( $this->client_id );
+		$response = $this->parse( $this->client_id );
 		if ( \is_wp_error( $response ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			\error_log( \__( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . \wp_json_encode( $response ) );
