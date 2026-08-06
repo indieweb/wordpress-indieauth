@@ -421,11 +421,12 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$code          = $params['code'];
 		$code_verifier = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
 		$token         = $this->get_code( $code );
-		$scopes        = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		if ( ! $token ) {
 			return new OAuth_Response( 'invalid_grant', \__( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
+
+		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		$bound_params = array( 'client_id' );
 		if ( empty( $token['fedcm'] ) ) {
