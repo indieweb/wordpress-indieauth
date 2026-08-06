@@ -434,7 +434,19 @@ class Client_Discovery {
 			$links = explode( ',', $links );
 		}
 		foreach ( (array) $links as $link ) {
-			if ( preg_match( '/<\s*([^>]+)\s*>\s*;\s*rel\s*=\s*"?redirect_uri"?/i', $link, $matches ) ) {
+			if ( ! preg_match( '/<\s*([^>]+?)\s*>\s*;\s*(.*)$/', $link, $matches ) ) {
+				continue;
+			}
+
+			// The rel parameter may be quoted or bare.
+			if ( ! preg_match( '/rel\s*=\s*"([^"]*)"/i', $matches[2], $rel )
+				&& ! preg_match( '/rel\s*=\s*([^;\s]+)/i', $matches[2], $rel ) ) {
+				continue;
+			}
+
+			// A rel value is a space-separated list of link types, and the types are case-insensitive.
+			$types = preg_split( '/\s+/', strtolower( trim( $rel[1] ) ) );
+			if ( in_array( 'redirect_uri', $types, true ) ) {
 				$redirect_uris[] = \WP_Http::make_absolute_url( trim( $matches[1] ), $url );
 			}
 		}
