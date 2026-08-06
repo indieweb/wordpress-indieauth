@@ -653,6 +653,28 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test the stored scope is canonical when a scope is requested twice.
+	 *
+	 * A repeated scope grants nothing extra, so it must not end up in the
+	 * stored scope string either.
+	 */
+	public function test_assertion_endpoint_stores_each_scope_once() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->assertion_request( array(), array( 'scope' => 'profile email profile' ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+
+		$data       = $response->get_data();
+		$token_data = json_decode( $data['token'], true );
+
+		$tokens    = new Token_User( '_indieauth_code_' );
+		$code_data = $tokens->get( $token_data['code'] );
+
+		$this->assertEquals( 'profile email', $code_data['scope'] );
+	}
+
+	/**
 	 * Data provider for the REST nonce exemption checks.
 	 *
 	 * @return array[] Sec-Fetch-Dest header (null to omit), dispatched route, whether a valid auth cookie was sent, whether the cookie user is kept.

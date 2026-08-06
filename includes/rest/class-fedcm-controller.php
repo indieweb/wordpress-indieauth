@@ -655,7 +655,8 @@ class FedCM_Controller extends \WP_REST_Controller {
 			// The FedCM browser UI never displays scopes, so only identity
 			// scopes may be granted without a real consent screen.
 			$requested = array_filter( explode( ' ', \sanitize_text_field( $params['scope'] ) ) );
-			$granted   = array_values( array_intersect( $requested, array( 'profile', 'email' ) ) );
+			// array_intersect() keeps every occurrence, so a repeated scope has to be dropped.
+			$granted = array_values( array_unique( array_intersect( $requested, array( 'profile', 'email' ) ) ) );
 			if ( $granted ) {
 				$scope = implode( ' ', $granted );
 			}
