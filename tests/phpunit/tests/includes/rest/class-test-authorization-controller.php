@@ -213,6 +213,28 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertFalse( pkce_verifier( $code_challenge, $code_verifier, 'S256' ) );
 	}
 	/**
+	 * An equivalent client_id must not burn the code at this endpoint either.
+	 *
+	 * The token endpoint compares these as URLs. This endpoint destroys the code
+	 * on a mismatch, so comparing as raw strings would mean a trailing slash
+	 * costs the user a restart of the whole flow.
+	 */
+	public function test_auth_code_redemption_tolerates_equivalent_client_id() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com/',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
 	 * This endpoint must destroy a code on a binding failure too.
 	 *
 	 * It accepts the same codes as the token endpoint. If only that one

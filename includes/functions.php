@@ -387,6 +387,39 @@ if ( ! function_exists( 'IndieAuth\build_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\code_binding_failure' ) ) {
+	/**
+	 * Check an authorization code against the parameters it was issued for.
+	 *
+	 * The authorization endpoint and the token endpoint both redeem the same
+	 * codes, so they must agree exactly on what counts as a match. This is the
+	 * one place that decides it.
+	 *
+	 * URLs are compared with same_url(), because a caller is not lying about its
+	 * identity by omitting a trailing slash, and a failure here destroys the code.
+	 *
+	 * @param array $token  The stored authorization code data.
+	 * @param array $params The parameters supplied at redemption.
+	 * @return string|null The name of the parameter that failed, or null if the code is bound correctly.
+	 */
+	function code_binding_failure( $token, $params ) {
+		$bound = array( 'client_id' );
+
+		// FedCM codes are issued without a redirect_uri; every other code is bound to one.
+		if ( empty( $token['fedcm'] ) ) {
+			$bound[] = 'redirect_uri';
+		}
+
+		foreach ( $bound as $key ) {
+			if ( ! isset( $params[ $key ], $token[ $key ] ) || ! same_url( $token[ $key ], $params[ $key ] ) ) {
+				return $key;
+			}
+		}
+
+		return null;
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.

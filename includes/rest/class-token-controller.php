@@ -17,6 +17,7 @@ use function IndieAuth\pkce_verifier;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\rest_is_valid_url;
 use function IndieAuth\same_url;
+use function IndieAuth\code_binding_failure;
 
 /**
  * IndieAuth Token Controller class.
@@ -380,19 +381,21 @@ class Token_Controller extends \WP_REST_Controller {
 		if ( ! $return ) {
 			return new OAuth_Response( 'invalid_code', \__( 'Invalid authorization code', 'indieauth' ), 401 );
 		}
-		if ( ! isset( $args['client_id'] ) || ! isset( $return['client_id'] ) || ! same_url( $return['client_id'], $args['client_id'] ) ) {
+		// A code that fails its binding is destroyed, including when the parameter
+		// is simply absent: answering differently would tell an attacker holding a
+		// stolen code that it is still live, without spending it.
+		$failed = code_binding_failure( $return, $args );
+		if ( null !== $failed ) {
 			$codes->destroy( $args['code'] );
-			return new OAuth_Response( 'invalid_grant', \__( 'The client_id does not match the authorization request', 'indieauth' ), 400 );
-		}
-		// FedCM codes are issued without a redirect_uri; every other code is bound
-		// to one. A code that fails the binding is destroyed either way, including
-		// when the parameter is absent: answering differently would tell an
-		// attacker holding a stolen code that it is still live, without spending it.
-		if ( empty( $return['fedcm'] ) ) {
-			if ( ! isset( $args['redirect_uri'] ) || ! isset( $return['redirect_uri'] ) || ! same_url( $return['redirect_uri'], $args['redirect_uri'] ) ) {
-				$codes->destroy( $args['code'] );
-				return new OAuth_Response( 'invalid_grant', \__( 'The redirect_uri does not match the authorization request', 'indieauth' ), 400 );
-			}
+			return new OAuth_Response(
+				'invalid_grant',
+				sprintf(
+					// translators: Name of the parameter that did not match.
+					\__( 'The %s does not match the authorization request', 'indieauth' ),
+					$failed
+				),
+				400
+			);
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {

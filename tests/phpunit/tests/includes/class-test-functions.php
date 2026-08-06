@@ -125,4 +125,42 @@ class Test_Functions extends WP_UnitTestCase {
 		}
 	}
 
+
+	public function code_binding_provider() {
+		$stored = array(
+			'client_id'    => 'https://app.example.com',
+			'redirect_uri' => 'https://app.example.com/redirect',
+		);
+
+		return array(
+			'exact match'                => array( $stored, array( 'client_id' => 'https://app.example.com', 'redirect_uri' => 'https://app.example.com/redirect' ), null ),
+			'client_id trailing slash'   => array( $stored, array( 'client_id' => 'https://app.example.com/', 'redirect_uri' => 'https://app.example.com/redirect' ), null ),
+			'client_id case'             => array( $stored, array( 'client_id' => 'HTTPS://App.Example.com', 'redirect_uri' => 'https://app.example.com/redirect' ), null ),
+			'explicit default port'      => array( $stored, array( 'client_id' => 'https://app.example.com:443', 'redirect_uri' => 'https://app.example.com/redirect' ), null ),
+			'client_id mismatch'         => array( $stored, array( 'client_id' => 'https://evil.example.com', 'redirect_uri' => 'https://app.example.com/redirect' ), 'client_id' ),
+			'redirect_uri mismatch'      => array( $stored, array( 'client_id' => 'https://app.example.com', 'redirect_uri' => 'https://evil.example.com/cb' ), 'redirect_uri' ),
+			'client_id absent'           => array( $stored, array( 'redirect_uri' => 'https://app.example.com/redirect' ), 'client_id' ),
+			'redirect_uri absent'        => array( $stored, array( 'client_id' => 'https://app.example.com' ), 'redirect_uri' ),
+			'different path is no match' => array( $stored, array( 'client_id' => 'https://app.example.com', 'redirect_uri' => 'https://app.example.com/other' ), 'redirect_uri' ),
+			'fedcm needs no redirect'    => array( array( 'client_id' => 'https://app.example.com', 'fedcm' => true ), array( 'client_id' => 'https://app.example.com' ), null ),
+			'fedcm still binds client'   => array( array( 'client_id' => 'https://app.example.com', 'fedcm' => true ), array( 'client_id' => 'https://evil.example.com' ), 'client_id' ),
+		);
+	}
+
+	/**
+	 * The one place that decides whether a code was redeemed correctly.
+	 *
+	 * Both the authorization endpoint and the token endpoint call this, so it is
+	 * tested directly rather than only through either of them.
+	 *
+	 * @dataProvider code_binding_provider
+	 *
+	 * @param array       $token    The stored code data.
+	 * @param array       $params   The redemption parameters.
+	 * @param string|null $expected The parameter expected to fail, or null.
+	 */
+	public function test_code_binding_failure( $token, $params, $expected ) {
+		$this->assertSame( $expected, IndieAuth\code_binding_failure( $token, $params ) );
+	}
+
 }

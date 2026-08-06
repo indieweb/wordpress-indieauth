@@ -19,6 +19,7 @@ use function IndieAuth\pkce_verifier;
 use function IndieAuth\add_query_params_to_url;
 use function IndieAuth\get_url_from_user;
 use function IndieAuth\same_url;
+use function IndieAuth\code_binding_failure;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -458,7 +459,9 @@ class Authorization_Controller extends \WP_REST_Controller {
 			unset( $token['code_challenge_method'] );
 		}
 
-		if ( array() === array_diff_assoc( $params, $token ) ) {
+		// Same check as the token endpoint, from the same function, so the two
+		// endpoints can never drift apart on what a valid redemption looks like.
+		if ( null === code_binding_failure( $token, $params ) ) {
 			$this->delete_code( $code, $token['user'] );
 
 			$return = array( 'me' => $token['me'] );
