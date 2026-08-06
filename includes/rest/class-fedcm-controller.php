@@ -283,8 +283,13 @@ class FedCM_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'invalid_params', \__( 'Invalid params format', 'indieauth' ) );
 		}
 
-		if ( empty( $value['code_challenge'] ) || empty( $value['code_challenge_method'] ) ) {
-			return new \WP_Error( 'invalid_params', \__( 'PKCE parameters required', 'indieauth' ) );
+		// Both have to be non-empty strings. A non-scalar passes empty() but
+		// sanitizes to an empty string later, and the code would then be stored
+		// without a PKCE binding at all.
+		foreach ( array( 'code_challenge', 'code_challenge_method' ) as $key ) {
+			if ( ! isset( $value[ $key ] ) || ! is_string( $value[ $key ] ) || '' === trim( $value[ $key ] ) ) {
+				return new \WP_Error( 'invalid_params', \__( 'PKCE parameters required', 'indieauth' ) );
+			}
 		}
 
 		if ( 'S256' !== $value['code_challenge_method'] ) {
@@ -559,6 +564,17 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		$code_challenge        = \sanitize_text_field( $params['code_challenge'] );
 		$code_challenge_method = \sanitize_text_field( $params['code_challenge_method'] );
+
+		// The stored code is run through array_filter() below, which drops empty
+		// values. A challenge that sanitized to nothing would therefore be stored
+		// as no challenge at all, and the token endpoint skips PKCE verification
+		// when the code carries none.
+		if ( '' === $code_challenge || '' === $code_challenge_method ) {
+			return new \WP_REST_Response(
+				array( 'error' => 'Invalid PKCE parameters' ),
+				400
+			);
+		}
 
 		// Generate authorization code.
 		$uuid = \wp_generate_uuid4();

@@ -605,4 +605,91 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'fedcm', $code_data );
 		$this->assertTrue( $code_data['fedcm'] );
 	}
+
+	public function unusable_code_challenge_provider() {
+		return array(
+			'array'         => array( array( 'abc' ) ),
+			'nested array'  => array( array( 'a' => 'b' ) ),
+			'boolean true'  => array( true ),
+			'whitespace'    => array( '   ' ),
+		);
+	}
+
+	/**
+	 * A code_challenge that cannot be used must be rejected at the assertion.
+	 *
+	 * `empty()` accepts a non-empty array, `sanitize_text_field()` turns it into
+	 * an empty string, and `array_filter()` then drops the key entirely. The
+	 * stored code would carry no challenge, and the token endpoint only verifies
+	 * PKCE when the code has one, so the binding would be gone with no error
+	 * anywhere along the way.
+	 *
+	 * @dataProvider unusable_code_challenge_provider
+	 *
+	 * @param mixed $code_challenge The code_challenge an RP sends.
+	 */
+	public function test_assertion_endpoint_rejects_unusable_code_challenge( $code_challenge ) {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->create_request(
+			'POST',
+			'assertion',
+			array(
+				'client_id'  => 'https://app.example.com/',
+				'account_id' => self::$author_url,
+				'params'     => array(
+					'code_challenge'        => $code_challenge,
+					'code_challenge_method' => 'S256',
+				),
+			),
+			array(
+				'Sec-Fetch-Dest' => 'webidentity',
+				'Origin'         => 'https://app.example.com',
+			)
+		);
+
+		$this->assertNotEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
+	 * No FedCM code may ever be stored without its PKCE challenge.
+	 *
+	 * This is the property that matters: the token endpoint skips PKCE
+	 * verification for a code that has no challenge, so a code stored without
+	 * one is redeemable by anyone who obtains it.
+	 */
+	public function test_assertion_endpoint_never_stores_a_code_without_a_challenge() {
+		wp_set_current_user( self::$author_id );
+
+		$response = $this->create_request(
+			'POST',
+			'assertion',
+			array(
+				'client_id'  => 'https://app.example.com/',
+				'account_id' => self::$author_url,
+				'params'     => array(
+					'code_challenge'        => array( 'abc' ),
+					'code_challenge_method' => 'S256',
+				),
+			),
+			array(
+				'Sec-Fetch-Dest' => 'webidentity',
+				'Origin'         => 'https://app.example.com',
+			)
+		);
+
+		$data = $response->get_data();
+		if ( ! isset( $data['token'] ) ) {
+			// Rejected outright, which is the expected outcome.
+			$this->assertNotEquals( 200, $response->get_status() );
+			return;
+		}
+
+		$token_data = json_decode( $data['token'], true );
+		$tokens     = new Token_User( '_indieauth_code_' );
+		$code_data  = $tokens->get( $token_data['code'] );
+
+		$this->assertArrayHasKey( 'code_challenge', $code_data, 'Code was stored with no PKCE challenge.' );
+		$this->assertNotEmpty( $code_data['code_challenge'] );
+	}
 }
