@@ -298,9 +298,10 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The deprecation signals belong on the error responses too, not only on success.
+	 * The deprecation headers belong on the error responses too, not only on success.
 	 *
-	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 * The _doing_it_wrong() notice is deliberately not emitted here: this path is
+	 * reachable without any credential, so emitting would let anyone fill the log.
 	 */
 	public function test_token_verification_sends_deprecation_signals_on_error() {
 		$response = $this->create_form( 'GET' );
@@ -360,7 +361,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	/**
 	 * A revoke call without a token is still a deprecated call and must say so.
 	 *
-	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 * Headers only, for the same reason as the token verification error path.
 	 */
 	public function test_token_revocation_action_sends_deprecation_signals_on_error() {
 		$response = $this->create_form( 'POST',

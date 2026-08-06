@@ -426,6 +426,65 @@ if ( ! function_exists( 'IndieAuth\same_origin' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\is_loopback_url' ) ) {
+	/**
+	 * Whether a URL points at the loopback interface.
+	 *
+	 * Native apps redirect to a loopback address on an ephemeral port, which they
+	 * cannot know in advance and cannot publish anywhere, so the port is not part
+	 * of the identity of such a client.
+	 *
+	 * @see https://datatracker.ietf.org/doc/html/rfc8252#section-7.3
+	 *
+	 * @param string $url URL to check.
+	 * @return bool True if the host is a loopback address.
+	 */
+	function is_loopback_url( $url ) {
+		if ( ! is_string( $url ) ) {
+			return false;
+		}
+
+		$host = \wp_parse_url( $url, PHP_URL_HOST );
+		if ( ! is_string( $host ) || '' === $host ) {
+			return false;
+		}
+
+		$host = strtolower( trim( $host, '[]' ) );
+
+		if ( 'localhost' === $host ) {
+			return true;
+		}
+
+		// Any 127.0.0.0/8 address, and the IPv6 loopback in any notation.
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			return 0 === strpos( $host, '127.' );
+		}
+
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			return in_array( inet_pton( $host ), array( inet_pton( '::1' ) ), true );
+		}
+
+		return false;
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\deprecation_notice' ) ) {
+	/**
+	 * Emit a developer notice about a deprecated endpoint behavior.
+	 *
+	 * Call this only once the request has been authenticated or validated.
+	 * These endpoints are public, so emitting on the way in lets an anonymous
+	 * caller fill the debug log by looping on them.
+	 *
+	 * @param string $function_name The function that was called.
+	 * @param string $message       The deprecation message.
+	 * @param string $version       The version the behavior was deprecated in.
+	 */
+	function deprecation_notice( $function_name, $message, $version ) {
+		\_doing_it_wrong( \esc_html( $function_name ), \esc_html( $message ), \esc_html( $version ) );
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\add_deprecation_headers' ) ) {
 	/**
 	 * Add deprecation headers to a REST response.

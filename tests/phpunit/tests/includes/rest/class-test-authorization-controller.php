@@ -159,6 +159,25 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 302, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 
+	/**
+	 * A native app on loopback may use any port.
+	 *
+	 * It listens on an ephemeral port it cannot know in advance and cannot
+	 * publish metadata at localhost, so the port is not part of its identity.
+	 * RFC 8252 section 7.3.
+	 */
+	public function test_verify_redirect_uri_allows_any_loopback_port() {
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertTrue( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'http://127.0.0.1:53821/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'http://localhost:8080/', 'http://localhost:53821/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'http://[::1]:8080/', 'http://[::1]:53821/cb' ) );
+
+		// A loopback client still may not redirect off the loopback interface.
+		$this->assertFalse( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'https://evil.example.net/cb' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'http://127.0.0.1:53821/cb' ) );
+	}
+
 	// Verifies the same scheme/host/port comparison directly.
 	public function test_verify_redirect_uri_same_origin() {
 		$controller = new IndieAuth\Rest\Authorization_Controller();

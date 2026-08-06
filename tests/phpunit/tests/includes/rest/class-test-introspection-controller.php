@@ -126,19 +126,76 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 	}
 
-	// Unauthenticated introspection can be re-enabled by filtering the supported auth methods to none.
-	public function test_token_introspection_unauthenticated_when_none_allowed() {
-		$allow_none = function () {
-			return array( 'none' );
-		};
-		add_filter( 'indieauth_introspection_auth_methods_supported', $allow_none );
+	// Unauthenticated introspection can be re-enabled with the dedicated filter.
+	public function test_token_introspection_unauthenticated_when_explicitly_allowed() {
+		$allow = '__return_true';
+		add_filter( 'indieauth_allow_unauthenticated_introspection', $allow );
 		$token    = self::set_access_token();
 		$response = $this->create_form( 'POST',
 				array(
 					'token' => $token
 				)
 			);
-		remove_filter( 'indieauth_introspection_auth_methods_supported', $allow_none );
+		remove_filter( 'indieauth_allow_unauthenticated_introspection', $allow );
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
+	 * Advertising 'none' in the metadata must not open the endpoint.
+	 *
+	 * That filter says what the server advertises. Letting it decide access
+	 * means a site documenting its capabilities silently exposes every token.
+	 */
+	public function test_metadata_filter_does_not_grant_access() {
+		$advertise_none = function () {
+			return array( 'none' );
+		};
+		add_filter( 'indieauth_introspection_auth_methods_supported', $advertise_none );
+		$token    = self::set_access_token();
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+		remove_filter( 'indieauth_introspection_auth_methods_supported', $advertise_none );
+		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
+	 * A logged-in user must not be able to read another user's token.
+	 *
+	 * The response is the same as for a token that does not exist, so the
+	 * endpoint cannot be used to find out which token values are real.
+	 */
+	public function test_token_introspection_hides_another_users_token() {
+		$token = self::set_access_token();
+
+		wp_set_current_user( self::$subscriber_id );
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertFalse( $data['active'] );
+		$this->assertArrayNotHasKey( 'client_id', $data );
+	}
+
+	// The owner can still read their own token.
+	public function test_token_introspection_allows_the_owner() {
+		$token = self::set_access_token();
+
+		wp_set_current_user( self::$author_id );
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'true', $data['active'] );
 	}
 }

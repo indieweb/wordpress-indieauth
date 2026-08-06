@@ -20,6 +20,8 @@ use function IndieAuth\pkce_verifier;
 use function IndieAuth\add_query_params_to_url;
 use function IndieAuth\get_url_from_user;
 use function IndieAuth\same_origin;
+use function IndieAuth\is_loopback_url;
+use function IndieAuth\deprecation_notice;
 use function IndieAuth\add_deprecation_headers;
 
 /**
@@ -309,9 +311,9 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$raw_params = $request->get_query_params();
 		$deprecated = ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'];
 		if ( $deprecated ) {
-			\_doing_it_wrong(
+			deprecation_notice(
 				'IndieAuth\Rest\Authorization_Controller::get',
-				\esc_html__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
+				\__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
 				'indieauth 4.7.0'
 			);
 			$params['response_type'] = 'code';
@@ -407,7 +409,13 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 		$discovery     = new Client_Discovery( $client_id );
 		$redirect_uris = $discovery->get_redirect_uris();
-		\set_transient( $cache_key, $redirect_uris, 5 * MINUTE_IN_SECONDS );
+
+		// Only cache an answer the client actually gave. A failed fetch is not
+		// "published nothing", and caching it would lock a working client out
+		// for the life of the transient over one network blip.
+		if ( $discovery->is_discovered() ) {
+			\set_transient( $cache_key, $redirect_uris, 5 * MINUTE_IN_SECONDS );
+		}
 
 		return $redirect_uris;
 	}
@@ -425,6 +433,13 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 */
 	public static function verify_redirect_uri( $client_id, $redirect_uri ) {
 		$valid = same_origin( $client_id, $redirect_uri );
+
+		// Native apps listen on an ephemeral loopback port and cannot publish
+		// anything at their client_id, so any loopback port is accepted for a
+		// loopback client. RFC 8252 section 7.3.
+		if ( ! $valid && is_loopback_url( $client_id ) && is_loopback_url( $redirect_uri ) ) {
+			$valid = true;
+		}
 
 		if ( ! $valid ) {
 			$valid = in_array( $redirect_uri, self::get_client_redirect_uris( $client_id ), true );
