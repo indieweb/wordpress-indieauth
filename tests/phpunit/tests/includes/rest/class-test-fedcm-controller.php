@@ -636,7 +636,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	/**
 	 * Data provider for the REST nonce exemption checks.
 	 *
-	 * @return array[] Sec-Fetch-Dest header (null to omit), request URI, whether the cookie user is kept.
+	 * @return array[] Sec-Fetch-Dest header (null to omit), dispatched route, whether a valid auth cookie was sent, whether the cookie user is kept.
 	 */
 	public function rest_nonce_exemption_provider() {
 		return array(

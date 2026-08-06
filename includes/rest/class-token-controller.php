@@ -384,9 +384,16 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_grant', \__( 'The client_id does not match the authorization request', 'indieauth' ), 400 );
 		}
 		// FedCM codes are issued without a redirect_uri; every other code is bound to one.
-		if ( empty( $return['fedcm'] ) && ( ! isset( $args['redirect_uri'] ) || ! isset( $return['redirect_uri'] ) || $return['redirect_uri'] !== $args['redirect_uri'] ) ) {
-			$codes->destroy( $args['code'] );
-			return new OAuth_Response( 'invalid_grant', \__( 'The redirect_uri does not match the authorization request', 'indieauth' ), 400 );
+		if ( empty( $return['fedcm'] ) ) {
+			// A missing parameter is a client mistake, not a sign the code leaked,
+			// so it stays usable for a retry.
+			if ( ! isset( $args['redirect_uri'] ) ) {
+				return new OAuth_Response( 'invalid_request', \__( 'The request is missing the redirect_uri parameter', 'indieauth' ), 400 );
+			}
+			if ( ! isset( $return['redirect_uri'] ) || $return['redirect_uri'] !== $args['redirect_uri'] ) {
+				$codes->destroy( $args['code'] );
+				return new OAuth_Response( 'invalid_grant', \__( 'The redirect_uri does not match the authorization request', 'indieauth' ), 400 );
+			}
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {

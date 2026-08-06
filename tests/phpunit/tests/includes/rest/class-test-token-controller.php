@@ -191,6 +191,58 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
 	}
 
+	/**
+	 * A missing redirect_uri is a client mistake, not a leaked code.
+	 *
+	 * It has to come back as invalid_request, and the code must survive so the
+	 * client can retry once it sends the parameter.
+	 */
+	public function test_auth_code_survives_missing_redirect_uri() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type' => 'authorization_code',
+				'code'       => $code,
+				'client_id'  => 'https://app.example.com',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_request', $data['error'], wp_json_encode( $data ) );
+
+		// The code is still there, and redeeming it properly works.
+		$this->assertNotFalse( $this->get_auth_code( $code ) );
+		$retry = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 200, $retry->get_status(), 'Response: ' . wp_json_encode( $retry ) );
+	}
+
+	// An actual mismatch may mean the code leaked, so the code is destroyed.
+	public function test_auth_code_destroyed_on_redirect_uri_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://evil.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
+
 	// FedCM codes are issued without a redirect, so redemption works without redirect_uri.
 	public function test_fedcm_auth_code_redemption_without_redirect_uri() {
 		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
