@@ -313,25 +313,55 @@ class FedCM_Controller extends \WP_REST_Controller {
 	 * unauthenticated. `Sec-` prefixed headers are forbidden for cross-site
 	 * JavaScript, so requiring `Sec-Fetch-Dest: webidentity` rules out CSRF.
 	 *
+	 * The exemption is deliberately narrow: it only applies to a request that
+	 * is actually cookie-authenticated and that the REST server dispatched to
+	 * one of this plugin's FedCM routes. Everything else falls through to the
+	 * normal REST authentication pipeline.
+	 *
 	 * @param \WP_Error|null|true $result Current authentication result.
-	 * @return \WP_Error|null|true True for FedCM requests to FedCM routes, unchanged otherwise.
+	 * @return \WP_Error|null|true True for cookie-authenticated FedCM requests to FedCM routes, unchanged otherwise.
 	 */
 	public function rest_authentication_errors( $result ) {
+		global $wp_rest_auth_cookie;
+
 		if ( null !== $result ) {
 			return $result;
 		}
 
-		if ( ! isset( $_SERVER['HTTP_SEC_FETCH_DEST'] ) || 'webidentity' !== $_SERVER['HTTP_SEC_FETCH_DEST'] ) {
+		if ( ! isset( $_SERVER['HTTP_SEC_FETCH_DEST'] ) || 'webidentity' !== \sanitize_text_field( \wp_unslash( $_SERVER['HTTP_SEC_FETCH_DEST'] ) ) ) {
 			return $result;
 		}
 
-		// Only exempt this plugin's FedCM routes.
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? \sanitize_text_field( \wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-		if ( false === strpos( $request_uri, $this->namespace . '/' . $this->rest_base . '/' ) ) {
+		// Match the route the REST server dispatched, not the raw request URI,
+		// so an unrelated route cannot carry the FedCM path in its query string.
+		if ( ! $this->is_fedcm_route() ) {
+			return $result;
+		}
+
+		// There is only a nonce-less user to preserve when the request really is
+		// cookie-authenticated. `is_user_logged_in()` resolves the current user,
+		// which is what populates `$wp_rest_auth_cookie`.
+		if ( ! \is_user_logged_in() || true !== $wp_rest_auth_cookie ) {
 			return $result;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check whether the REST server is serving one of this plugin's FedCM routes.
+	 *
+	 * @return bool True if the dispatched route belongs to the FedCM namespace.
+	 */
+	private function is_fedcm_route() {
+		if ( empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
+			return false;
+		}
+
+		$route  = '/' . ltrim( $GLOBALS['wp']->query_vars['rest_route'], '/' );
+		$prefix = '/' . $this->namespace . '/' . $this->rest_base . '/';
+
+		return 0 === strpos( $route, $prefix );
 	}
 
 	/**

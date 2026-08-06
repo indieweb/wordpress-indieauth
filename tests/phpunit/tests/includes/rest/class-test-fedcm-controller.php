@@ -64,6 +64,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$wp_rewrite->set_permalink_structure( '' );
 		$wp_rewrite->flush_rules();
 		unset( $GLOBALS['wp_rest_auth_cookie'] );
+		unset( $GLOBALS['wp']->query_vars['rest_route'] );
 		unset( $_SERVER['HTTP_SEC_FETCH_DEST'] );
 		$_SERVER['REQUEST_URI'] = $this->original_request_uri;
 		parent::tear_down();
@@ -639,9 +640,10 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	 */
 	public function rest_nonce_exemption_provider() {
 		return array(
-			'FedCM request to a FedCM route is exempt'    => array( 'webidentity', '/wp-json/indieauth/1.0/fedcm/accounts', true ),
-			'request without FedCM header is not exempt'  => array( null, '/wp-json/wp/v2/posts', false ),
-			'FedCM header on another route is not exempt' => array( 'webidentity', '/wp-json/wp/v2/posts', false ),
+			'FedCM request to a FedCM route is exempt'     => array( 'webidentity', '/indieauth/1.0/fedcm/accounts', true, true ),
+			'request without FedCM header is not exempt'   => array( null, '/wp/v2/posts', true, false ),
+			'FedCM header on another route is not exempt'  => array( 'webidentity', '/wp/v2/posts', true, false ),
+			'FedCM path in a query string is not exempt'   => array( 'webidentity', '/wp/v2/posts?s=/indieauth/1.0/fedcm/accounts', true, false ),
 		);
 	}
 
@@ -655,25 +657,54 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 	 * @dataProvider rest_nonce_exemption_provider
 	 *
 	 * @param string|null $sec_fetch_dest Sec-Fetch-Dest header value, or null to omit the header.
-	 * @param string      $request_uri    The request URI.
+	 * @param string      $rest_route     The route the REST server dispatched.
+	 * @param bool        $auth_cookie    Whether the request carried a valid auth cookie.
 	 * @param bool        $exempt         Whether the cookie-authenticated user should be kept.
 	 */
-	public function test_rest_nonce_exemption( $sec_fetch_dest, $request_uri, $exempt ) {
+	public function test_rest_nonce_exemption( $sec_fetch_dest, $rest_route, $auth_cookie, $exempt ) {
 		wp_set_current_user( self::$author_id );
 
-		// Simulate a cookie-authenticated request without a nonce.
-		$GLOBALS['wp_rest_auth_cookie'] = true;
+		// Simulate a request without a nonce.
+		if ( $auth_cookie ) {
+			$GLOBALS['wp_rest_auth_cookie'] = true;
+		}
 		if ( null === $sec_fetch_dest ) {
 			unset( $_SERVER['HTTP_SEC_FETCH_DEST'] );
 		} else {
 			$_SERVER['HTTP_SEC_FETCH_DEST'] = $sec_fetch_dest;
 		}
-		$_SERVER['REQUEST_URI'] = $request_uri;
+		$GLOBALS['wp']->query_vars['rest_route'] = $rest_route;
 
 		$result = apply_filters( 'rest_authentication_errors', null );
 
 		$this->assertTrue( $result );
 		$this->assertEquals( $exempt ? self::$author_id : 0, get_current_user_id() );
+	}
+
+	/**
+	 * Test that a FedCM request without a valid auth cookie is not exempted.
+	 *
+	 * The exemption exists to keep a cookie-authenticated user that cannot send
+	 * a nonce. With no cookie there is nothing to preserve, so the request has
+	 * to fall through to the normal REST authentication pipeline.
+	 */
+	public function test_rest_nonce_exemption_requires_auth_cookie() {
+		$controller = new IndieAuth\Rest\FedCM_Controller();
+
+		wp_set_current_user( self::$author_id );
+		$_SERVER['HTTP_SEC_FETCH_DEST']          = 'webidentity';
+		$GLOBALS['wp']->query_vars['rest_route'] = '/indieauth/1.0/fedcm/accounts';
+
+		// No valid auth cookie was collected for this request.
+		unset( $GLOBALS['wp_rest_auth_cookie'] );
+		$this->assertNull( $controller->rest_authentication_errors( null ) );
+
+		// A cookie that failed validation must not qualify either.
+		$GLOBALS['wp_rest_auth_cookie'] = 'bad_hash';
+		$this->assertNull( $controller->rest_authentication_errors( null ) );
+
+		$GLOBALS['wp_rest_auth_cookie'] = true;
+		$this->assertTrue( $controller->rest_authentication_errors( null ) );
 	}
 
 	/**
