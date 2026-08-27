@@ -16,6 +16,8 @@ use function IndieAuth\get_user_by_identifier;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\rest_is_valid_url;
+use function IndieAuth\deprecation_notice;
+use function IndieAuth\add_deprecation_headers;
 
 /**
  * IndieAuth Token Controller class.
@@ -154,22 +156,31 @@ class Token_Controller extends \WP_REST_Controller {
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
-			return new OAuth_Response(
-				'parameter_absent',
-				\__(
-					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
+			return add_deprecation_headers(
+				new OAuth_Response(
+					'parameter_absent',
+					\__(
+						'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
 				IndieAuth Settings Page',
-					'indieauth'
-				),
-				400
+						'indieauth'
+					),
+					400
+				)
 			);
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
+			return add_deprecation_headers( new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 ) );
 		}
+		// Only once the caller proved it holds a valid token, so an anonymous
+		// requester cannot fill the log by looping on this endpoint.
+		deprecation_notice(
+			'IndieAuth\Rest\Token_Controller::get',
+			\__( 'Token verification via a GET request to the token endpoint was removed from the IndieAuth specification. Use the introspection endpoint instead.', 'indieauth' ),
+			'indieauth 4.7.0'
+		);
 		$token['active'] = 'true';
-		return \rest_ensure_response( $token );
+		return add_deprecation_headers( \rest_ensure_response( $token ) );
 	}
 
 	/**
@@ -194,10 +205,15 @@ class Token_Controller extends \WP_REST_Controller {
 				// Revoke Token.
 				case 'revoke':
 					if ( isset( $params['token'] ) ) {
+						deprecation_notice(
+							'IndieAuth\Rest\Token_Controller::revoke_action',
+							\__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
+							'indieauth 4.7.0'
+						);
 						$this->delete_token( $params['token'] );
-						return \__( 'The Token Provided is No Longer Valid', 'indieauth' );
+						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );
 					} else {
-						return new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
+						return add_deprecation_headers( new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 ) );
 					}
 				default:
 					$resp = new OAuth_Response( 'unsupported_action', \__( 'Unsupported Action', 'indieauth' ), 400 );

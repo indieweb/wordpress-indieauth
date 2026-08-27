@@ -69,6 +69,20 @@ class Client_Discovery {
 	public $client_uri = '';
 
 	/**
+	 * The redirect URIs published by the client.
+	 *
+	 * @var array
+	 */
+	protected $redirect_uris = array();
+
+	/**
+	 * Whether the client document was successfully fetched and parsed.
+	 *
+	 * @var bool
+	 */
+	protected $discovered = false;
+
+	/**
 	 * Constructor. Fetches and parses client information.
 	 *
 	 * @param string $client_id The client identifier URL.
@@ -79,28 +93,48 @@ class Client_Discovery {
 		if ( defined( 'INDIEAUTH_UNIT_TESTS' ) ) {
 			return;
 		}
-		// Validate if this is an IP address.
-		$ip         = filter_var( \wp_parse_url( $client_id, PHP_URL_HOST ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 );
-		$donotfetch = array(
-			'127.0.0.1',
-			'0000:0000:0000:0000:0000:0000:0000:0001',
-			'::1',
-		);
 
-		// If this is an IP address on the donotfetch list then do not fetch.
-		if ( $ip && ! in_array( $ip, $donotfetch, true ) ) {
+		$this->discover();
+	}
+
+	/**
+	 * Fetches and parses the client information document.
+	 */
+	public function discover() {
+		// An IPv6 host arrives bracketed.
+		$host = trim( (string) \wp_parse_url( $this->client_id, PHP_URL_HOST ), '[]' );
+
+		// Never fetch a bare IP address. Only loopback addresses are valid client
+		// identifiers, and a native app listening on one serves no client
+		// information document; anything else is not a valid identifier at all.
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
 			return;
 		}
 
-		if ( 'localhost' === \wp_parse_url( $client_id, PHP_URL_HOST ) ) {
+		if ( 'localhost' === strtolower( $host ) ) {
 			return;
 		}
-		$response = self::parse( $client_id );
+		$response = $this->parse( $this->client_id );
 		if ( \is_wp_error( $response ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			\error_log( \__( 'Failed to Retrieve IndieAuth Client Details ', 'indieauth' ) . \wp_json_encode( $response ) );
 			return;
 		}
+
+		$this->discovered = true;
+	}
+
+	/**
+	 * Whether the client document was fetched and parsed.
+	 *
+	 * A client that published nothing and a client that could not be reached both
+	 * end up with no redirect URIs, but they are not the same answer. Only the
+	 * first is a statement about the client.
+	 *
+	 * @return bool True if discovery completed.
+	 */
+	public function is_discovered() {
+		return $this->discovered;
 	}
 
 	/**
@@ -131,7 +165,7 @@ class Client_Discovery {
 		$wp_version = \get_bloginfo( 'version' );
 		$user_agent = \apply_filters( 'http_headers_useragent', 'WordPress/' . $wp_version . '; ' . \get_bloginfo( 'url' ) );
 		$args       = array(
-			'timeout'             => 100,
+			'timeout'             => 5,
 			'limit_response_size' => 1048576,
 			'redirection'         => 3,
 			'user-agent'          => "$user_agent; IndieAuth Client Information Discovery",
@@ -148,6 +182,144 @@ class Client_Discovery {
 	}
 
 	/**
+	 * Get the media type of a response, without any parameters.
+	 *
+	 * Servers usually send something like "application/json; charset=utf-8", so
+	 * the raw header cannot be compared to a media type directly.
+	 *
+	 * @param array|\WP_Error $response The HTTP response.
+	 * @return string The lowercased media type, or an empty string if there is none.
+	 */
+	private static function parse_content_type( $response ) {
+		$content_type = \wp_remote_retrieve_header( $response, 'content-type' );
+
+		// A repeated header comes back as an array.
+		if ( is_array( $content_type ) ) {
+			$content_type = end( $content_type );
+		}
+
+		if ( ! is_string( $content_type ) ) {
+			return '';
+		}
+
+		// Drop parameters like "; charset=utf-8". The type itself is case-insensitive.
+		$parts = explode( ';', $content_type );
+
+		return strtolower( trim( $parts[0] ) );
+	}
+
+	/**
+	 * Whether a media type should be parsed as JSON client metadata.
+	 *
+	 * @param string $content_type The media type.
+	 * @return bool True for a JSON media type.
+	 */
+	private static function is_json_type( $content_type ) {
+		return 'application/json' === $content_type || (bool) preg_match( '#^application/[\w.+-]+\+json$#', $content_type );
+	}
+
+	/**
+	 * Whether a media type should be parsed as HTML.
+	 *
+	 * @param string $content_type The media type.
+	 * @return bool True for an HTML media type.
+	 */
+	private static function is_html_type( $content_type ) {
+		return in_array( $content_type, array( 'text/html', 'application/xhtml+xml' ), true );
+	}
+
+	/**
+	 * Extracts redirect URIs from <link> elements in the document head.
+	 *
+	 * Only the head is read. Body markup is user-generated on plenty of sites,
+	 * and a redirect URI decides where an authorization code gets delivered.
+	 *
+	 * @param string $content The HTML document.
+	 * @param string $url     The requested URL, used to make relative URLs absolute.
+	 * @return array The redirect URIs published in the head.
+	 */
+	private static function parse_redirect_uris_from_head( $content, $url ) {
+		$redirect_uris = array();
+
+		if ( '' === trim( (string) $content ) ) {
+			return $redirect_uris;
+		}
+
+		$domdocument     = new \DOMDocument();
+		$libxml_previous = \libxml_use_internal_errors( true );
+		$loaded          = $domdocument->loadHTML( $content );
+		\libxml_clear_errors();
+		\libxml_use_internal_errors( $libxml_previous );
+
+		if ( ! $loaded ) {
+			return $redirect_uris;
+		}
+
+		$xpath = new \DOMXPath( $domdocument );
+
+		foreach ( $xpath->query( '//head/link[@rel and @href]' ) as $link ) {
+			// A rel value is a space-separated list, and the types are case-insensitive.
+			$types = preg_split( '/\s+/', strtolower( trim( $link->getAttribute( 'rel' ) ) ) );
+			if ( in_array( 'redirect_uri', $types, true ) ) {
+				$redirect_uris[] = \WP_Http::make_absolute_url( trim( $link->getAttribute( 'href' ) ), $url );
+			}
+		}
+
+		return $redirect_uris;
+	}
+
+	/**
+	 * Splits a Link header value into its individual link-values.
+	 *
+	 * A comma only separates links when it is outside a quoted parameter, so
+	 * `<https://example.com/cb>; title="Foo, Bar"` is one link, not two.
+	 *
+	 * @param string $header The Link header value.
+	 * @return array The individual link-values.
+	 */
+	private static function split_link_header( $header ) {
+		$links   = array();
+		$current = '';
+		$quoted  = false;
+		$escaped = false;
+		$length  = strlen( $header );
+
+		for ( $i = 0; $i < $length; $i++ ) {
+			$char = $header[ $i ];
+
+			if ( $escaped ) {
+				$escaped  = false;
+				$current .= $char;
+				continue;
+			}
+
+			if ( '\\' === $char && $quoted ) {
+				$escaped  = true;
+				$current .= $char;
+				continue;
+			}
+
+			if ( '"' === $char ) {
+				$quoted   = ! $quoted;
+				$current .= $char;
+				continue;
+			}
+
+			if ( ',' === $char && ! $quoted ) {
+				$links[] = $current;
+				$current = '';
+				continue;
+			}
+
+			$current .= $char;
+		}
+
+		$links[] = $current;
+
+		return array_filter( array_map( 'trim', $links ) );
+	}
+
+	/**
 	 * Parses the client URL to extract client metadata.
 	 *
 	 * @param string $url The client URL to parse.
@@ -160,9 +332,17 @@ class Client_Discovery {
 			return $response;
 		}
 
-		$content_type = \wp_remote_retrieve_header( $response, 'content-type' );
-		if ( 'application/json' === $content_type ) {
-			$this->json = json_decode( \wp_remote_retrieve_body( $response ), true );
+		$this->redirect_uris = self::parse_redirect_uris_from_link_headers( $response, $url );
+
+		$content_type = self::parse_content_type( $response );
+		$body         = \wp_remote_retrieve_body( $response );
+
+		if ( '' === trim( (string) $body ) ) {
+			return new \WP_Error( 'empty_body', \__( 'Client Information Document Was Empty', 'indieauth' ) );
+		}
+
+		if ( self::is_json_type( $content_type ) ) {
+			$this->json = json_decode( $body, true );
 			/**
 			 * Expected format is per the IndieAuth standard as revised 2024-06-23 to include a JSON Client Metadata File
 			 *
@@ -192,8 +372,17 @@ class Client_Discovery {
 			if ( array_key_exists( 'client_uri', $this->json ) ) {
 				$this->client_uri = $this->json['client_uri'];
 			}
-		} elseif ( 'text/html' === $content_type ) {
-			$content = \wp_remote_retrieve_body( $response );
+			if ( array_key_exists( 'redirect_uris', $this->json ) && is_array( $this->json['redirect_uris'] ) ) {
+				// Published by an untrusted party, so only usable strings survive.
+				foreach ( $this->json['redirect_uris'] as $redirect_uri ) {
+					if ( is_string( $redirect_uri ) && '' !== trim( $redirect_uri ) ) {
+						$this->redirect_uris[] = \WP_Http::make_absolute_url( trim( $redirect_uri ), $url );
+					}
+				}
+			}
+		} elseif ( self::is_html_type( $content_type ) ) {
+			$content             = $body;
+			$this->redirect_uris = array_merge( $this->redirect_uris, self::parse_redirect_uris_from_head( $content, $url ) );
 			$this->get_mf2( $content, $url );
 			if ( ! empty( $this->mf2 ) ) {
 				if ( array_key_exists( 'name', $this->mf2 ) ) {
@@ -207,10 +396,17 @@ class Client_Discovery {
 					}
 				}
 			} else {
-				$domdocument       = new \DOMDocument( \wp_remote_retrieve_body( $response ) );
+				$domdocument = new \DOMDocument();
+				// This is a global setting, so put it back the way it was.
+				$libxml_previous = \libxml_use_internal_errors( true );
+				$domdocument->loadHTML( $content );
+				\libxml_clear_errors();
+				\libxml_use_internal_errors( $libxml_previous );
 				$this->client_icon = $this->determine_icon( $this->rels );
 				$this->get_html( $domdocument );
-				$this->client_name = $this->html['title'];
+				if ( ! empty( $this->html['title'] ) ) {
+					$this->client_name = $this->html['title'];
+				}
 			}
 
 			if ( ! empty( $this->client_icon ) ) {
@@ -229,8 +425,12 @@ class Client_Discovery {
 		if ( ! class_exists( 'Mf2\Parser' ) ) {
 			require_once \plugin_dir_path( __DIR__ ) . 'lib/mf2/Parser.php';
 		}
-		$mf = Mf2\parse( $input, $url );
+		$mf = \Mf2\parse( $input, $url );
 		if ( array_key_exists( 'rels', $mf ) ) {
+			// Deliberately no redirect_uri here. The mf2 parser collects rels from
+			// anywhere in the document, including body content that is often
+			// user-generated, and a redirect target decides where an authorization
+			// code is delivered. Those come from <head> and the Link header only.
 			$this->rels = \wp_array_slice_assoc( $mf['rels'], array( 'apple-touch-icon', 'icon', 'mask-icon' ) );
 		}
 		if ( array_key_exists( 'items', $mf ) ) {
@@ -252,7 +452,7 @@ class Client_Discovery {
 		$xpath = new \DOMXPath( $input );
 		if ( ! empty( $xpath ) ) {
 			$title = $xpath->query( '//title' );
-			if ( ! empty( $title ) ) {
+			if ( $title instanceof \DOMNodeList && $title->length > 0 ) {
 				$this->html['title'] = $title->item( 0 )->textContent;
 			}
 		}
@@ -321,6 +521,10 @@ class Client_Discovery {
 			$icons = $input['icon'];
 		}
 
+		if ( empty( $icons ) ) {
+			return '';
+		}
+
 		if ( is_array( $icons ) && ! \wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
 			return $icons['url'];
 		} elseif ( is_string( $icons[0] ) ) {
@@ -341,5 +545,65 @@ class Client_Discovery {
 	 */
 	public function get_icon() {
 		return $this->client_icon;
+	}
+
+	/**
+	 * Returns the redirect URIs published by the client.
+	 *
+	 * @return array The published redirect URIs.
+	 */
+	public function get_redirect_uris() {
+		return array_values( array_unique( $this->redirect_uris ) );
+	}
+
+	/**
+	 * Extracts redirect URIs from Link headers of a response.
+	 *
+	 * A client MAY publish one or more Link HTTP headers with a rel attribute
+	 * of redirect_uri at the client_id URL.
+	 *
+	 * @param array  $response The HTTP response.
+	 * @param string $url      The requested URL, used to make relative URLs absolute.
+	 * @return array The redirect URIs found in Link headers.
+	 */
+	private static function parse_redirect_uris_from_link_headers( $response, $url ) {
+		$redirect_uris = array();
+		$links         = \wp_remote_retrieve_header( $response, 'link' );
+		if ( empty( $links ) ) {
+			return $redirect_uris;
+		}
+		// A repeated header comes back as an array, and any single value may still
+		// carry several comma-separated links.
+		$values = array();
+		foreach ( (array) $links as $header ) {
+			if ( is_string( $header ) ) {
+				$values = array_merge( $values, self::split_link_header( $header ) );
+			}
+		}
+
+		foreach ( $values as $link ) {
+			// Each link-value is one target in <> followed by its own parameters,
+			// so a rel can never be read off a neighbouring link.
+			if ( ! preg_match( '/^<\s*([^>]*?)\s*>\s*(?:;\s*(.*))?$/', $link, $matches ) ) {
+				continue;
+			}
+
+			if ( '' === $matches[1] || ! isset( $matches[2] ) ) {
+				continue;
+			}
+
+			// The rel parameter may be quoted or bare.
+			if ( ! preg_match( '/(?:^|;)\s*rel\s*=\s*"([^"]*)"/i', $matches[2], $rel )
+				&& ! preg_match( '/(?:^|;)\s*rel\s*=\s*([^;\s]+)/i', $matches[2], $rel ) ) {
+				continue;
+			}
+
+			// A rel value is a space-separated list of link types, and the types are case-insensitive.
+			$types = preg_split( '/\s+/', strtolower( trim( $rel[1] ) ) );
+			if ( in_array( 'redirect_uri', $types, true ) ) {
+				$redirect_uris[] = \WP_Http::make_absolute_url( $matches[1], $url );
+			}
+		}
+		return $redirect_uris;
 	}
 }

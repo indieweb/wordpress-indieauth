@@ -165,4 +165,30 @@ class Test_Functions extends WP_UnitTestCase {
 		}
 	}
 
+	// Schemes and hostnames are case-insensitive, so equivalent origins must match.
+	public function test_same_origin_ignores_case() {
+		$this->assertTrue( IndieAuth\same_origin( 'https://example.com/a', 'HTTPS://Example.com/b' ) );
+		$this->assertTrue( IndieAuth\same_origin( 'HTTPS://EXAMPLE.COM', 'https://example.com' ) );
+
+		// The default port still has to be resolved from the uppercased scheme.
+		$this->assertTrue( IndieAuth\same_origin( 'HTTPS://Example.com', 'https://example.com:443' ) );
+		$this->assertFalse( IndieAuth\same_origin( 'HTTPS://Example.com', 'https://example.com:8443' ) );
+
+		// Paths are irrelevant, everything else must still differ.
+		$this->assertFalse( IndieAuth\same_origin( 'https://example.com', 'http://example.com' ) );
+		$this->assertFalse( IndieAuth\same_origin( 'https://example.com', 'https://evil.example.net' ) );
+	}
+
+	// The deprecation link is added next to an existing Link header, not on top of it.
+	public function test_add_deprecation_headers_keeps_existing_link() {
+		$response = new WP_REST_Response();
+		$response->header( 'Link', '<https://example.com/>; rel="canonical"' );
+
+		$headers = IndieAuth\add_deprecation_headers( $response )->get_headers();
+
+		$this->assertEquals( 'true', $headers['Deprecation'] );
+		$this->assertStringContainsString( 'rel="canonical"', $headers['Link'] );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
 }

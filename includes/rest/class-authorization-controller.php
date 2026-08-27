@@ -10,6 +10,7 @@ namespace IndieAuth\Rest;
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\OAuth_Response;
 use IndieAuth\Client_Taxonomy;
+use IndieAuth\Client_Discovery;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\indieauth_validate_user_identifier;
 use function IndieAuth\rest_is_valid_url;
@@ -18,6 +19,10 @@ use function IndieAuth\indieauth_get_user;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\add_query_params_to_url;
 use function IndieAuth\get_url_from_user;
+use function IndieAuth\same_origin;
+use function IndieAuth\is_loopback_url;
+use function IndieAuth\deprecation_notice;
+use function IndieAuth\add_deprecation_headers;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -296,14 +301,33 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 */
 	public function get( $request ) {
 		$params = $request->get_params();
-		if ( ! isset( $params['response_type'] ) || 'id' === $params['response_type'] ) {
+
+		/*
+		 * The response_type parameter is required as of IndieAuth 1.1 and `id` was removed
+		 * from the specification. Both are still accepted for older clients, but are
+		 * deprecated. The REST API fills in the registered default of `code`, so a request
+		 * that omitted the parameter is only visible in the raw query parameters.
+		 */
+		$raw_params = $request->get_query_params();
+		$deprecated = ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'];
+		if ( $deprecated ) {
+			deprecation_notice(
+				'IndieAuth\Rest\Authorization_Controller::get',
+				\__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
+				'indieauth 4.7.0'
+			);
 			$params['response_type'] = 'code';
 		}
-		if ( 'code' === $params['response_type'] ) {
-			return $this->code( $params );
+
+		if ( 'code' !== $params['response_type'] ) {
+			return new OAuth_Response( 'unsupported_response_type', \__( 'Unsupported Response Type', 'indieauth' ), 400 );
 		}
 
-		return new OAuth_Response( 'unsupported_response_type', \__( 'Unsupported Response Type', 'indieauth' ), 400 );
+		$response = $this->code( $params );
+		if ( $deprecated && $response instanceof \WP_REST_Response ) {
+			add_deprecation_headers( $response );
+		}
+		return $response;
 	}
 
 	/**
@@ -319,6 +343,10 @@ class Authorization_Controller extends \WP_REST_Controller {
 				// translators: Name of missing parameter.
 				return new OAuth_Response( 'parameter_absent', sprintf( \__( 'Missing Parameter: %1$s', 'indieauth' ), $require ), 400 );
 			}
+		}
+
+		if ( ! self::verify_redirect_uri( $params['client_id'], $params['redirect_uri'] ) ) {
+			return new OAuth_Response( 'invalid_request', \__( 'The redirect_uri does not match the client_id and is not published by the client', 'indieauth' ), 400 );
 		}
 		$url  = \wp_login_url( $params['redirect_uri'], true );
 		$args = array_filter(
@@ -348,6 +376,83 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$url = add_query_params_to_url( $args, $url );
 
 		return new \WP_REST_Response( array( 'url' => $url ), 302, array( 'Location' => $url ) );
+	}
+
+	/**
+	 * Get the redirect URIs published by a client.
+	 *
+	 * @param string $client_id The client identifier URL.
+	 * @return array The published redirect URIs.
+	 */
+	public static function get_client_redirect_uris( $client_id ) {
+		/**
+		 * Short-circuit client redirect URI discovery.
+		 *
+		 * Return an array of redirect URIs to skip fetching the client information
+		 * document, for example to serve them from a cache or a static registration.
+		 *
+		 * @param array|null $redirect_uris The redirect URIs or null to discover them.
+		 * @param string     $client_id     The client identifier URL.
+		 */
+		$redirect_uris = \apply_filters( 'pre_indieauth_client_redirect_uris', null, $client_id );
+		if ( null !== $redirect_uris ) {
+			return (array) $redirect_uris;
+		}
+
+		// The authorization flow verifies twice (authorization request and consent
+		// submission); cache briefly so the client document is fetched only once.
+		$cache_key     = 'indieauth_client_redirect_uris_' . md5( $client_id );
+		$redirect_uris = \get_transient( $cache_key );
+		if ( false !== $redirect_uris ) {
+			return (array) $redirect_uris;
+		}
+
+		$discovery     = new Client_Discovery( $client_id );
+		$redirect_uris = $discovery->get_redirect_uris();
+
+		// Only cache an answer the client actually gave. A failed fetch is not
+		// "published nothing", and caching it would lock a working client out
+		// for the life of the transient over one network blip.
+		if ( $discovery->is_discovered() ) {
+			\set_transient( $cache_key, $redirect_uris, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return $redirect_uris;
+	}
+
+	/**
+	 * Verify that a redirect_uri belongs to the client.
+	 *
+	 * If the URL scheme, host or port of the redirect_uri differ from the
+	 * client_id, the redirect_uri has to match one of the redirect URLs
+	 * published by the client.
+	 *
+	 * @param string $client_id    The client identifier URL.
+	 * @param string $redirect_uri The redirect URI to verify.
+	 * @return bool Whether the redirect URI is valid for this client.
+	 */
+	public static function verify_redirect_uri( $client_id, $redirect_uri ) {
+		$valid = same_origin( $client_id, $redirect_uri );
+
+		// Native apps listen on an ephemeral loopback port and cannot publish
+		// anything at their client_id, so any loopback port is accepted for a
+		// loopback client. RFC 8252 section 7.3.
+		if ( ! $valid && is_loopback_url( $client_id ) && is_loopback_url( $redirect_uri ) ) {
+			$valid = true;
+		}
+
+		if ( ! $valid ) {
+			$valid = in_array( $redirect_uri, self::get_client_redirect_uris( $client_id ), true );
+		}
+
+		/**
+		 * Filter the result of the redirect URI verification.
+		 *
+		 * @param bool   $valid        Whether the redirect URI was verified.
+		 * @param string $redirect_uri The redirect URI.
+		 * @param string $client_id    The client identifier URL.
+		 */
+		return \apply_filters( 'indieauth_verify_redirect_uri', $valid, $redirect_uri, $client_id );
 	}
 
 	/**
@@ -545,6 +650,11 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$scope         = isset( $_POST['scope'] ) ? $_POST['scope'] : array();
 		$code_challenge  = isset( $_POST['code_challenge'] ) ? \wp_unslash( $_POST['code_challenge'] ) : null;
 		$code_challenge_method  = isset( $_POST['code_challenge_method'] ) ? \wp_unslash( $_POST['code_challenge_method'] ) : null;
+
+		// The consent form can be reached without passing through the REST endpoint, so verify the redirect_uri here as well.
+		if ( empty( $redirect_uri ) || ! self::verify_redirect_uri( $client_id, $redirect_uri ) ) {
+			\wp_die( \esc_html__( 'The redirect_uri does not match the client_id and is not published by the client.', 'indieauth' ) );
+		}
 
 		// Do not allow the post scope as deprecated.
 		// For compatibility, instead update the offering to the more limited but functionally identical create/update.

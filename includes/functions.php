@@ -393,6 +393,123 @@ if ( ! function_exists( 'IndieAuth\build_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\same_origin' ) ) {
+	/**
+	 * Check whether two URLs share the same origin.
+	 *
+	 * The origin is the scheme, host and port; a missing port counts as the
+	 * default port for the scheme.
+	 *
+	 * @param string $url1 First URL.
+	 * @param string $url2 Second URL.
+	 * @return bool Whether both URLs have the same origin.
+	 */
+	function same_origin( $url1, $url2 ) {
+		$parts1 = \wp_parse_url( $url1 );
+		$parts2 = \wp_parse_url( $url2 );
+
+		if ( ! isset( $parts1['scheme'], $parts1['host'], $parts2['scheme'], $parts2['host'] ) ) {
+			return false;
+		}
+
+		// Schemes and hosts are case-insensitive.
+		$scheme1 = strtolower( $parts1['scheme'] );
+		$scheme2 = strtolower( $parts2['scheme'] );
+
+		if ( $scheme1 !== $scheme2 || strtolower( $parts1['host'] ) !== strtolower( $parts2['host'] ) ) {
+			return false;
+		}
+
+		$defaults     = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+		$default_port = isset( $defaults[ $scheme1 ] ) ? $defaults[ $scheme1 ] : null;
+		$port1        = isset( $parts1['port'] ) ? (int) $parts1['port'] : $default_port;
+		$port2        = isset( $parts2['port'] ) ? (int) $parts2['port'] : $default_port;
+
+		return $port1 === $port2;
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\is_loopback_url' ) ) {
+	/**
+	 * Whether a URL points at the loopback interface.
+	 *
+	 * Native apps redirect to a loopback address on an ephemeral port, which they
+	 * cannot know in advance and cannot publish anywhere, so the port is not part
+	 * of the identity of such a client.
+	 *
+	 * @see https://datatracker.ietf.org/doc/html/rfc8252#section-7.3
+	 *
+	 * @param string $url URL to check.
+	 * @return bool True if the host is a loopback address.
+	 */
+	function is_loopback_url( $url ) {
+		if ( ! is_string( $url ) ) {
+			return false;
+		}
+
+		$host = \wp_parse_url( $url, PHP_URL_HOST );
+		if ( ! is_string( $host ) || '' === $host ) {
+			return false;
+		}
+
+		$host = strtolower( trim( $host, '[]' ) );
+
+		if ( 'localhost' === $host ) {
+			return true;
+		}
+
+		// Any 127.0.0.0/8 address, and the IPv6 loopback in any notation.
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			return 0 === strpos( $host, '127.' );
+		}
+
+		if ( filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			return in_array( inet_pton( $host ), array( inet_pton( '::1' ) ), true );
+		}
+
+		return false;
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\deprecation_notice' ) ) {
+	/**
+	 * Emit a developer notice about a deprecated endpoint behavior.
+	 *
+	 * Call this only once the request has been authenticated or validated.
+	 * These endpoints are public, so emitting on the way in lets an anonymous
+	 * caller fill the debug log by looping on them.
+	 *
+	 * @param string $function_name The function that was called.
+	 * @param string $message       The deprecation message.
+	 * @param string $version       The version the behavior was deprecated in.
+	 */
+	function deprecation_notice( $function_name, $message, $version ) {
+		\_doing_it_wrong( \esc_html( $function_name ), \esc_html( $message ), \esc_html( $version ) );
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\add_deprecation_headers' ) ) {
+	/**
+	 * Add deprecation headers to a REST response.
+	 *
+	 * Used by endpoints that still accept behavior removed from the IndieAuth
+	 * specification.
+	 *
+	 * @param \WP_REST_Response $response The response object.
+	 * @return \WP_REST_Response The response with deprecation headers added.
+	 */
+	function add_deprecation_headers( $response ) {
+		$response->header( 'Deprecation', 'true' );
+		// Append, so an existing Link header is not dropped.
+		$response->header( 'Link', '<https://github.com/indieweb/wordpress-indieauth/issues/294>; rel="deprecation"', false );
+
+		return $response;
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
