@@ -11,6 +11,6 @@
 		"lint": "wp-env run cli --env-cwd=\"wp-content/plugins/indieauth\" vendor/bin/phpcs"
 	},
 	"devDependencies": {
-		"@wordpress/env": "11.13.0"
+		"@wordpress/env": "11.14.0"
 	}
 }
