@@ -21,9 +21,25 @@ class Authorize {
 	/**
 	 * Error object.
 	 *
+	 * Set when a token was positively attributed to this plugin but could not be used,
+	 * for example because the user it belongs to no longer exists. Surfaced via the
+	 * `rest_authentication_errors` filter.
+	 *
 	 * @var \WP_Error|OAuth_Response|null
 	 */
 	public $error = null;
+
+	/**
+	 * Deferred error object.
+	 *
+	 * Set when a Bearer token was presented that is not in the IndieAuth token store.
+	 * Such a token may belong to another plugin, so the request is not rejected outright.
+	 * The error is only attached to responses that reject the request for lack of
+	 * authentication anyway. See `rest_request_after_callbacks()`.
+	 *
+	 * @var OAuth_Response|null
+	 */
+	public $deferred_error = null;
 
 	/**
 	 * Current scopes.
@@ -68,7 +84,38 @@ class Authorize {
 		\add_filter( 'indieauth_scopes', array( $this, 'get_indieauth_scopes' ), 9 );
 		\add_filter( 'indieauth_response', array( $this, 'get_indieauth_response' ), 9 );
 		\add_filter( 'wp_rest_server_class', array( $this, 'wp_rest_server_class' ) );
+		\add_filter( 'rest_request_after_callbacks', array( $this, 'rest_request_after_callbacks' ), 9 );
 		\add_filter( 'rest_request_after_callbacks', array( $this, 'return_oauth_error' ), 10, 3 );
+	}
+
+	/**
+	 * Attaches a deferred `invalid_token` error to responses that reject an unauthenticated request.
+	 *
+	 * A Bearer token that is not in the IndieAuth token store may belong to another plugin,
+	 * so it must not fail the request by itself. If no plugin authenticated the request and the
+	 * route rejects it with a 401, the token was invalid for this site after all. In that case
+	 * the generic error is replaced with the OAuth error, as required by RFC 6750.
+	 *
+	 * Public routes and routes that authenticate through other means are left untouched.
+	 *
+	 * @param \WP_REST_Response|\WP_HTTP_Response|\WP_Error|mixed $response Result to send to the client.
+	 * @return \WP_REST_Response|\WP_Error|mixed Modified response.
+	 */
+	public function rest_request_after_callbacks( $response ) {
+		if ( ! is_oauth_error( $this->deferred_error ) || ! \is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		if ( \is_user_logged_in() ) {
+			return $response;
+		}
+
+		$data = $response->get_error_data();
+		if ( ! isset( $data['status'] ) || 401 !== (int) $data['status'] ) {
+			return $response;
+		}
+
+		return $this->deferred_error->to_wp_error();
 	}
 
 
@@ -174,13 +221,18 @@ class Authorize {
 		if ( ! isset( $token ) ) {
 			return $user_id;
 		}
-		// If there is a token and it is invalid then reject all logins.
 		$params = $this->verify_access_token( $token );
 		if ( ! isset( $params ) ) {
 			return $user_id;
 		}
 		if ( is_oauth_error( $params ) ) {
-			$this->error = $params;
+			/*
+			 * The token is not in the IndieAuth token store. Bearer tokens are an opaque
+			 * namespace shared with every other plugin, so this one may well belong to
+			 * someone else. Do not reject the request here; let the route decide and
+			 * attach the error later if the request fails for lack of authentication.
+			 */
+			$this->deferred_error = $params;
 			return $user_id;
 		}
 		if ( is_array( $params ) ) {
