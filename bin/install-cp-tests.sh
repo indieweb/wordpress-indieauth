@@ -62,8 +62,8 @@ fi
 
 if [ $CP_RELEASE = y ]; then
 	# Remote URLs for release and dev packages/files
-	CP_BUILD_ZIP_URL="https://github.com/ClassicPress/ClassicPress-release/archive/$CP_VERSION.zip"
-	CP_DEV_ZIP_URL="https://github.com/ClassicPress/ClassicPress/archive/$CP_VERSION+dev.zip"
+	CP_BUILD_ZIP_URL="https://github.com/ClassicPress/ClassicPress-release/archive/refs/tags/$CP_VERSION.zip"
+	CP_DEV_ZIP_URL="https://github.com/ClassicPress/ClassicPress/archive/refs/tags/$CP_VERSION+dev.zip"
 	CP_DEV_FILE_URL="https://raw.githubusercontent.com/ClassicPress/ClassicPress/$CP_VERSION+dev"
 	# Local paths
 	CP_BUILD_ZIP_PATH="$TMPDIR/classicpress-release-$CP_VERSION.zip"

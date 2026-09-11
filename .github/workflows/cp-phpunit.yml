@@ -10,6 +10,7 @@ on:
       - 'phpunit.xml.dist'
       - 'phpcs.xml'
       - '.github/workflows/cp-phpunit.yml'
+      - 'bin/install-cp-tests.sh'
   pull_request:
     paths:
       - '**/*.php'
@@ -18,6 +19,7 @@ on:
       - 'phpunit.xml.dist'
       - 'phpcs.xml'
       - '.github/workflows/cp-phpunit.yml'
+      - 'bin/install-cp-tests.sh'
 jobs:
   phpunit:
     runs-on: ubuntu-latest
