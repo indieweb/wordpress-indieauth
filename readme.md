@@ -3,8 +3,8 @@
 - Contributors: indieweb, pfefferle, dshanske
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
-- Tested up to: 7.0
-- Stable tag: 4.7.1
+- Tested up to: 7.1
+- Stable tag: 4.7.2
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -188,6 +188,11 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 4.7.2
+
+* Fix user lookup when the "Site User" setting is set to "None": an identifier matching the site URL now falls through to the regular author URL lookups instead of failing, and the setting is stored as an integer (#325)
+* Clarify the "Site User" setting description: it now names the home URL and explains what happens to the other users (#325)
 
 ### 4.7.1
 
