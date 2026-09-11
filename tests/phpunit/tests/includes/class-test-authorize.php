@@ -25,6 +25,11 @@ class Test_Authorize extends WP_UnitTestCase {
 		parent::set_up();
 	}
 
+	public function tear_down() {
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_POST['access_token'], $_REQUEST['micropub'] );
+		parent::tear_down();
+	}
+
 	public static function wpSetUpBeforeClass( $factory ) {
 		static::$author_id = $factory->user->create(
 			array(
@@ -128,7 +133,119 @@ class Test_Authorize extends WP_UnitTestCase {
 		$user_id = apply_filters( 'determine_current_user', false );
 		$this->assertFalse( $user_id );
 		wp_set_current_user( $user_id );
-		$this->assertTrue( is_wp_error( $authorize->rest_authentication_errors() ) );
+		// A token that is not ours may belong to another plugin, so it must not fail authentication by itself.
+		$this->assertNull( $authorize->rest_authentication_errors() );
+		$this->assertTrue( is_oauth_error( $authorize->deferred_error ) );
+	}
+
+	/**
+	 * Registers two routes for the unknown token tests: one public, one requiring authentication.
+	 */
+	private function register_test_routes() {
+		register_rest_route(
+			'indieauth-test/1.0',
+			'/public',
+			array(
+				'methods'             => 'GET',
+				'callback'            => function () {
+					return array( 'ok' => true );
+				},
+				'permission_callback' => '__return_true',
+			)
+		);
+		register_rest_route(
+			'indieauth-test/1.0',
+			'/protected',
+			array(
+				'methods'             => 'GET',
+				'callback'            => function () {
+					return array( 'ok' => true );
+				},
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+			)
+		);
+		register_rest_route(
+			'indieauth-test/1.0',
+			'/custom-error',
+			array(
+				'methods'             => 'GET',
+				'callback'            => function () {
+					return array( 'ok' => true );
+				},
+				'permission_callback' => function () {
+					return new WP_Error( 'other_plugin_error', 'Custom', array( 'status' => 403 ) );
+				},
+			)
+		);
+	}
+
+	/**
+	 * Authenticates the current request with an unknown Bearer token.
+	 *
+	 * @return Indieauth_Authorize
+	 */
+	private function authorize_with_unknown_token() {
+		$this->register_test_routes();
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ema-health-check';
+		$authorize = new Indieauth_Authorize();
+		$authorize->load();
+		$user_id = apply_filters( 'determine_current_user', false );
+		$this->assertFalse( $user_id );
+		wp_set_current_user( 0 );
+		return $authorize;
+	}
+
+	public function test_unknown_token_does_not_break_public_route() {
+		$this->authorize_with_unknown_token();
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/public' ) );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( array( 'ok' => true ), $response->get_data() );
+	}
+
+	public function test_unknown_token_on_protected_route_returns_invalid_token() {
+		$this->authorize_with_unknown_token();
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/protected' ) );
+		$this->assertEquals( 401, $response->get_status() );
+		$this->assertEquals( 'invalid_token', $response->get_data()['code'] );
+	}
+
+	public function test_unknown_token_keeps_other_plugins_error() {
+		$this->authorize_with_unknown_token();
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/custom-error' ) );
+		$this->assertEquals( 403, $response->get_status() );
+		$this->assertEquals( 'other_plugin_error', $response->get_data()['code'] );
+	}
+
+	public function test_unknown_token_does_not_replace_error_for_authenticated_user() {
+		$this->register_test_routes();
+		$self_author_id = self::$author_id;
+		add_filter( 'determine_current_user', function( $user_id ) use ( $self_author_id ) {
+			if ( 'Bearer other-valid-token' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+				return $self_author_id;
+			}
+			return $user_id;
+		} );
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer other-valid-token';
+		$authorize = new Indieauth_Authorize();
+		$authorize->load();
+		wp_set_current_user( apply_filters( 'determine_current_user', false ) );
+		$this->assertTrue( is_user_logged_in() );
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/protected' ) );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_valid_token_on_protected_route() {
+		$this->register_test_routes();
+		$token = self::set_token();
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+		$authorize = new Indieauth_Authorize();
+		$authorize->load();
+		wp_set_current_user( apply_filters( 'determine_current_user', false ) );
+		$this->assertNull( $authorize->deferred_error );
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/protected' ) );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	// Tests map_meta_cap for standard permissions
