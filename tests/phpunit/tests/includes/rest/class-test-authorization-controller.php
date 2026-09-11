@@ -91,6 +91,35 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		);
 	}
 
+	// FedCM codes are issued without a redirect, so redemption works without redirect_uri.
+	public function test_fedcm_auth_code_redemption_without_redirect_uri() {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		$code = $tokens->set(
+			array(
+				'client_id' => 'https://app.example.com/',
+				'scope'     => 'profile',
+				'me'        => get_author_posts_url( static::$author_id ),
+				'user'      => static::$author_id,
+				'fedcm'     => true,
+			),
+			600
+		);
+
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type' => 'authorization_code',
+				'code'       => $code,
+				'client_id'  => 'https://app.example.com/',
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayNotHasKey( 'access_token', $data );
+		$this->assertEquals( get_author_posts_url( static::$author_id ), $data['me'] );
+	}
+
 	// Tests to Make Sure the Auth Endpoint Does Not Return a Token
 	public function test_auth_code_redemption_with_scope() {
 		static::$test_auth_code['scope'] = 'create update';
@@ -183,4 +212,51 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	 	$code_verifier  = "a612878371009ghja1d388e2e98b6ae8221ac31aca31959e59512c59f5";
 		$this->assertFalse( pkce_verifier( $code_challenge, $code_verifier, 'S256' ) );
 	}
+	/**
+	 * An equivalent client_id must not burn the code at this endpoint either.
+	 *
+	 * The token endpoint compares these as URLs. This endpoint destroys the code
+	 * on a mismatch, so comparing as raw strings would mean a trailing slash
+	 * costs the user a restart of the whole flow.
+	 */
+	public function test_auth_code_redemption_tolerates_equivalent_client_id() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com/',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	/**
+	 * This endpoint must destroy a code on a binding failure too.
+	 *
+	 * It accepts the same codes as the token endpoint. If only that one
+	 * revoked, an attacker could simply probe client_id and redirect_uri here
+	 * instead, without ever spending the code.
+	 */
+	public function test_auth_code_destroyed_on_binding_failure() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://evil.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
+
 }
