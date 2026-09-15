@@ -16,6 +16,8 @@ use function IndieAuth\get_user_by_identifier;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\rest_is_valid_url;
+use function IndieAuth\same_url;
+use function IndieAuth\code_binding_failure;
 
 /**
  * IndieAuth Token Controller class.
@@ -257,14 +259,15 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
 	public function authorization_code( $params ) {
-		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
+		// redirect_uri is validated against the stored code, which knows whether one was used.
+		$diff = array_diff( array( 'code', 'client_id' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new OAuth_Response( 'invalid_request', \__( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$args     = array_filter(
 			array(
 				'code'          => $params['code'],
-				'redirect_uri'  => $params['redirect_uri'],
+				'redirect_uri'  => isset( $params['redirect_uri'] ) ? $params['redirect_uri'] : null,
 				'client_id'     => $params['client_id'],
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
@@ -377,6 +380,22 @@ class Token_Controller extends \WP_REST_Controller {
 		$return = $codes->get( $args['code'] );
 		if ( ! $return ) {
 			return new OAuth_Response( 'invalid_code', \__( 'Invalid authorization code', 'indieauth' ), 401 );
+		}
+		// A code that fails its binding is destroyed, including when the parameter
+		// is simply absent: answering differently would tell an attacker holding a
+		// stolen code that it is still live, without spending it.
+		$failed = code_binding_failure( $return, $args );
+		if ( null !== $failed ) {
+			$codes->destroy( $args['code'] );
+			return new OAuth_Response(
+				'invalid_grant',
+				sprintf(
+					// translators: Name of the parameter that did not match.
+					\__( 'The %s does not match the authorization request', 'indieauth' ),
+					$failed
+				),
+				400
+			);
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {
