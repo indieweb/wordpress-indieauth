@@ -1,0 +1,45 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"landingPage": "/wp-admin/users.php?page=indieauth_user_token",
+	"preferredVersions": {
+		"php": "8.2",
+		"wp": "latest"
+	},
+	"features": {
+		"networking": true
+	},
+	"login": true,
+	"steps": [
+		{
+			"step": "setSiteOptions",
+			"options": {
+				"permalink_structure": "/%postname%/",
+				"blogname": "IndieAuth Demo",
+				"blogdescription": "Sign in with your own domain"
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "indieauth"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "mkdir",
+			"path": "/wordpress/wp-content/mu-plugins"
+		},
+		{
+			"step": "writeFile",
+			"path": "/wordpress/wp-content/mu-plugins/show-admin-notice.php",
+			"data": "<?php\nadd_action(\n'admin_notices',\nfunction() {\n$dismissed = get_user_option( 'dismissed_indieauth_blueprint_notice', get_current_user_id() );\nif ( $dismissed ) {\nreturn;\n}\necho '<div class=\"notice notice-info is-dismissible\" id=\"indieauth-admin-notice\"><p>' . esc_html( 'Welcome to IndieAuth! The tokens below are examples of apps you could authorize to post to your site. 👋' ) . '</p></div>';\n}\n);\nadd_action('wp_ajax_dismiss_indieauth-admin-notice', function() {\ncheck_ajax_referer('indieauth-admin-notice', 'nonce');\n$user_id = get_current_user_id();\nif ( $user_id ) {\nupdate_user_option($user_id, 'dismissed_indieauth_blueprint_notice', 1, false);\nwp_send_json_success();\n} else {\nwp_send_json_error('User not found');\n}\n} );\nadd_action('admin_footer', function() {\n?>\n<script type=\"text/javascript\">\njQuery(document).ready( function($) {\nvar ajaxurl = '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>';\nvar nonce = '<?php echo esc_js( wp_create_nonce( 'indieauth-admin-notice' ) ); ?>';\n$( '#indieauth-admin-notice' ).on( 'click', '.notice-dismiss', function() {\n$.ajax({\nurl: ajaxurl,\ntype: 'POST',\ndata: {\naction: 'dismiss_indieauth-admin-notice',\nnonce: nonce\n}\n});\n});\n});\n</script>\n<?php\n} );"
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php\nrequire_once '/wordpress/wp-load.php';\n$tokens = new IndieAuth\\Token\\User( '_indieauth_token_', 1 );\n$clients = array(\n\tarray( 'Quill', 'https://quill.p3k.io/', 'create update media' ),\n\tarray( 'Indigenous', 'https://indigenous.realize.be/', 'create update delete media read follow channels' ),\n\tarray( 'Micropublish', 'https://micropublish.net/', 'create update' ),\n);\nforeach ( $clients as $i => $client ) {\n\t$tokens->set(\n\t\tarray(\n\t\t\t'token_type'  => 'Bearer',\n\t\t\t'scope'       => $client[2],\n\t\t\t'me'          => home_url( '/' ),\n\t\t\t'issued_by'   => rest_url( 'indieauth/1.0/token' ),\n\t\t\t'user'        => 1,\n\t\t\t'client_id'   => $client[1],\n\t\t\t'client_name' => $client[0],\n\t\t\t'issued_at'   => time() - ( $i + 1 ) * WEEK_IN_SECONDS,\n\t\t),\n\t\t( $i + 2 ) * MONTH_IN_SECONDS\n\t);\n}\nflush_rewrite_rules();\n"
+		}
+	]
+}
