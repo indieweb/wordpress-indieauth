@@ -393,6 +393,39 @@ if ( ! function_exists( 'IndieAuth\build_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\code_binding_failure' ) ) {
+	/**
+	 * Check an authorization code against the parameters it was issued for.
+	 *
+	 * The authorization endpoint and the token endpoint both redeem the same
+	 * codes, so they must agree exactly on what counts as a match. This is the
+	 * one place that decides it.
+	 *
+	 * URLs are compared with same_url(), because a caller is not lying about its
+	 * identity by omitting a trailing slash, and a failure here destroys the code.
+	 *
+	 * @param array $token  The stored authorization code data.
+	 * @param array $params The parameters supplied at redemption.
+	 * @return string|null The name of the parameter that failed, or null if the code is bound correctly.
+	 */
+	function code_binding_failure( $token, $params ) {
+		$bound = array( 'client_id' );
+
+		// FedCM codes are issued without a redirect_uri; every other code is bound to one.
+		if ( empty( $token['fedcm'] ) ) {
+			$bound[] = 'redirect_uri';
+		}
+
+		foreach ( $bound as $key ) {
+			if ( ! isset( $params[ $key ], $token[ $key ] ) || ! same_url( $token[ $key ], $params[ $key ] ) ) {
+				return $key;
+			}
+		}
+
+		return null;
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
@@ -424,6 +457,61 @@ if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 			return false;
 		}
 		return build_url( $parts );
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\same_url' ) ) {
+	/**
+	 * Compare two URLs, ignoring differences that do not change what they point at.
+	 *
+	 * Used to bind an authorization code to the client_id and redirect_uri it was
+	 * issued for. A client that registers "https://app.example.com" and redeems
+	 * with "https://app.example.com/" means the same URL, and the binding check
+	 * must not destroy the code over that.
+	 *
+	 * @param string $url1 First URL.
+	 * @param string $url2 Second URL.
+	 * @return bool True if both URLs are equivalent.
+	 */
+	function same_url( $url1, $url2 ) {
+		if ( ! is_string( $url1 ) || ! is_string( $url2 ) ) {
+			return false;
+		}
+
+		if ( $url1 === $url2 ) {
+			return true;
+		}
+
+		$defaults  = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+		$canonical = array();
+
+		foreach ( array( $url1, $url2 ) as $url ) {
+			$parts = \wp_parse_url( $url );
+			if ( ! is_array( $parts ) || ! isset( $parts['scheme'], $parts['host'] ) ) {
+				return false;
+			}
+
+			// Scheme and host are case-insensitive.
+			$parts['scheme'] = strtolower( $parts['scheme'] );
+			$parts['host']   = strtolower( $parts['host'] );
+
+			// No path means the root path.
+			if ( empty( $parts['path'] ) ) {
+				$parts['path'] = '/';
+			}
+
+			// An explicit default port is the same as none.
+			if ( isset( $parts['port'], $defaults[ $parts['scheme'] ] ) && (int) $parts['port'] === $defaults[ $parts['scheme'] ] ) {
+				unset( $parts['port'] );
+			}
+
+			$canonical[] = build_url( $parts );
+		}
+
+		return $canonical[0] === $canonical[1];
 	}
 }
 
