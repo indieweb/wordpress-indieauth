@@ -64,6 +64,16 @@ class Web_Signin {
 				)
 			);
 		}
+		// Users of this site sign in with their password. The endpoints found on its pages can be set by any author.
+		if ( strtolower( \wp_parse_url( \home_url(), PHP_URL_HOST ) ) === strtolower( \wp_parse_url( $me, PHP_URL_HOST ) ) ) {
+			return new \WP_Error(
+				'authentication_failed',
+				\__( '<strong>ERROR</strong>: Please sign in with your username and password.', 'indieauth' ),
+				array(
+					'status' => 401,
+				)
+			);
+		}
 		$client    = new Client();
 		$endpoints = $client->discover_endpoints( $me );
 		if ( ! $endpoints ) {
