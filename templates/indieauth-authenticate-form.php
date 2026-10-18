@@ -2,7 +2,7 @@
 $login_errors = new WP_Error();
 login_header(
 	/* translators: Client Name or ID */
-	sprintf( __( 'Authenticate %1$s', 'indieauth' ), empty( $client_name ) ? esc_url( $client_id ) : $client_name ),
+	sprintf( __( 'Authenticate %1$s', 'indieauth' ), empty( $client_name ) ? esc_url( $client_id ) : esc_html( $client_name ) ),
 	'',
 	$login_errors
 );
