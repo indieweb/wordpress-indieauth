@@ -78,6 +78,18 @@ class Test_Functions extends WP_UnitTestCase {
 		$this->assertSame( $result->ID, static::$author_id );
 	}
 
+	// Author URLs live on the home URL, so a URL on a different WordPress Address host is not an author.
+	public function test_urltoauthor_ignores_site_url_host() {
+		add_filter(
+			'site_url',
+			function () {
+				return 'https://wp.example.net';
+			}
+		);
+		$this->assertNull( url_to_author( 'https://wp.example.net/?author=' . static::$author_id ) );
+		$this->assertSame( static::$author_id, url_to_author( get_author_posts_url( static::$author_id ) )->ID );
+	}
+
 	// Test that Profile Return Function is Compliant with IndieAuth Return Spec.
 	public function test_profile_return() {
 

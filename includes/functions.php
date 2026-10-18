@@ -235,7 +235,7 @@ if ( ! function_exists( 'IndieAuth\url_to_author' ) ) {
 	function url_to_author( $url ) {
 		global $wp_rewrite;
 		// Check if url has the same host.
-		if ( \wp_parse_url( \site_url(), PHP_URL_HOST ) !== \wp_parse_url( $url, PHP_URL_HOST ) ) {
+		if ( \wp_parse_url( \home_url(), PHP_URL_HOST ) !== \wp_parse_url( $url, PHP_URL_HOST ) ) {
 			return null;
 		}
 		// First, check to see if there is a 'author=N' to match against.
