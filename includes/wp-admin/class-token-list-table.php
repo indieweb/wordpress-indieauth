@@ -95,10 +95,10 @@ class Token_List_Table extends \WP_List_Table {
 	 *
 	 * @param array  $item        Row data.
 	 * @param string $column_name Column name.
-	 * @return mixed Column value.
+	 * @return string Column value.
 	 */
 	public function column_default( $item, $column_name ) {
-		return $item[ $column_name ];
+		return \esc_html( $item[ $column_name ] );
 	}
 
 	/**
