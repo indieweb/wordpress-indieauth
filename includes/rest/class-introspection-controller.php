@@ -186,7 +186,7 @@ class Introspection_Controller extends \WP_REST_Controller {
 		}
 
 		if ( $token ) {
-			$token['active'] = 'true';
+			$token['active'] = true;
 		} else {
 			$token = array( 'active' => false );
 		}
