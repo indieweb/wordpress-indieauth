@@ -1,5 +1,6 @@
 <?php
 
+use IndieAuth\IndieAuth;
 use IndieAuth\Rest\Metadata_Controller;
 
 class Test_Metadata_Controller extends WP_UnitTestCase {
@@ -7,6 +8,12 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->set_permalink_structure( '/%postname%/' );
+	}
+
+	// Rules added here would otherwise leak into later tests that flush.
+	public function tear_down() {
+		$this->remove_well_known_rules();
+		parent::tear_down();
 	}
 
 	// Resolve a path the way WP::parse_request() does and return the query of the first matching rule.
@@ -81,5 +88,44 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 		foreach ( array_keys( $wp_rewrite->extra_rules_top ) as $match ) {
 			$this->assertStringNotContainsString( 'oauth-authorization-server', $match );
 		}
+	}
+
+	/**
+	 * An update does not run the activation hook, so the stored rules may lack
+	 * a rule this version adds. The admin flushes them once.
+	 */
+	public function test_flushes_once_when_a_rule_is_missing() {
+		Metadata_Controller::add_rewrite_rules();
+		flush_rewrite_rules( false );
+
+		// The stored rules of the previous version, without the new rule.
+		$rules = get_option( 'rewrite_rules' );
+		$path  = '.well-known/oauth-authorization-server/' . rest_get_url_prefix() . '/indieauth/1.0';
+		foreach ( array_keys( $rules ) as $match ) {
+			if ( false !== strpos( $match, 'oauth-authorization-server' ) ) {
+				unset( $rules[ $match ] );
+			}
+		}
+		update_option( 'rewrite_rules', $rules );
+		$this->assertNotSame( 'index.php?rest_route=/indieauth/1.0/metadata', $this->resolve( $path ) );
+
+		IndieAuth::maybe_flush_rewrite_rules();
+		$this->assertSame( 'index.php?rest_route=/indieauth/1.0/metadata', $this->resolve( $path ) );
+
+		// Nothing is missing anymore, so the next admin request does not flush.
+		$flushes = did_action( 'generate_rewrite_rules' );
+		IndieAuth::maybe_flush_rewrite_rules();
+		$this->assertSame( $flushes, did_action( 'generate_rewrite_rules' ) );
+	}
+
+	// Deactivating drops the stored rules, so they are rebuilt without the plugin.
+	public function test_deactivation_drops_the_stored_rules() {
+		Metadata_Controller::add_rewrite_rules();
+		flush_rewrite_rules( false );
+		$this->assertNotEmpty( get_option( 'rewrite_rules' ) );
+
+		IndieAuth::deactivation();
+
+		$this->assertEmpty( get_option( 'rewrite_rules' ) );
 	}
 }

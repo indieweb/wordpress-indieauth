@@ -142,6 +142,7 @@ class IndieAuth {
 	 */
 	private function register_hooks() {
 		\add_action( 'init', array( $this, 'init_plugin' ), 2 );
+		\add_action( 'admin_init', array( self::class, 'maybe_flush_rewrite_rules' ) );
 	}
 
 	/**
@@ -315,6 +316,34 @@ class IndieAuth {
 	 */
 	public static function deactivation() {
 		self::cancel_schedule();
+
+		// The rules of this request still include ours, so do not flush. Dropping
+		// the stored rules lets WordPress rebuild them without the plugin.
+		\delete_option( 'rewrite_rules' );
+	}
+
+	/**
+	 * Flush the rewrite rules once if one of ours is missing.
+	 *
+	 * An update does not run the activation hook, so the stored rules can lack a
+	 * rule a new version adds. Only rules this plugin registers are checked.
+	 */
+	public static function maybe_flush_rewrite_rules() {
+		global $wp_rewrite;
+
+		$rules = \get_option( 'rewrite_rules' );
+		// Plain permalinks store no rules.
+		if ( ! is_array( $rules ) ) {
+			return;
+		}
+
+		foreach ( $wp_rewrite->extra_rules_top as $match => $query ) {
+			$ours = 0 === strpos( $query, 'index.php?rest_route=/indieauth/' ) || 'index.php?well-known=web-identity' === $query;
+			if ( $ours && ! isset( $rules[ $match ] ) ) {
+				\flush_rewrite_rules( false );
+				return;
+			}
+		}
 	}
 
 	/**
