@@ -177,7 +177,8 @@ class Introspection_Controller extends \WP_REST_Controller {
 	 */
 	public function introspection( $request ) {
 		$params = $request->get_params();
-		$token  = $this->get_token( $params['token'], $params['token_type_hint'] );
+		// The hint is only a hint, RFC 7662 section 2.1, so look up every token type.
+		$token = $this->get_token( $params['token'] );
 
 		// Someone else's token reads the same as one that does not exist, so a
 		// caller cannot use this endpoint to learn which token values are real.
@@ -186,7 +187,7 @@ class Introspection_Controller extends \WP_REST_Controller {
 		}
 
 		if ( $token ) {
-			$token['active'] = 'true';
+			$token['active'] = true;
 		} else {
 			$token = array( 'active' => false );
 		}

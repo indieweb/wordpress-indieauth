@@ -446,6 +446,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 				)
 			);
 		$response_token = $response->get_data();
+		$this->assertTrue( $response_token['active'] );
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );

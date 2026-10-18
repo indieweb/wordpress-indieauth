@@ -170,7 +170,7 @@ class Token_Controller extends \WP_REST_Controller {
 				)
 			);
 		}
-		$token = $this->get_token( $access_token );
+		$token = $this->get_token( $access_token, true, 'access_token' );
 		if ( ! $token ) {
 			return add_deprecation_headers( new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 ) );
 		}
@@ -181,7 +181,7 @@ class Token_Controller extends \WP_REST_Controller {
 			\__( 'Token verification via a GET request to the token endpoint was removed from the IndieAuth specification. Use the introspection endpoint instead.', 'indieauth' ),
 			'indieauth 4.8.0'
 		);
-		$token['active'] = 'true';
+		$token['active'] = true;
 		return add_deprecation_headers( \rest_ensure_response( $token ) );
 	}
 
