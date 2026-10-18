@@ -100,6 +100,35 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
+	/**
+	 * An invalid legacy request still gets the headers, but logs nothing.
+	 *
+	 * The endpoint is public, so the _doing_it_wrong() notice may only fire
+	 * once the request passed validation.
+	 */
+	public function test_invalid_legacy_request_does_not_log() {
+		$none = function () {
+			return array();
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $none );
+
+		// A cross-origin redirect_uri the client never published.
+		$response = $this->create_get(
+			array(
+				'response_type'         => 'id',
+				'client_id'             => 'https://app.example.com',
+				'redirect_uri'          => 'https://evil.example.net/cb',
+				'state'                 => '12345',
+				'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+				'code_challenge_method' => 'S256',
+			)
+		);
+		remove_filter( 'pre_indieauth_client_redirect_uris', $none );
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayHasKey( 'Deprecation', $response->get_headers() );
+	}
+
 	// A spec-conforming request must not carry deprecation signals.
 	public function test_response_type_code_sends_no_deprecation_signals() {
 		$response = $this->create_get(

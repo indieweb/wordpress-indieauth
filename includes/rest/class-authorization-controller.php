@@ -313,11 +313,6 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$raw_params = $request->get_query_params();
 		$deprecated = ! isset( $raw_params['response_type'] ) || 'id' === $params['response_type'];
 		if ( $deprecated ) {
-			deprecation_notice(
-				'IndieAuth\Rest\Authorization_Controller::get',
-				\__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
-				'indieauth 4.8.0'
-			);
 			$params['response_type'] = 'code';
 		}
 
@@ -327,6 +322,15 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 		$response = $this->code( $params );
 		if ( $deprecated && $response instanceof \WP_REST_Response ) {
+			// Only once the request passed validation, so an anonymous requester
+			// cannot fill the log by looping on this endpoint.
+			if ( ! $response instanceof OAuth_Response ) {
+				deprecation_notice(
+					'IndieAuth\Rest\Authorization_Controller::get',
+					\__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
+					'indieauth 4.8.0'
+				);
+			}
 			add_deprecation_headers( $response );
 		}
 		return $response;

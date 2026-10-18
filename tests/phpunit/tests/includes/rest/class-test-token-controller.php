@@ -537,6 +537,24 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Revoking an unknown token keeps its response, but logs nothing.
+	 *
+	 * Anyone can send any token value here, so only a real revocation may
+	 * emit the _doing_it_wrong() notice.
+	 */
+	public function test_token_revocation_action_with_unknown_token_does_not_log() {
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+				'token'  => 'not-a-real-token',
+			)
+		);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayHasKey( 'Deprecation', $response->get_headers() );
+	}
+
+	/**
 	 * Sets a token, revokes it, then verifies it is not there.
 	 *
 	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action

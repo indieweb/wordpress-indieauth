@@ -138,6 +138,9 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 			);
 		remove_filter( 'indieauth_allow_unauthenticated_introspection', $allow );
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		// Restoring the old behavior means the token is actually reported, not hidden.
+		$data = $response->get_data();
+		$this->assertNotFalse( $data['active'], 'Response: ' . wp_json_encode( $data ) );
 	}
 
 	/**

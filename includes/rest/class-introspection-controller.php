@@ -50,7 +50,8 @@ class Introspection_Controller extends \WP_REST_Controller {
 	 * Get supported authentication methods for introspection.
 	 *
 	 * The endpoint MUST require some form of authorization, so the default is a
-	 * Bearer access token issued by this site. Filtering this to `none` restores
+	 * Bearer access token issued by this site. Filtering this only changes what the
+	 * metadata advertises; `indieauth_allow_unauthenticated_introspection` restores
 	 * unauthenticated introspection.
 	 *
 	 * @return array Supported authentication methods.
@@ -102,7 +103,12 @@ class Introspection_Controller extends \WP_REST_Controller {
 			return true;
 		}
 
-		$allowed = $owner ? \current_user_can( 'edit_user', $owner ) : \current_user_can( 'edit_users' );
+		// Unauthenticated introspection was opted into, so every token is readable, as before.
+		if ( \apply_filters( 'indieauth_allow_unauthenticated_introspection', false ) ) {
+			$allowed = true;
+		} else {
+			$allowed = $owner ? \current_user_can( 'edit_user', $owner ) : \current_user_can( 'edit_users' );
+		}
 
 		/**
 		 * Filter whether the current user may introspect a token.

@@ -272,6 +272,65 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 		$this->assertSame( array( 'https://b.example/cb' ), $discovery->get_redirect_uris() );
 	}
 
+	// The client_id in the document MUST match the URL it was fetched from.
+	public function test_rejects_json_metadata_for_another_client_id() {
+		$this->mock_http(
+			array( 'content-type' => 'application/json' ),
+			wp_json_encode(
+				array(
+					'client_id'     => 'https://evil.example.net/',
+					'redirect_uris' => array( 'https://evil.example.net/cb' ),
+				)
+			)
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com/' );
+		$discovery->discover();
+
+		$this->assertSame( array(), $discovery->get_redirect_uris() );
+		$this->assertFalse( $discovery->is_discovered() );
+	}
+
+	/**
+	 * A redirect to another document is not the client's own document.
+	 *
+	 * The fetch follows redirects, so an open redirect on the client's host
+	 * could serve a document that just claims the client's client_id.
+	 */
+	public function test_rejects_json_metadata_served_from_another_url() {
+		$this->http_mock = function () {
+			$final              = new WpOrg\Requests\Response();
+			$final->url         = 'https://evil.example.net/client.json';
+			$final->status_code = 200;
+
+			return array(
+				'headers'       => array(
+					'content-type' => 'application/json',
+					'link'         => '<https://evil.example.net/cb2>; rel="redirect_uri"',
+				),
+				'body'          => wp_json_encode(
+					array(
+						'client_id'     => 'https://app.example.com/',
+						'redirect_uris' => array( 'https://evil.example.net/cb' ),
+					)
+				),
+				'response'      => array(
+					'code'    => 200,
+					'message' => 'OK',
+				),
+				'cookies'       => array(),
+				'filename'      => null,
+				'http_response' => new WP_HTTP_Requests_Response( $final ),
+			);
+		};
+		add_filter( 'pre_http_request', $this->http_mock, 10, 3 );
+
+		$discovery = new Client_Discovery( 'https://app.example.com/' );
+		$discovery->discover();
+
+		$this->assertSame( array(), $discovery->get_redirect_uris() );
+		$this->assertFalse( $discovery->is_discovered() );
+	}
+
 	// XHTML is still HTML for discovery purposes.
 	public function test_parses_xhtml_content_type() {
 		$this->mock_http(

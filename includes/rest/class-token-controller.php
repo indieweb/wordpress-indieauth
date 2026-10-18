@@ -207,12 +207,15 @@ class Token_Controller extends \WP_REST_Controller {
 				// Revoke Token.
 				case 'revoke':
 					if ( isset( $params['token'] ) ) {
-						deprecation_notice(
-							'IndieAuth\Rest\Token_Controller::revoke_action',
-							\__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
-							'indieauth 4.8.0'
-						);
-						$this->delete_token( $params['token'] );
+						// Only for a token that existed, so an anonymous requester
+						// cannot fill the log by looping on this endpoint.
+						if ( $this->delete_token( $params['token'] ) ) {
+							deprecation_notice(
+								'IndieAuth\Rest\Token_Controller::revoke_action',
+								\__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
+								'indieauth 4.8.0'
+							);
+						}
 						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );
 					} else {
 						return add_deprecation_headers( new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 ) );
