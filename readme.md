@@ -189,6 +189,10 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+### Unreleased
+
+* Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
+
 ### 4.7.2
 
 * Fix user lookup when the "Site User" setting is set to "None": an identifier matching the site URL now falls through to the regular author URL lookups instead of failing, and the setting is stored as an integer (#325)

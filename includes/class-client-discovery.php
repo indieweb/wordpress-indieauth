@@ -207,10 +207,17 @@ class Client_Discovery {
 					}
 				}
 			} else {
-				$domdocument       = new \DOMDocument( \wp_remote_retrieve_body( $response ) );
+				$domdocument = new \DOMDocument();
+				// This is a global setting, so put it back the way it was.
+				$libxml_previous = \libxml_use_internal_errors( true );
+				$domdocument->loadHTML( $content );
+				\libxml_clear_errors();
+				\libxml_use_internal_errors( $libxml_previous );
 				$this->client_icon = $this->determine_icon( $this->rels );
 				$this->get_html( $domdocument );
-				$this->client_name = $this->html['title'];
+				if ( ! empty( $this->html['title'] ) ) {
+					$this->client_name = $this->html['title'];
+				}
 			}
 
 			if ( ! empty( $this->client_icon ) ) {
@@ -229,7 +236,7 @@ class Client_Discovery {
 		if ( ! class_exists( 'Mf2\Parser' ) ) {
 			require_once \plugin_dir_path( __DIR__ ) . 'lib/mf2/Parser.php';
 		}
-		$mf = Mf2\parse( $input, $url );
+		$mf = \Mf2\parse( $input, $url );
 		if ( array_key_exists( 'rels', $mf ) ) {
 			$this->rels = \wp_array_slice_assoc( $mf['rels'], array( 'apple-touch-icon', 'icon', 'mask-icon' ) );
 		}
@@ -252,7 +259,7 @@ class Client_Discovery {
 		$xpath = new \DOMXPath( $input );
 		if ( ! empty( $xpath ) ) {
 			$title = $xpath->query( '//title' );
-			if ( ! empty( $title ) ) {
+			if ( $title instanceof \DOMNodeList && $title->length > 0 ) {
 				$this->html['title'] = $title->item( 0 )->textContent;
 			}
 		}
@@ -319,6 +326,10 @@ class Client_Discovery {
 			$icons = $input['apple-touch-icon'];
 		} elseif ( isset( $input['icon'] ) ) {
 			$icons = $input['icon'];
+		}
+
+		if ( empty( $icons ) ) {
+			return '';
 		}
 
 		if ( is_array( $icons ) && ! \wp_is_numeric_array( $icons ) && isset( $icons['url'] ) ) {
