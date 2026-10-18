@@ -398,7 +398,7 @@ class Token_Controller extends \WP_REST_Controller {
 		$codes  = new Token_User( '_indieauth_code_' );
 		$return = $codes->get( $args['code'] );
 		if ( ! $return ) {
-			return new OAuth_Response( 'invalid_code', \__( 'Invalid authorization code', 'indieauth' ), 401 );
+			return new OAuth_Response( 'invalid_grant', \__( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
 		// A code that fails its binding is destroyed, including when the parameter
 		// is simply absent: answering differently would tell an attacker holding a

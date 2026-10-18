@@ -157,6 +157,22 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		);
 	}
 
+	// An unknown code is an invalid grant, RFC 6749 section 5.2.
+	public function test_auth_code_redemption_rejects_unknown_code() {
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => 'not-a-real-code',
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
 	// Redemption must fail when the client_id does not match the stored code.
 	public function test_auth_code_redemption_rejects_client_id_mismatch() {
 		$code     = $this->set_auth_code();
