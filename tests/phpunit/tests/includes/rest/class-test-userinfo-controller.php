@@ -70,10 +70,24 @@ class Test_Userinfo_Controller extends WP_UnitTestCase {
 		return rest_get_server()->dispatch( $request );
 	}
 
-	// Test UserInfo Endpoint with no Token
+	// A request without a token is unauthorized, RFC 6750 section 3.1.
 	public function test_userinfo_endpoint_with_no_token() {
 		$response = $this->create_form( 'GET' );
-		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayHasKey( 'WWW-Authenticate', $response->get_headers() );
+	}
+
+	// Every 401 from the endpoint tells the client how to authenticate.
+	public function test_userinfo_endpoint_with_invalid_token() {
+		$response = $this->create_form(
+			'GET',
+			array(),
+			array(
+				'Authorization' => 'Bearer not-a-real-token',
+			)
+		);
+		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayHasKey( 'WWW-Authenticate', $response->get_headers() );
 	}
 
 	// Test UserInfo Endpoint with Profile

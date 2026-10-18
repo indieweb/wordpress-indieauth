@@ -101,20 +101,25 @@ class Userinfo_Controller extends \WP_REST_Controller {
 			$header = \wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
+		// RFC 6750 section 3: a 401 tells the client how to authenticate.
 		if ( ! $access_token ) {
-			return new OAuth_Response(
+			$response = new OAuth_Response(
 				'parameter_absent',
 				\__(
 					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
 				IndieAuth Settings Page',
 					'indieauth'
 				),
-				400
+				401
 			);
+			$response->header( 'WWW-Authenticate', 'Bearer' );
+			return $response;
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
+			$response = new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
+			$response->header( 'WWW-Authenticate', 'Bearer error="invalid_token"' );
+			return $response;
 		}
 		$scopes = explode( ' ', $token['scope'] );
 		if ( ! in_array( 'profile', $scopes, true ) ) {
