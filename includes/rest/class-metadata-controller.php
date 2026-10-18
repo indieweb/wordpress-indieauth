@@ -51,6 +51,34 @@ class Metadata_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Serve the metadata at the RFC 8414 well-known URL.
+	 *
+	 * The well-known string goes between the host and the path of the issuer,
+	 * so the URL is /.well-known/oauth-authorization-server/wp-json/indieauth/1.0.
+	 * The bare /.well-known/oauth-authorization-server belongs to an issuer
+	 * without a path and is left alone.
+	 *
+	 * @see https://www.rfc-editor.org/rfc/rfc8414#section-3
+	 */
+	public static function add_rewrite_rules() {
+		$issuer      = \wp_parse_url( self::get_issuer() );
+		$issuer_path = isset( $issuer['path'] ) ? trim( $issuer['path'], '/' ) : '';
+		$home_path   = trim( (string) \wp_parse_url( \home_url(), PHP_URL_PATH ), '/' );
+
+		// Plain permalinks put the route in the query, and a WordPress in a
+		// subdirectory cannot answer at the root of the host.
+		if ( isset( $issuer['query'] ) || '' === $issuer_path || '' !== $home_path ) {
+			return;
+		}
+
+		\add_rewrite_rule(
+			'^\.well-known/oauth-authorization-server/' . preg_quote( $issuer_path, '#' ) . '/?$',
+			'index.php?rest_route=/indieauth/1.0/metadata',
+			'top'
+		);
+	}
+
+	/**
 	 * Hooks into the REST API output to add a metadata header to the Issuer URL.
 	 *
 	 * @param bool                       $served  Whether the request has already been served.
