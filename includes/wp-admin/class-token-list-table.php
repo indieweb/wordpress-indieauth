@@ -117,6 +117,9 @@ class Token_List_Table extends \WP_List_Table {
 	public function process_action() {
 		$tokens = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
 		$t      = new Token_User( '_indieauth_token_', \get_current_user_id() );
+		if ( $this->current_action() ) {
+			\check_admin_referer( 'bulk-' . $this->_args['plural'] );
+		}
 		switch ( $this->current_action() ) {
 			case 'revoke':
 				if ( is_string( $tokens ) ) {
@@ -210,7 +213,7 @@ class Token_List_Table extends \WP_List_Table {
 		$uri     = \wp_doing_ajax() ? \wp_get_referer() : \sanitize_text_field( \wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
 		$uri     = rawurlencode( $uri );
 		$actions = array(
-			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s">%3$s</a>', $item['token'], $uri, \__( 'Retrieve Information', 'indieauth' ) ),
+			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s&_wpnonce=%4$s">%3$s</a>', $item['token'], $uri, \__( 'Retrieve Information', 'indieauth' ), \wp_create_nonce( 'bulk-' . $this->_args['plural'] ) ),
 		);
 		if ( ! isset( $item['client_name'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
@@ -224,7 +227,7 @@ class Token_List_Table extends \WP_List_Table {
 				$item['client_name'] = \__( 'Not Provided', 'indieauth' );
 			}
 		}
-		return sprintf( '%1$s  %2$s', $item['client_name'], $this->row_actions( $actions ) );
+		return sprintf( '%1$s  %2$s', \esc_html( $item['client_name'] ), $this->row_actions( $actions ) );
 	}
 
 	/**
@@ -245,7 +248,7 @@ class Token_List_Table extends \WP_List_Table {
 				return \__( 'None', 'indieauth' );
 			}
 		}
-		return sprintf( '<img src="%1$s" height="48" width="48" />', $item['client_icon'] );
+		return sprintf( '<img src="%1$s" height="48" width="48" />', \esc_url( $item['client_icon'] ) );
 	}
 
 	/**
