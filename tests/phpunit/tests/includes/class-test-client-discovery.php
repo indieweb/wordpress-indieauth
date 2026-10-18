@@ -344,4 +344,38 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 		$this->assertSame( array(), $discovery->get_redirect_uris() );
 		$this->assertFalse( $discovery->is_discovered() );
 	}
+
+	public function test_reads_name_from_h_app() {
+		$this->mock_http(
+			array( 'content-type' => 'text/html' ),
+			'<html><head><title>Page Title</title></head><body><div class="h-app"><a class="p-name u-url" href="/">My App</a></div></body></html>'
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com/' );
+		$discovery->discover();
+
+		$this->assertSame( 'My App', $discovery->get_name() );
+	}
+
+	public function test_falls_back_to_html_title() {
+		$this->mock_http(
+			array( 'content-type' => 'text/html' ),
+			'<html><head><title>Page Title</title></head><body><p>No h-app here.</p></body></html>'
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com/' );
+		$discovery->discover();
+
+		$this->assertSame( 'Page Title', $discovery->get_name() );
+	}
+
+	public function test_page_without_title_or_icon_does_not_crash() {
+		$this->mock_http(
+			array( 'content-type' => 'text/html' ),
+			'<html><head></head><body><p>Nothing to see.</p></body></html>'
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com/' );
+		$discovery->discover();
+
+		$this->assertEmpty( $discovery->get_name() );
+		$this->assertSame( '', $discovery->get_icon() );
+	}
 }
