@@ -102,7 +102,14 @@ class Settings_Fields {
 				'selected'        => \get_option( 'indieauth_root_user' ),
 			)
 		);
-		echo '<p class="description">' . \esc_html__( 'Set a User who will represent the URL of the site', 'indieauth' ) . '</p>';
+		echo '<p class="description">';
+		\printf(
+			/* translators: %s: The home URL of the site. */
+			\esc_html__( 'The user whose identity is this site itself. When that user signs in, they are identified as %s instead of their author URL. Every other user is always identified by their own author URL.', 'indieauth' ),
+			'<code>' . \esc_html( \home_url( '/' ) ) . '</code>'
+		);
+		echo '<br />' . \esc_html__( 'Choose "None" if no single person represents this site — everyone then signs in with their author URL.', 'indieauth' );
+		echo '</p>';
 	}
 
 	/**

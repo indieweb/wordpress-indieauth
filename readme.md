@@ -3,8 +3,8 @@
 - Contributors: indieweb, pfefferle, dshanske
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
-- Tested up to: 7.0
-- Stable tag: 4.7.1
+- Tested up to: 7.1
+- Stable tag: 4.7.2
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -195,6 +195,11 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification.
 * Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Filter `indieauth_introspection_auth_methods_supported` to `none` to restore unauthenticated introspection.
 * Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
+
+### 4.7.2
+
+* Fix user lookup when the "Site User" setting is set to "None": an identifier matching the site URL now falls through to the regular author URL lookups instead of failing, and the setting is stored as an integer (#325)
+* Clarify the "Site User" setting description: it now names the home URL and explains what happens to the other users (#325)
 
 ### 4.7.1
 

@@ -23,6 +23,8 @@ use function IndieAuth\same_origin;
 use function IndieAuth\is_loopback_url;
 use function IndieAuth\deprecation_notice;
 use function IndieAuth\add_deprecation_headers;
+use function IndieAuth\same_url;
+use function IndieAuth\code_binding_failure;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -514,7 +516,8 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 * @return array|OAuth_Response Response to return to the REST Server.
 	 */
 	public function authorization_code( $params ) {
-		$required = array( 'redirect_uri', 'client_id', 'code', 'grant_type' );
+		// redirect_uri is required conditionally below; FedCM codes are issued without one.
+		$required = array( 'client_id', 'code', 'grant_type' );
 		foreach ( $required as $require ) {
 			if ( ! isset( $params[ $require ] ) ) {
 				// translators: Name of missing parameter.
@@ -524,14 +527,24 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 		$code          = $params['code'];
 		$code_verifier = isset( $params['code_verifier'] ) ? $params['code_verifier'] : null;
-		$params        = \wp_array_slice_assoc( $params, array( 'client_id', 'redirect_uri' ) );
 		$token         = $this->get_code( $code );
-		$scopes        = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
 
 		if ( ! $token ) {
 			return new OAuth_Response( 'invalid_grant', \__( 'Invalid authorization code', 'indieauth' ), 400 );
 		}
-		$user = \get_user_by( 'id', $token['user'] );
+
+		$scopes = isset( $token['scope'] ) ? array_filter( explode( ' ', $token['scope'] ) ) : array();
+
+		$bound_params = array( 'client_id' );
+		if ( empty( $token['fedcm'] ) ) {
+			if ( ! isset( $params['redirect_uri'] ) ) {
+				// translators: Name of missing parameter.
+				return new OAuth_Response( 'parameter_absent', sprintf( \__( 'Missing Parameter: %1$s', 'indieauth' ), 'redirect_uri' ), 400 );
+			}
+			$bound_params[] = 'redirect_uri';
+		}
+		$params = \wp_array_slice_assoc( $params, $bound_params );
+		$user   = \get_user_by( 'id', $token['user'] );
 		if ( $token['exp'] <= time() ) {
 			$this->delete_code( $code, $token['user'] );
 			return new OAuth_Response( 'invalid_grant', \__( 'The authorization code expired', 'indieauth' ), 400 );
@@ -551,7 +564,9 @@ class Authorization_Controller extends \WP_REST_Controller {
 			unset( $token['code_challenge_method'] );
 		}
 
-		if ( array() === array_diff_assoc( $params, $token ) ) {
+		// Same check as the token endpoint, from the same function, so the two
+		// endpoints can never drift apart on what a valid redemption looks like.
+		if ( null === code_binding_failure( $token, $params ) ) {
 			$this->delete_code( $code, $token['user'] );
 
 			$return = array( 'me' => $token['me'] );
@@ -562,6 +577,11 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 			return $return;
 		}
+
+		// The token endpoint destroys a code that fails this same binding check.
+		// This endpoint accepts the same codes, so it has to do the same, or the
+		// code could simply be probed here instead.
+		$this->delete_code( $code, $token['user'] );
 		return new OAuth_Response( 'invalid_grant', \__( 'There was an error verifying the authorization code. Check that the client_id and redirect_uri match the original request.', 'indieauth' ), 400 );
 	}
 

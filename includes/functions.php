@@ -176,9 +176,14 @@ if ( ! function_exists( 'IndieAuth\get_user_by_identifier' ) ) {
 		// Try to save the expense of a search query if the URL is the site URL.
 		if ( \home_url( '/' ) === $identifier ) {
 			// Use the settings to set the root user.
-			if ( 0 !== indieauth_get_root_user() ) {
-				return \get_user_by( 'id', (int) \get_option( 'indieauth_root_user' ) );
+			$root_user = indieauth_get_root_user();
+			if ( 0 !== $root_user ) {
+				$user = \get_user_by( 'id', $root_user );
+				if ( $user instanceof \WP_User ) {
+					return $user;
+				}
 			}
+			// No root user, or the configured one no longer exists, so fall through to the lookups below.
 		}
 
 		// Check if this is a author post URL.
@@ -209,11 +214,12 @@ if ( ! function_exists( 'IndieAuth\get_url_from_user' ) ) {
 	 * @return string|null URL or null.
 	 */
 	function get_url_from_user( $user_id ) {
-		if ( (int) indieauth_get_root_user() === $user_id ) {
-			return \home_url( '/' );
-		}
+		$user_id = (int) $user_id;
 		if ( ! $user_id ) {
 			return null;
+		}
+		if ( indieauth_get_root_user() === $user_id ) {
+			return \home_url( '/' );
 		}
 		return \get_author_posts_url( $user_id );
 	}
@@ -504,6 +510,39 @@ if ( ! function_exists( 'IndieAuth\add_deprecation_headers' ) ) {
 	}
 }
 
+if ( ! function_exists( 'IndieAuth\code_binding_failure' ) ) {
+	/**
+	 * Check an authorization code against the parameters it was issued for.
+	 *
+	 * The authorization endpoint and the token endpoint both redeem the same
+	 * codes, so they must agree exactly on what counts as a match. This is the
+	 * one place that decides it.
+	 *
+	 * URLs are compared with same_url(), because a caller is not lying about its
+	 * identity by omitting a trailing slash, and a failure here destroys the code.
+	 *
+	 * @param array $token  The stored authorization code data.
+	 * @param array $params The parameters supplied at redemption.
+	 * @return string|null The name of the parameter that failed, or null if the code is bound correctly.
+	 */
+	function code_binding_failure( $token, $params ) {
+		$bound = array( 'client_id' );
+
+		// FedCM codes are issued without a redirect_uri; every other code is bound to one.
+		if ( empty( $token['fedcm'] ) ) {
+			$bound[] = 'redirect_uri';
+		}
+
+		foreach ( $bound as $key ) {
+			if ( ! isset( $params[ $key ], $token[ $key ] ) || ! same_url( $token[ $key ], $params[ $key ] ) ) {
+				return $key;
+			}
+		}
+
+		return null;
+	}
+}
+
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
@@ -535,6 +574,61 @@ if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 			return false;
 		}
 		return build_url( $parts );
+	}
+}
+
+if ( ! function_exists( 'IndieAuth\same_url' ) ) {
+	/**
+	 * Compare two URLs, ignoring differences that do not change what they point at.
+	 *
+	 * Used to bind an authorization code to the client_id and redirect_uri it was
+	 * issued for. A client that registers "https://app.example.com" and redeems
+	 * with "https://app.example.com/" means the same URL, and the binding check
+	 * must not destroy the code over that.
+	 *
+	 * @param string $url1 First URL.
+	 * @param string $url2 Second URL.
+	 * @return bool True if both URLs are equivalent.
+	 */
+	function same_url( $url1, $url2 ) {
+		if ( ! is_string( $url1 ) || ! is_string( $url2 ) ) {
+			return false;
+		}
+
+		if ( $url1 === $url2 ) {
+			return true;
+		}
+
+		$defaults  = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+		$canonical = array();
+
+		foreach ( array( $url1, $url2 ) as $url ) {
+			$parts = \wp_parse_url( $url );
+			if ( ! is_array( $parts ) || ! isset( $parts['scheme'], $parts['host'] ) ) {
+				return false;
+			}
+
+			// Scheme and host are case-insensitive.
+			$parts['scheme'] = strtolower( $parts['scheme'] );
+			$parts['host']   = strtolower( $parts['host'] );
+
+			// No path means the root path.
+			if ( empty( $parts['path'] ) ) {
+				$parts['path'] = '/';
+			}
+
+			// An explicit default port is the same as none.
+			if ( isset( $parts['port'], $defaults[ $parts['scheme'] ] ) && (int) $parts['port'] === $defaults[ $parts['scheme'] ] ) {
+				unset( $parts['port'] );
+			}
+
+			$canonical[] = build_url( $parts );
+		}
+
+		return $canonical[0] === $canonical[1];
 	}
 }
 
@@ -676,17 +770,19 @@ function indieauth_get_user( $user, $email = false ) {
 /**
  * Get the root user for IndieAuth.
  *
- * @return int User ID or 0.
+ * This is the user whose identity is the site's home URL rather than their author URL.
+ *
+ * @return int User ID, or 0 if no user represents the site URL.
  */
 function indieauth_get_root_user() {
 	$default = \get_option( 'indieauth_root_user', null );
-	// Null is only returned if the setting does not exist.
+	// Null is only returned if the setting does not exist. The dropdown stores "None" as the string '0'.
 	if ( ! is_null( $default ) ) {
-		return $default;
+		return (int) $default;
 	}
 	$default = \get_option( 'iw_default_author', null );
 	if ( $default ) {
-		return $default;
+		return (int) $default;
 	}
 	$users = \get_users(
 		array(
