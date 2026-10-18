@@ -67,12 +67,11 @@ trait Token_Management {
 			case 'refresh_token':
 				return $this->refresh_tokens->get( $token, $hash );
 			default:
-				$token = $this->tokens->get( $token, $hash );
-				if ( $token ) {
-					return $token;
+				$access = $this->tokens->get( $token, $hash );
+				if ( $access ) {
+					return $access;
 				}
-				$refresh = $this->refresh_tokens->get( $token, $hash );
-				return $refresh;
+				return $this->refresh_tokens->get( $token, $hash );
 		}
 	}
 
