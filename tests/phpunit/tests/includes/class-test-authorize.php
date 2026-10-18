@@ -27,6 +27,15 @@ class Test_Authorize extends WP_UnitTestCase {
 
 	public function tear_down() {
 		unset( $_SERVER['HTTP_AUTHORIZATION'], $_POST['access_token'], $_REQUEST['micropub'] );
+		// The plugin's own instance also answers determine_current_user, so clear the token it kept.
+		foreach ( $GLOBALS['wp_filter']['indieauth_response']->callbacks as $callbacks ) {
+			foreach ( $callbacks as $callback ) {
+				if ( is_array( $callback['function'] ) && $callback['function'][0] instanceof Indieauth_Authorize ) {
+					$callback['function'][0]->response = array();
+					$callback['function'][0]->scopes   = array();
+				}
+			}
+		}
 		parent::tear_down();
 	}
 
@@ -330,6 +339,69 @@ class Test_Authorize extends WP_UnitTestCase {
 				10 
 			);
 		$this->assertFalse( user_can( static::$subscriber_id, 'delete_posts' ) );
+	}
+
+	// A profile token cannot create an application password, which needs no capability on your own user.
+	public function test_profile_scope_cannot_create_app_password() {
+		add_filter(
+			'indieauth_response',
+			function () {
+				return static::$test_token;
+			}
+		);
+		add_filter(
+			'indieauth_scopes',
+			function () {
+				return array( 'profile' );
+			}
+		);
+		$this->assertFalse( user_can( static::$author_id, 'create_app_password', static::$author_id ) );
+		$this->assertFalse( user_can( static::$author_id, 'edit_user', static::$author_id ) );
+	}
+
+	// A token only gets the capabilities of its scopes, not every other capability of the user.
+	public function test_create_scope_cannot_manage_options() {
+		$admin_id = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		add_filter(
+			'indieauth_response',
+			function () {
+				return static::$test_token;
+			}
+		);
+		add_filter(
+			'indieauth_scopes',
+			function () {
+				return array( 'create', 'update', 'media' );
+			}
+		);
+		$this->assertFalse( user_can( $admin_id, 'manage_options' ) );
+		$this->assertFalse( user_can( $admin_id, 'activate_plugins' ) );
+		$this->assertTrue( user_can( $admin_id, 'publish_posts' ) );
+	}
+
+	// Plugins can allow extra capabilities for tokens.
+	public function test_allowed_caps_filter() {
+		add_filter(
+			'indieauth_response',
+			function () {
+				return static::$test_token;
+			}
+		);
+		add_filter(
+			'indieauth_scopes',
+			function () {
+				return array( 'profile' );
+			}
+		);
+		$this->assertFalse( user_can( static::$author_id, 'upload_files' ) );
+		add_filter(
+			'indieauth_allowed_caps',
+			function ( $allowed ) {
+				$allowed[] = 'upload_files';
+				return $allowed;
+			}
+		);
+		$this->assertTrue( user_can( static::$author_id, 'upload_files' ) );
 	}
 
 
