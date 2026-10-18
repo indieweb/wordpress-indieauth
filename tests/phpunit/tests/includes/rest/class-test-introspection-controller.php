@@ -199,7 +199,8 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
 		$data = $response->get_data();
-		$this->assertEquals( 'true', $data['active'] );
+		// RFC 7662 section 2.2: active is a boolean.
+		$this->assertTrue( $data['active'] );
 	}
 
 	// RFC 8414 names the key introspection_endpoint_auth_methods_supported; the old key stays for existing readers.
