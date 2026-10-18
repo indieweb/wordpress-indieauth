@@ -120,4 +120,13 @@ class Test_Revocation_Controller extends WP_UnitTestCase {
 		$check = self::get_access_token( $token );
 		$this->assertFalse( $check, $check );
 	}
+
+	// RFC 8414 names the key revocation_endpoint_auth_methods_supported; the old key stays for existing readers.
+	public function test_metadata_uses_rfc8414_auth_methods_key() {
+		$controller = new IndieAuth\Rest\Revocation_Controller();
+		$metadata   = $controller->metadata( array() );
+
+		$this->assertArrayHasKey( 'revocation_endpoint_auth_methods_supported', $metadata );
+		$this->assertSame( $metadata['revocation_auth_methods_supported'], $metadata['revocation_endpoint_auth_methods_supported'] );
+	}
 }

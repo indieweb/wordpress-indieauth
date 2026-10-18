@@ -126,8 +126,10 @@ class Introspection_Controller extends \WP_REST_Controller {
 	 * @return array Modified metadata.
 	 */
 	public function metadata( $metadata ) {
-		$metadata['introspection_endpoint']               = $this->get_endpoint();
-		$metadata['introspection_auth_methods_supported'] = $this->auth_methods_supported();
+		$metadata['introspection_endpoint']                        = $this->get_endpoint();
+		$metadata['introspection_endpoint_auth_methods_supported'] = $this->auth_methods_supported();
+		// Pre RFC 8414 key, kept for existing readers.
+		$metadata['introspection_auth_methods_supported'] = $metadata['introspection_endpoint_auth_methods_supported'];
 		return $metadata;
 	}
 

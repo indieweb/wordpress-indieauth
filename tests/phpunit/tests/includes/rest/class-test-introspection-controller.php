@@ -201,4 +201,13 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 		$data = $response->get_data();
 		$this->assertEquals( 'true', $data['active'] );
 	}
+
+	// RFC 8414 names the key introspection_endpoint_auth_methods_supported; the old key stays for existing readers.
+	public function test_metadata_uses_rfc8414_auth_methods_key() {
+		$controller = new IndieAuth\Rest\Introspection_Controller();
+		$metadata   = $controller->metadata( array() );
+
+		$this->assertArrayHasKey( 'introspection_endpoint_auth_methods_supported', $metadata );
+		$this->assertSame( $metadata['introspection_auth_methods_supported'], $metadata['introspection_endpoint_auth_methods_supported'] );
+	}
 }
