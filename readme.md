@@ -87,7 +87,7 @@ The WordPress function, `get_current_user_id` works to retrieve the current user
     * `$client->get_name()` - Once the class is instantiated, retrieve the name
     * `$client->get_icon()` - Once the class is instantiated, retrieve an icon
 
-If any of these return null, the value was not set, and IndieAuth is not being used. Scopes and user permissions are not enforced by the IndieAuth plugin and must be enforced by whatever is using them. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the scope is for.
+If any of these return null, the value was not set, and IndieAuth is not being used. A request authenticated with a token only gets the capabilities of the token's scopes. A `profile` or `email` token gets `read` only. Plugins that need more for a token can add capability names with the `indieauth_allowed_caps( $allowed, $scopes )` filter. Anything beyond capabilities must be enforced by whatever is using the scopes. The plugin does contain a list of permission descriptions to display when authorizing, but this is solely to aid the user in understanding what the scope is for.
 
 The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
 
@@ -195,6 +195,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification.
 * Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Return `true` from the `indieauth_allow_unauthenticated_introspection` filter to restore unauthenticated introspection.
 * Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
+* Limit token requests to the capabilities of the token's scopes. Before, only a short list of capabilities was checked, so a token could manage options, install plugins or create an application password. The `indieauth_meta_caps` filter is replaced by `indieauth_allowed_caps`.
 
 ### 4.7.2
 

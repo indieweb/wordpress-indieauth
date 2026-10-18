@@ -39,16 +39,7 @@ class Scopes {
 	}
 
 	/**
-	 * Offers a list of caps to be checked in the function below. Allows custom capabilities to not be filtered.
-	 *
-	 * @return array List of capabilities to filter.
-	 */
-	public function map_caps() {
-		return \apply_filters( 'indieauth_meta_caps', array( 'publish_posts', 'delete_users', 'edit_users', 'remove_users', 'promote_users', 'delete_posts', 'delete_pages', 'edit_posts', 'edit_pages', 'read_posts', 'read_pages', 'unfiltered_html' ) );
-	}
-
-	/**
-	 * Filters a user's capabilities depending on token scope if in the list of appropriate ones.
+	 * Filters a user's capabilities depending on token scope. A token only gets the capabilities of its scopes.
 	 *
 	 * @param string[] $caps    Array of the user's capabilities.
 	 * @param string   $cap     Capability name.
@@ -65,17 +56,21 @@ class Scopes {
 				return array( 'do_not_allow' );
 			}
 
-			// This check is only for certain capabilities.
-			if ( ! in_array( $cap, $this->map_caps(), true ) ) {
-				if ( WP_DEBUG ) {
-					/* translators: %s: Capability name. */
-					\error_log( sprintf( \__( 'Unknown cap: %s', 'indieauth' ), $cap ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				}
-				return $caps;
+			/**
+			 * Filters the capabilities a token may use without a scope that grants them.
+			 *
+			 * @param string[] $allowed Capability names.
+			 * @param string[] $scopes  Scopes of the token.
+			 */
+			$allowed = \apply_filters( 'indieauth_allowed_caps', array(), $scopes );
+
+			// Caps that need no capability, like editing your own user or creating an application password, are not covered by any scope.
+			if ( empty( $caps ) && ! in_array( $cap, $allowed, true ) ) {
+				return array( 'do_not_allow' );
 			}
 			foreach ( $caps as $c ) {
 				// If the capability is not in any of the scopes then do not allow.
-				if ( ! $this->has_cap( $c, $scopes ) ) {
+				if ( ! in_array( $c, $allowed, true ) && ! $this->has_cap( $c, $scopes ) ) {
 					return array( 'do_not_allow' );
 				}
 			}
