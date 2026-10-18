@@ -179,7 +179,7 @@ class Token_Controller extends \WP_REST_Controller {
 		deprecation_notice(
 			'IndieAuth\Rest\Token_Controller::get',
 			\__( 'Token verification via a GET request to the token endpoint was removed from the IndieAuth specification. Use the introspection endpoint instead.', 'indieauth' ),
-			'indieauth 4.7.0'
+			'indieauth 4.8.0'
 		);
 		$token['active'] = 'true';
 		return add_deprecation_headers( \rest_ensure_response( $token ) );
@@ -210,7 +210,7 @@ class Token_Controller extends \WP_REST_Controller {
 						deprecation_notice(
 							'IndieAuth\Rest\Token_Controller::revoke_action',
 							\__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
-							'indieauth 4.7.0'
+							'indieauth 4.8.0'
 						);
 						$this->delete_token( $params['token'] );
 						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );

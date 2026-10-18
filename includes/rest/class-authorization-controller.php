@@ -316,7 +316,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 			deprecation_notice(
 				'IndieAuth\Rest\Authorization_Controller::get',
 				\__( 'Omitting response_type or using response_type=id was removed from the IndieAuth specification. Clients must send response_type=code.', 'indieauth' ),
-				'indieauth 4.7.0'
+				'indieauth 4.8.0'
 			);
 			$params['response_type'] = 'code';
 		}
