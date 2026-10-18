@@ -139,7 +139,8 @@ class Test_Authorize extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Registers two routes for the unknown token tests: one public, one requiring authentication.
+	 * Registers the routes for the unknown token tests: a public one, one requiring
+	 * authentication, and two that answer with their own error.
 	 */
 	private function register_test_routes() {
 		register_rest_route(
@@ -176,6 +177,19 @@ class Test_Authorize extends WP_UnitTestCase {
 				},
 				'permission_callback' => function () {
 					return new WP_Error( 'other_plugin_error', 'Custom', array( 'status' => 403 ) );
+				},
+			)
+		);
+		register_rest_route(
+			'indieauth-test/1.0',
+			'/custom-unauthorized',
+			array(
+				'methods'             => 'GET',
+				'callback'            => function () {
+					return array( 'ok' => true );
+				},
+				'permission_callback' => function () {
+					return new WP_Error( 'invalid_api_key', 'Custom', array( 'status' => 401 ) );
 				},
 			)
 		);
@@ -216,6 +230,14 @@ class Test_Authorize extends WP_UnitTestCase {
 		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/custom-error' ) );
 		$this->assertEquals( 403, $response->get_status() );
 		$this->assertEquals( 'other_plugin_error', $response->get_data()['code'] );
+	}
+
+	// A route's own 401 is about its own credentials, not ours.
+	public function test_unknown_token_keeps_other_plugins_unauthorized_error() {
+		$this->authorize_with_unknown_token();
+		$response = rest_do_request( new WP_REST_Request( 'GET', '/indieauth-test/1.0/custom-unauthorized' ) );
+		$this->assertEquals( 401, $response->get_status() );
+		$this->assertEquals( 'invalid_api_key', $response->get_data()['code'] );
 	}
 
 	public function test_unknown_token_does_not_replace_error_for_authenticated_user() {

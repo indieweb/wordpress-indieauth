@@ -115,6 +115,12 @@ class Authorize {
 			return $response;
 		}
 
+		// Only WordPress' own "not logged in" errors (rest_forbidden, rest_cannot_*, ...).
+		// A route's own 401 is about its own credentials, so it is kept.
+		if ( 0 !== strpos( (string) $response->get_error_code(), 'rest_' ) ) {
+			return $response;
+		}
+
 		return $this->deferred_error->to_wp_error();
 	}
 
