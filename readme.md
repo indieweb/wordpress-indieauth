@@ -189,6 +189,13 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
+### Unreleased
+
+* Deprecate legacy endpoint behaviors removed from the IndieAuth specification: `response_type=id` (and omitted `response_type`), token verification via GET on the token endpoint, and token revocation via `action=revoke`. These still work but now send a `Deprecation` header and log a `_doing_it_wrong()` notice; use the introspection and revocation endpoints instead.
+* Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification.
+* Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Return `true` from the `indieauth_allow_unauthenticated_introspection` filter to restore unauthenticated introspection.
+* Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
+
 ### 4.7.2
 
 * Fix user lookup when the "Site User" setting is set to "None": an identifier matching the site URL now falls through to the regular author URL lookups instead of failing, and the setting is stored as an integer (#325)

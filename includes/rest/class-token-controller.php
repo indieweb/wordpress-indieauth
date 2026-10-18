@@ -16,6 +16,10 @@ use function IndieAuth\get_user_by_identifier;
 use function IndieAuth\pkce_verifier;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\rest_is_valid_url;
+use function IndieAuth\deprecation_notice;
+use function IndieAuth\add_deprecation_headers;
+use function IndieAuth\same_url;
+use function IndieAuth\code_binding_failure;
 
 /**
  * IndieAuth Token Controller class.
@@ -154,22 +158,31 @@ class Token_Controller extends \WP_REST_Controller {
 		}
 		$access_token = $this->get_token_from_bearer_header( $header );
 		if ( ! $access_token ) {
-			return new OAuth_Response(
-				'parameter_absent',
-				\__(
-					'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
+			return add_deprecation_headers(
+				new OAuth_Response(
+					'parameter_absent',
+					\__(
+						'Bearer Token Not Supplied or Server Misconfigured to Not Pass Token. Run diagnostic script in WordPress Admin
 				IndieAuth Settings Page',
-					'indieauth'
-				),
-				400
+						'indieauth'
+					),
+					400
+				)
 			);
 		}
 		$token = $this->get_token( $access_token );
 		if ( ! $token ) {
-			return new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
+			return add_deprecation_headers( new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 ) );
 		}
+		// Only once the caller proved it holds a valid token, so an anonymous
+		// requester cannot fill the log by looping on this endpoint.
+		deprecation_notice(
+			'IndieAuth\Rest\Token_Controller::get',
+			\__( 'Token verification via a GET request to the token endpoint was removed from the IndieAuth specification. Use the introspection endpoint instead.', 'indieauth' ),
+			'indieauth 4.8.0'
+		);
 		$token['active'] = 'true';
-		return \rest_ensure_response( $token );
+		return add_deprecation_headers( \rest_ensure_response( $token ) );
 	}
 
 	/**
@@ -194,10 +207,18 @@ class Token_Controller extends \WP_REST_Controller {
 				// Revoke Token.
 				case 'revoke':
 					if ( isset( $params['token'] ) ) {
-						$this->delete_token( $params['token'] );
-						return \__( 'The Token Provided is No Longer Valid', 'indieauth' );
+						// Only for a token that existed, so an anonymous requester
+						// cannot fill the log by looping on this endpoint.
+						if ( $this->delete_token( $params['token'] ) ) {
+							deprecation_notice(
+								'IndieAuth\Rest\Token_Controller::revoke_action',
+								\__( 'Token revocation via action=revoke on the token endpoint was removed from the IndieAuth specification. Use the revocation endpoint instead.', 'indieauth' ),
+								'indieauth 4.8.0'
+							);
+						}
+						return add_deprecation_headers( \rest_ensure_response( \__( 'The Token Provided is No Longer Valid', 'indieauth' ) ) );
 					} else {
-						return new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 );
+						return add_deprecation_headers( new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 ) );
 					}
 				default:
 					$resp = new OAuth_Response( 'unsupported_action', \__( 'Unsupported Action', 'indieauth' ), 400 );
@@ -257,14 +278,15 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
 	public function authorization_code( $params ) {
-		$diff = array_diff( array( 'code', 'client_id', 'redirect_uri' ), array_keys( $params ) );
+		// redirect_uri is validated against the stored code, which knows whether one was used.
+		$diff = array_diff( array( 'code', 'client_id' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new OAuth_Response( 'invalid_request', \__( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
 		$args     = array_filter(
 			array(
 				'code'          => $params['code'],
-				'redirect_uri'  => $params['redirect_uri'],
+				'redirect_uri'  => isset( $params['redirect_uri'] ) ? $params['redirect_uri'] : null,
 				'client_id'     => $params['client_id'],
 				'code_verifier' => isset( $params['code_verifier'] ) ? $params['code_verifier'] : null,
 			)
@@ -376,7 +398,23 @@ class Token_Controller extends \WP_REST_Controller {
 		$codes  = new Token_User( '_indieauth_code_' );
 		$return = $codes->get( $args['code'] );
 		if ( ! $return ) {
-			return new OAuth_Response( 'invalid_code', \__( 'Invalid authorization code', 'indieauth' ), 401 );
+			return new OAuth_Response( 'invalid_grant', \__( 'Invalid authorization code', 'indieauth' ), 400 );
+		}
+		// A code that fails its binding is destroyed, including when the parameter
+		// is simply absent: answering differently would tell an attacker holding a
+		// stolen code that it is still live, without spending it.
+		$failed = code_binding_failure( $return, $args );
+		if ( null !== $failed ) {
+			$codes->destroy( $args['code'] );
+			return new OAuth_Response(
+				'invalid_grant',
+				sprintf(
+					// translators: Name of the parameter that did not match.
+					\__( 'The %s does not match the authorization request', 'indieauth' ),
+					$failed
+				),
+				400
+			);
 		}
 		if ( isset( $return['code_challenge'] ) ) {
 			if ( ! isset( $args['code_verifier'] ) ) {

@@ -157,6 +157,181 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		);
 	}
 
+	// An unknown code is an invalid grant, RFC 6749 section 5.2.
+	public function test_auth_code_redemption_rejects_unknown_code() {
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => 'not-a-real-code',
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
+	// Redemption must fail when the client_id does not match the stored code.
+	public function test_auth_code_redemption_rejects_client_id_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://evil.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
+	// Redemption must fail when the redirect_uri does not match the stored code.
+	public function test_auth_code_redemption_rejects_redirect_uri_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://evil.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+	}
+
+	/**
+	 * A missing redirect_uri must destroy the code, like any other binding failure.
+	 *
+	 * Answering differently for a live code than for a dead one, without
+	 * spending the code, would let anyone holding a stolen code confirm it is
+	 * still redeemable and keep probing. client_id is the client's public URL,
+	 * so that probe costs an attacker nothing.
+	 */
+	public function test_auth_code_destroyed_when_redirect_uri_missing() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type' => 'authorization_code',
+				'code'       => $code,
+				'client_id'  => 'https://app.example.com',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
+
+	/**
+	 * The probe must not be repeatable.
+	 *
+	 * A single request can still tell a live code from one that never existed,
+	 * the same as any other binding failure. What matters is that the attempt
+	 * spends the code, so an attacker cannot poll a set of harvested codes and
+	 * keep the live ones intact for later.
+	 */
+	public function test_missing_redirect_uri_probe_is_not_repeatable() {
+		$code = $this->set_auth_code();
+
+		$probe = function ( $candidate ) {
+			return $this->create_form(
+				'POST',
+				array(
+					'grant_type' => 'authorization_code',
+					'code'       => $candidate,
+					'client_id'  => 'https://app.example.com',
+				)
+			);
+		};
+
+		$probe( $code );
+
+		// The code is gone, so a second probe looks like one for a code that
+		// was never issued.
+		$second      = $probe( $code );
+		$nonexistent = $probe( 'a-code-that-was-never-issued' );
+
+		$this->assertEquals( $nonexistent->get_status(), $second->get_status() );
+		$this->assertEquals( $nonexistent->get_data()['error'], $second->get_data()['error'] );
+	}
+
+	// A cosmetic client_id difference is the same URL and must still redeem.
+	public function test_auth_code_redemption_tolerates_equivalent_client_id() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com/',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
+
+	// An actual mismatch may mean the code leaked, so the code is destroyed.
+	public function test_auth_code_destroyed_on_redirect_uri_mismatch() {
+		$code     = $this->set_auth_code();
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://evil.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertEquals( 'invalid_grant', $data['error'], wp_json_encode( $data ) );
+		$this->assertFalse( $this->get_auth_code( $code ) );
+	}
+
+	// FedCM codes are issued without a redirect, so redemption works without redirect_uri.
+	public function test_fedcm_auth_code_redemption_without_redirect_uri() {
+		$code_verifier  = 'a6128783714cfda1d388e2e98b6ae8221ac31aca31959e59512c59f5';
+		$code_challenge = base64_urlencode( hash( 'sha256', $code_verifier, true ) );
+
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		$code = $tokens->set(
+			array(
+				'client_id'             => 'https://app.example.com/',
+				'scope'                 => 'profile',
+				'me'                    => get_author_posts_url( static::$author_id ),
+				'user'                  => static::$author_id,
+				'code_challenge'        => $code_challenge,
+				'code_challenge_method' => 'S256',
+				'fedcm'                 => true,
+			),
+			600
+		);
+
+		$response = $this->create_form(
+			'POST',
+			array(
+				'grant_type'    => 'authorization_code',
+				'code'          => $code,
+				'client_id'     => 'https://app.example.com/',
+				'code_verifier' => $code_verifier,
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'access_token', $data );
+		$this->assertEquals( 'profile', $data['scope'] );
+	}
+
 	// Sets an Auth Code and Redeems it at the Token Endpoint with Profile
 	public function test_auth_code_redemption_with_profile() {
 		static::$test_auth_code['scope'] = 'create profile';
@@ -256,7 +431,11 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 
-	// Sets a token and verifies it using Access Token Verification
+	/**
+	 * Sets a token and verifies it using Access Token Verification.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 */
 	public function test_token_verification() {
 		$token   = self::set_access_token();
 		$response = $this->create_form( 
@@ -270,6 +449,43 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		unset( $response_token['user'] );
 		unset( $response_token['active'] );
 		$this->assertEquals( static::$test_token, $response_token );
+	}
+
+	/**
+	 * Token verification via GET is no longer part of the spec and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::get
+	 */
+	public function test_token_verification_sends_deprecation_signals() {
+		$token    = self::set_access_token();
+		$response = $this->create_form(
+				'GET',
+				array(),
+				array(
+					'Authorization' => 'Bearer ' . $token
+				)
+			);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
+	/**
+	 * The deprecation headers belong on the error responses too, not only on success.
+	 *
+	 * The _doing_it_wrong() notice is deliberately not emitted here: this path is
+	 * reachable without any credential, so emitting would let anyone fill the log.
+	 */
+	public function test_token_verification_sends_deprecation_signals_on_error() {
+		$response = $this->create_form( 'GET' );
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
 	}
 
 	// To Make Sure that Revokation Works, Test the Helper Function First.
@@ -296,7 +512,69 @@ class Test_Token_Controller extends WP_UnitTestCase {
 
 
 
-	// Sets a token, revokes it, then verifies it is not there.
+	/**
+	 * Token revocation via action=revoke is no longer part of the spec and must send deprecation signals.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 */
+	public function test_token_revocation_action_sends_deprecation_signals() {
+		$token    = self::set_access_token();
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+				'token'  => $token,
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+		$this->assertFalse( self::get_access_token( $token ) );
+	}
+
+	/**
+	 * A revoke call without a token is still a deprecated call and must say so.
+	 *
+	 * Headers only, for the same reason as the token verification error path.
+	 */
+	public function test_token_revocation_action_sends_deprecation_signals_on_error() {
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+			)
+		);
+
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Deprecation', $headers );
+		$this->assertArrayHasKey( 'Link', $headers );
+		$this->assertStringContainsString( 'rel="deprecation"', $headers['Link'] );
+	}
+
+	/**
+	 * Revoking an unknown token keeps its response, but logs nothing.
+	 *
+	 * Anyone can send any token value here, so only a real revocation may
+	 * emit the _doing_it_wrong() notice.
+	 */
+	public function test_token_revocation_action_with_unknown_token_does_not_log() {
+		$response = $this->create_form( 'POST',
+			array(
+				'action' => 'revoke',
+				'token'  => 'not-a-real-token',
+			)
+		);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$this->assertArrayHasKey( 'Deprecation', $response->get_headers() );
+	}
+
+	/**
+	 * Sets a token, revokes it, then verifies it is not there.
+	 *
+	 * @expectedIncorrectUsage IndieAuth\Rest\Token_Controller::revoke_action
+	 */
 	public function test_token_revokation() {
 		$token   = self::set_access_token();
 		$response = $this->create_form( 'POST', 
