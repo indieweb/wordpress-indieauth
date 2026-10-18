@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.1
-- Stable tag: 4.7.2
+- Stable tag: 5.0.0
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -189,13 +189,23 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
 
-### Unreleased
+### 5.0.0
 
-* Deprecate legacy endpoint behaviors removed from the IndieAuth specification: `response_type=id` (and omitted `response_type`), token verification via GET on the token endpoint, and token revocation via `action=revoke`. These still work but now send a `Deprecation` header and log a `_doing_it_wrong()` notice; use the introspection and revocation endpoints instead.
-* Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification.
-* Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Return `true` from the `indieauth_allow_unauthenticated_introspection` filter to restore unauthenticated introspection.
-* Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor.
-* Limit token requests to the capabilities of the token's scopes. Before, only a short list of capabilities was checked, so a token could manage options, install plugins or create an application password. The `indieauth_meta_caps` filter is replaced by `indieauth_allowed_caps`.
+* Limit token requests to the capabilities of the token's scopes. Before, only a short list of capabilities was checked, so a token could manage options, install plugins or create an application password. The `indieauth_meta_caps` filter is replaced by `indieauth_allowed_caps` (#346)
+* Require authorization for the token introspection endpoint, as required by the IndieAuth specification. Any authentication that establishes a WordPress user is accepted. Return `true` from the `indieauth_allow_unauthenticated_introspection` filter to restore unauthenticated introspection (#311)
+* Verify the `redirect_uri` of authorization requests: if its scheme, host or port differ from the `client_id`, it must match one of the redirect URLs published by the client (client metadata `redirect_uris`, `rel="redirect_uri"` link tags, or `Link` headers), as required by the IndieAuth specification (#311)
+* Deprecate legacy endpoint behaviors removed from the IndieAuth specification: `response_type=id` (and omitted `response_type`), token verification via GET on the token endpoint, and token revocation via `action=revoke`. These still work but now send a `Deprecation` header and log a `_doing_it_wrong()` notice; use the introspection and revocation endpoints instead (#311)
+* FedCM: logged-in users are no longer seen as logged out, scopes are limited to `profile` and `email` (the `indieauth_fedcm_scope` filter can allow more), and the `client_id` and `redirect_uri` of a code are verified when it is redeemed (#322)
+* Serve the metadata at the RFC 8414 well-known URL, `/.well-known/oauth-authorization-server/wp-json/indieauth/1.0`. The rewrite rules are flushed after plugin updates and removed on deactivation (#343, #344)
+* A bearer token that is not in the IndieAuth token store no longer fails the request, so tokens of other plugins keep working. A protected route that rejects the request answers with `invalid_token`, as required by RFC 6750 (#330)
+* Return `invalid_grant` for unknown authorization codes (#338)
+* Return 401 with a `WWW-Authenticate` header from the userinfo endpoint when the token is missing or invalid (#339)
+* Add the RFC 8414 metadata keys `introspection_endpoint_auth_methods_supported` and `revocation_endpoint_auth_methods_supported`. The old keys are kept (#340)
+* Return `active` as a boolean from the introspection endpoint (#341)
+* Find refresh tokens when introspecting (#342)
+* Escape client names on the consent screen and in the token list, and check nonces for the token list actions (#345, #347)
+* Refuse Web Sign-in for URLs on the site's own host, and match author URLs on the home URL host (#348, #349)
+* Fix client information discovery for HTML clients, which failed with a fatal error since the namespacing refactor (#337)
 
 ### 4.7.2
 
