@@ -170,7 +170,7 @@ class Token_Controller extends \WP_REST_Controller {
 				)
 			);
 		}
-		$token = $this->get_token( $access_token );
+		$token = $this->get_token( $access_token, true, 'access_token' );
 		if ( ! $token ) {
 			return add_deprecation_headers( new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 ) );
 		}
