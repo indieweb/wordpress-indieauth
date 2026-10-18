@@ -180,6 +180,7 @@ class IndieAuth {
 		\add_filter( 'rest_pre_serve_request', array( static::$metadata, 'serve_request' ), 11, 4 );
 		\add_filter( 'rest_index', array( static::$metadata, 'register_index' ) );
 		\add_action( 'rest_api_init', array( static::$metadata, 'register_routes' ) );
+		\add_action( 'init', array( Metadata_Controller::class, 'add_rewrite_rules' ) );
 
 		// Authorization Controller hooks.
 		\add_action( 'rest_api_init', array( $this->authorization, 'register_routes' ) );
@@ -304,7 +305,8 @@ class IndieAuth {
 	public static function activation() {
 		self::schedule();
 
-		// Flush rewrite rules for FedCM well-known endpoint.
+		// Flush rewrite rules for the FedCM and RFC 8414 well-known endpoints.
+		Metadata_Controller::add_rewrite_rules();
 		WebIdentity::flush_rewrite_rules();
 	}
 
