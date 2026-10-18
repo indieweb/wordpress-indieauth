@@ -115,7 +115,7 @@ class Userinfo_Controller extends \WP_REST_Controller {
 			$response->header( 'WWW-Authenticate', 'Bearer' );
 			return $response;
 		}
-		$token = $this->get_token( $access_token );
+		$token = $this->get_token( $access_token, true, 'access_token' );
 		if ( ! $token ) {
 			$response = new OAuth_Response( 'invalid_token', \__( 'Invalid access token', 'indieauth' ), 401 );
 			$response->header( 'WWW-Authenticate', 'Bearer error="invalid_token"' );

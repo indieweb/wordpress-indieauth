@@ -106,5 +106,19 @@ class Test_Userinfo_Controller extends WP_UnitTestCase {
 		$this->assertEquals( indieauth_get_user( static::$author_id ), $data, 'Response: ' . wp_json_encode( $data ) );
 	}
 
+	// A refresh token is not a bearer credential.
+	public function test_userinfo_endpoint_rejects_refresh_token() {
+		$tokens = new Token_User( '_indieauth_refresh_' );
+		$tokens->set_user( self::$author_id );
+		$token = $tokens->set( array( 'scope' => 'profile', 'client_id' => 'https://quill.p3k.io/' ) );
 
+		$response = $this->create_form(
+			'GET',
+			array(),
+			array(
+				'Authorization' => 'Bearer ' . $token,
+			)
+		);
+		$this->assertEquals( 401, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+	}
 }

@@ -211,4 +211,20 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'introspection_endpoint_auth_methods_supported', $metadata );
 		$this->assertSame( $metadata['introspection_auth_methods_supported'], $metadata['introspection_endpoint_auth_methods_supported'] );
 	}
+
+	// A refresh token can be introspected too, RFC 7662 section 2.1.
+	public function test_refresh_token_introspection() {
+		$token = self::set_refresh_token();
+
+		wp_set_current_user( self::$author_id );
+		$response = $this->create_form( 'POST',
+				array(
+					'token' => $token
+				)
+			);
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
+		$data = $response->get_data();
+		$this->assertNotFalse( $data['active'], 'Response: ' . wp_json_encode( $data ) );
+	}
 }
