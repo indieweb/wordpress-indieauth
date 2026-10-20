@@ -16,22 +16,8 @@ class Debug {
 	 * Constructor. Registers hooks for debugging.
 	 */
 	public function __construct() {
-		\add_filter( 'http_request_args', array( $this, 'indieauth_allow_localhost' ), 10, 2 );
 		\add_filter( 'rest_post_dispatch', array( $this, 'log_rest_api_errors' ), 10, 3 );
 		\add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-	}
-
-	/**
-	 * Allow localhost URLs if WP_DEBUG is true.
-	 *
-	 * @param array  $r   Array of HTTP request arguments.
-	 * @param string $url The request URL.
-	 * @return array Modified request arguments.
-	 */
-	public function indieauth_allow_localhost( $r, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-		$r['reject_unsafe_urls'] = false;
-
-		return $r;
 	}
 
 	/**
