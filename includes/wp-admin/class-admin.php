@@ -302,7 +302,57 @@ class Admin {
 				'title'   => \__( 'Overview', 'indieauth' ),
 				'content' =>
 					'<p>' . \__( 'IndieAuth is a way for doing Web sign-in, where you use your own homepage to sign in to other places.', 'indieauth' ) . '</p>' .
-					'<p>' . \__( 'IndieAuth was built on ideas and technology from existing proven technologies like OAuth and OpenID but aims at making it easier for users as well as developers. It also decentralises much of the process so completely separate implementations and services can be used for each part.', 'indieauth' ) . '</p>',
+					'<p>' . \__( 'This plugin turns your site into an IndieAuth server. When you enter your site URL or your author URL on another site or app, you are sent back here, log in with your WordPress account and decide which permissions (scopes) the app gets.', 'indieauth' ) . '</p>' .
+					'<p>' . \__( 'Apps like Micropub clients then receive a token, which they use to post or read on your site through the REST API.', 'indieauth' ) . '</p>',
+			)
+		);
+
+		\get_current_screen()->add_help_tab(
+			array(
+				'id'      => 'site-user',
+				'title'   => \__( 'Site User', 'indieauth' ),
+				'content' =>
+					'<p>' . \__( 'Every user signs in with their author URL, for example example.com/author/jane/.', 'indieauth' ) . '</p>' .
+					'<p>' . \__( 'Only one user can sign in with the URL of the site itself. Pick that user as "Site User", usually the owner of a personal blog. On a site with several authors, you can choose "None".', 'indieauth' ) . '</p>',
+			)
+		);
+
+		\get_current_screen()->add_help_tab(
+			array(
+				'id'      => 'web-sign-in',
+				'title'   => \__( 'Web Sign-In', 'indieauth' ),
+				'content' =>
+					'<p>' . \__( 'Web Sign-In works the other way around: you log into this site with the identity of another site that offers IndieAuth.', 'indieauth' ) . '</p>' .
+					'<p>' . \__( 'Enable "Login Form" to add a link to the WordPress login screen. The URL you enter there has to be the website URL in your user profile, otherwise the login is refused.', 'indieauth' ) . '</p>',
+			)
+		);
+
+		\get_current_screen()->add_help_tab(
+			array(
+				'id'      => 'tokens',
+				'title'   => \__( 'Tokens', 'indieauth' ),
+				'content' =>
+					'<p>' . \__( '"Token Expiration" sets how long a token stays valid, in seconds. The default is two weeks; 0 means tokens never expire.', 'indieauth' ) . '</p>' .
+					'<p>' . \sprintf(
+						/* translators: %s: URL of the Manage Tokens page. */
+						\__( 'Every user can see and revoke their tokens under <a href="%s">Users &rarr; Manage Tokens</a>. You can also create a token there by hand, for apps that do not support IndieAuth.', 'indieauth' ),
+						\esc_url( \admin_url( 'users.php?page=indieauth_user_token' ) )
+					) . '</p>',
+			)
+		);
+
+		\get_current_screen()->add_help_tab(
+			array(
+				'id'      => 'troubleshooting',
+				'title'   => \__( 'Troubleshooting', 'indieauth' ),
+				'content' =>
+					'<p>' . \sprintf(
+						/* translators: %s: URL of the Site Health page. */
+						\__( 'If apps keep getting "Unauthorized", your server probably drops the Authorization header. Run the <a href="%s">Site Health</a> check, which tests exactly that.', 'indieauth' ),
+						\esc_url( \admin_url( 'site-health.php' ) )
+					) . '</p>' .
+					'<p>' . \__( 'On Apache, adding the following line to your .htaccess file usually fixes it:', 'indieauth' ) . '<br /><code>SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1</code></p>' .
+					'<p>' . \__( 'If that does not help, ask your hosting provider to pass the Authorization header through. Please use HTTPS, so your credentials and tokens are not sent in cleartext.', 'indieauth' ) . '</p>',
 			)
 		);
 
