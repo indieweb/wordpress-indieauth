@@ -107,6 +107,7 @@ class Authorize {
 		}
 
 		// The request failed and no other plugin claimed the token, so it is worth logging.
+		// This includes route errors that are not swapped below, like Micropub's own 403.
 		$failed = \is_wp_error( $response ) || ( $response instanceof \WP_HTTP_Response && $response->get_status() >= 400 );
 		if ( $failed && WP_DEBUG ) {
 			\error_log( $this->deferred_error->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log

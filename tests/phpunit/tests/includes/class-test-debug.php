@@ -37,15 +37,26 @@ class Test_Debug extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Runs the logger for an error response on a route.
+	 * Reads what was logged so far.
 	 *
-	 * @param string $route Request route.
-	 * @param string $code  Error code.
-	 * @param int    $status HTTP status.
 	 * @return string Logged output.
 	 */
-	private function log_error( $route, $code = 'rest_forbidden', $status = 401 ) {
-		$request = new WP_REST_Request( 'GET', $route );
+	private function read_log() {
+		return file_get_contents( $this->log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	}
+
+	/**
+	 * Runs the logger for an error response on a route.
+	 *
+	 * @param string $route  Request route.
+	 * @param string $code   Error code.
+	 * @param int    $status HTTP status.
+	 * @param array  $params Request body params.
+	 * @return string Logged output.
+	 */
+	private function log_error( $route, $code = 'rest_forbidden', $status = 401, $params = array() ) {
+		$request = new WP_REST_Request( 'POST', $route );
+		$request->set_body_params( $params );
 		$result  = new WP_REST_Response(
 			array(
 				'code'    => $code,
@@ -55,7 +66,7 @@ class Test_Debug extends WP_UnitTestCase {
 		);
 		( new Debug() )->log_rest_api_errors( $result, rest_get_server(), $request );
 
-		return file_get_contents( $this->log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		return $this->read_log();
 	}
 
 	public function test_other_plugin_errors_are_not_logged() {
@@ -67,23 +78,18 @@ class Test_Debug extends WP_UnitTestCase {
 	}
 
 	public function test_errors_with_indieauth_token_are_logged() {
-		$response = function () {
-			return array( 'scope' => 'create' );
-		};
-		add_filter( 'indieauth_response', $response );
-		$log = $this->log_error( '/other-plugin/1.0/items', 'rest_forbidden', 403 );
-		remove_filter( 'indieauth_response', $response );
+		add_filter(
+			'indieauth_response',
+			function () {
+				return array( 'scope' => 'create' );
+			}
+		);
 
-		$this->assertStringContainsString( 'REST request: /other-plugin/1.0/items', $log );
+		$this->assertStringContainsString( 'REST request: /other-plugin/1.0/items', $this->log_error( '/other-plugin/1.0/items', 'rest_forbidden', 403 ) );
 	}
 
 	public function test_access_token_param_is_redacted() {
-		$request = new WP_REST_Request( 'POST', '/indieauth/1.0/userinfo' );
-		$request->set_body_params( array( 'access_token' => 'secret-token' ) );
-		$result = new WP_REST_Response( array( 'code' => 'invalid_token' ), 401 );
-		( new Debug() )->log_rest_api_errors( $result, rest_get_server(), $request );
-
-		$log = file_get_contents( $this->log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$log = $this->log_error( '/indieauth/1.0/userinfo', 'invalid_token', 401, array( 'access_token' => 'secret-token' ) );
 		$this->assertStringNotContainsString( 'secret-token', $log );
 		$this->assertStringContainsString( 'XXXX', $log );
 	}
@@ -99,7 +105,7 @@ class Test_Debug extends WP_UnitTestCase {
 		$authorize->deferred_error = $authorize->verify_access_token( 'not-an-indieauth-token' );
 		$authorize->rest_request_after_callbacks( $response );
 
-		return file_get_contents( $this->log_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		return $this->read_log();
 	}
 
 	public function test_unknown_token_is_logged_when_request_fails() {
@@ -119,12 +125,12 @@ class Test_Debug extends WP_UnitTestCase {
 		$error = ( new Authorize() )->verify_access_token( 'not-an-indieauth-token' );
 
 		$this->assertTrue( is_oauth_error( $error ) );
-		$this->assertSame( '', file_get_contents( $this->log_file ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$this->assertSame( '', $this->read_log() );
 	}
 
 	public function test_oauth_errors_are_logged() {
 		new IndieAuth\OAuth_Response( 'invalid_request', 'Bad request', 400 );
 
-		$this->assertStringContainsString( 'IndieAuth Error: 400 invalid_request', file_get_contents( $this->log_file ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$this->assertStringContainsString( 'IndieAuth Error: 400 invalid_request', $this->read_log() );
 	}
 }
