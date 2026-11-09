@@ -4,7 +4,7 @@
 - Donate link: https://opencollective.com/indieweb
 - Tags: IndieAuth, IndieWeb, login, oauth
 - Tested up to: 7.1
-- Stable tag: 5.0.0
+- Stable tag: 5.1.0
 - Requires PHP: 7.4
 - License: MIT
 - License URI: https://opensource.org/licenses/MIT
@@ -188,6 +188,12 @@ In version 2.0, we added an IndieAuth endpoint to this plugin, which previously 
 ## Changelog
 
 Project and support maintained on github at [indieweb/wordpress-indieauth](https://github.com/indieweb/wordpress-indieauth).
+
+### 5.1.0
+
+* Add help tabs to the settings page that explain the Site User, Web Sign-In, tokens and how to fix a missing Authorization header (#351)
+* Only allow requests to local and private URLs, and show the Client Discovery tester, when the environment type is `local`. Before, `WP_DEBUG` alone was enough, also on production sites (#350)
+* With `WP_DEBUG`, only log errors of IndieAuth routes and of requests with an IndieAuth token. A bearer token of another plugin is only logged if the request fails, and `access_token` parameters are masked in the log (#350)
 
 ### 5.0.0
 
