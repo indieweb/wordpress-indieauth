@@ -23,8 +23,9 @@ class OAuth_Response extends \WP_REST_Response {
 	 * @param string     $error_description Error description.
 	 * @param int        $code              HTTP status code.
 	 * @param array|null $debug             Optional debug information.
+	 * @param bool       $log               Whether to log the error when WP_DEBUG is on.
 	 */
-	public function __construct( $error, $error_description, $code = 200, $debug = null ) {
+	public function __construct( $error, $error_description, $code = 200, $debug = null, $log = true ) {
 		$this->set_status( $code );
 		$this->set_data(
 			array(
@@ -35,7 +36,7 @@ class OAuth_Response extends \WP_REST_Response {
 		if ( is_array( $debug ) && ! empty( $debug ) ) {
 			$this->set_debug( $debug );
 		}
-		if ( WP_DEBUG ) {
+		if ( $log && WP_DEBUG ) {
 			\error_log( $this->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}

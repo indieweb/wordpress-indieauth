@@ -162,6 +162,14 @@ class IndieAuth {
 		if ( \WP_DEBUG ) {
 			new Debug();
 		}
+
+		// Load development tools.
+		if ( 'local' === \wp_get_environment_type() ) {
+			$loader_file = INDIEAUTH_PLUGIN_DIR . 'local/load.php';
+			if ( \file_exists( $loader_file ) && \is_readable( $loader_file ) ) {
+				require_once $loader_file;
+			}
+		}
 	}
 
 	/**

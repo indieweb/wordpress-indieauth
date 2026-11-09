@@ -102,11 +102,18 @@ class Authorize {
 	 * @return \WP_REST_Response|\WP_Error|mixed Modified response.
 	 */
 	public function rest_request_after_callbacks( $response ) {
-		if ( ! is_oauth_error( $this->deferred_error ) || ! \is_wp_error( $response ) ) {
+		if ( ! is_oauth_error( $this->deferred_error ) || \is_user_logged_in() ) {
 			return $response;
 		}
 
-		if ( \is_user_logged_in() ) {
+		// The request failed and no other plugin claimed the token, so it is worth logging.
+		// This includes route errors that are not swapped below, like Micropub's own 403.
+		$failed = \is_wp_error( $response ) || ( $response instanceof \WP_HTTP_Response && $response->get_status() >= 400 );
+		if ( $failed && WP_DEBUG ) {
+			\error_log( $this->deferred_error->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		}
+
+		if ( ! \is_wp_error( $response ) ) {
 			return $response;
 		}
 
@@ -358,10 +365,13 @@ class Authorize {
 		$tokens = new Token_User( '_indieauth_token_' );
 		$return = $tokens->get( $token );
 		if ( empty( $return ) ) {
+			// Not logged here, the token may belong to another plugin. Logged in rest_request_after_callbacks() if the request fails.
 			return new OAuth_Response(
 				'invalid_token',
 				\__( 'Invalid access token', 'indieauth' ),
-				401
+				401,
+				null,
+				false
 			);
 		}
 		if ( is_oauth_error( $return ) ) {

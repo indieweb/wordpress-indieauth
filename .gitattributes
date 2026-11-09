@@ -10,6 +10,7 @@
 
 # Build and config files
 /bin/                export-ignore
+/local/              export-ignore
 /composer.json       export-ignore
 /composer.lock       export-ignore
 /package-lock.json   export-ignore

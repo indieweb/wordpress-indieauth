@@ -16,26 +16,15 @@ class Debug {
 	 * Constructor. Registers hooks for debugging.
 	 */
 	public function __construct() {
-		\add_filter( 'http_request_args', array( $this, 'indieauth_allow_localhost' ), 10, 2 );
 		\add_filter( 'rest_post_dispatch', array( $this, 'log_rest_api_errors' ), 10, 3 );
 		\add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	/**
-	 * Allow localhost URLs if WP_DEBUG is true.
+	 * Log REST API errors that involve IndieAuth.
 	 *
-	 * @param array  $r   Array of HTTP request arguments.
-	 * @param string $url The request URL.
-	 * @return array Modified request arguments.
-	 */
-	public function indieauth_allow_localhost( $r, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-		$r['reject_unsafe_urls'] = false;
-
-		return $r;
-	}
-
-	/**
-	 * Log REST API errors.
+	 * Logs errors on IndieAuth routes and on routes called with an IndieAuth token.
+	 * Errors of other plugins are left alone.
 	 *
 	 * @param \WP_REST_Response $result  Result that will be sent to the client.
 	 * @param \WP_REST_Server   $server  The API server instance.
@@ -49,7 +38,7 @@ class Debug {
 		if ( in_array( $request_route, $routes, true ) || in_array( $result_route, $routes, true ) ) {
 			return $result;
 		}
-		if ( $result->is_error() ) {
+		if ( $result->is_error() && ( 0 === strpos( $request_route, '/indieauth/1.0/' ) || indieauth_get_response() ) ) {
 			$params = $request->get_params();
 			if ( isset( $params['code'] ) ) {
 				// Remove actual code from logs.
@@ -58,6 +47,10 @@ class Debug {
 			if ( isset( $params['ticket'] ) ) {
 				// Remove actual token from logs.
 				$params['ticket'] = 'XXXX';
+			}
+			if ( isset( $params['access_token'] ) ) {
+				// Remove actual token from logs.
+				$params['access_token'] = 'XXXX';
 			}
 			$headers = $request->get_headers();
 			$token   = isset( $headers['authorization'] ) ? 'Present' : 'Absent';
