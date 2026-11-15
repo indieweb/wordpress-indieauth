@@ -24,10 +24,10 @@ class Token_UI {
 	 *
 	 * @access public
 	 */
-	public function __construct() {
-		\add_action( 'admin_init', array( $this, 'admin_init' ) );
-		\add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
-		\add_action( 'admin_action_indieauth_newtoken', array( $this, 'new_token' ) );
+	public static function init() {
+		\add_action( 'admin_init', array( self::class, 'admin_init' ) );
+		\add_action( 'admin_menu', array( self::class, 'admin_menu' ), 11 );
+		\add_action( 'admin_action_indieauth_newtoken', array( self::class, 'new_token' ) );
 	}
 
 	/**
@@ -35,7 +35,7 @@ class Token_UI {
 	 *
 	 * @access public
 	 */
-	public function admin_init() {
+	public static function admin_init() {
 	}
 
 	/**
@@ -43,8 +43,8 @@ class Token_UI {
 	 *
 	 * @access public
 	 */
-	public function admin_menu() {
-		\add_users_page( \__( 'Manage IndieAuth Tokens', 'indieauth' ), \__( 'Manage Tokens', 'indieauth' ), 'read', 'indieauth_user_token', array( $this, 'options_form' ) );
+	public static function admin_menu() {
+		\add_users_page( \__( 'Manage IndieAuth Tokens', 'indieauth' ), \__( 'Manage Tokens', 'indieauth' ), 'read', 'indieauth_user_token', array( self::class, 'options_form' ) );
 	}
 
 	/**
@@ -52,13 +52,13 @@ class Token_UI {
 	 *
 	 * @access public
 	 */
-	public function options_callback() {
+	public static function options_callback() {
 	}
 
 	/**
 	 * Handle new token creation action.
 	 */
-	public function new_token() {
+	public static function new_token() {
 		if ( ! isset( $_POST['indieauth_nonce'] )
 				|| ! \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_POST['indieauth_nonce'] ) ), 'indieauth_newtoken' )
 		) {
@@ -79,7 +79,7 @@ class Token_UI {
 		}
 		$scopes  = \sanitize_text_field( $scopes );
 		$expires = isset( $_REQUEST['expires_in'] ) ? \absint( $_REQUEST['expires_in'] ) : 0;
-		$token   = $this->generate_local_token( $client_name, $scopes, $expires );
+		$token   = self::generate_local_token( $client_name, $scopes, $expires );
 		?>
 	<p><?php \esc_html_e( 'A token has been generated and appears below. This token will not be stored anywhere. Please copy and store it.', 'indieauth' ); ?></p>
 	<h3><?php echo $token; // phpcs:ignore
@@ -98,7 +98,7 @@ class Token_UI {
 	 * @param int    $expires_in Expiration in seconds.
 	 * @return string|false Token or false on failure.
 	 */
-	private function generate_local_token( $name, $scopes, $expires_in = 0 ) {
+	private static function generate_local_token( $name, $scopes, $expires_in = 0 ) {
 		$user_id = \get_current_user_id();
 		$tokens  = new Token_User( '_indieauth_token_' );
 		$tokens->set_user( $user_id );
@@ -127,7 +127,7 @@ class Token_UI {
 	 *
 	 * @access public
 	 */
-	public function options_form() {
+	public static function options_form() {
 		// As a precaution every time the Token UI page is loaded it will check for any expired auth codes and purge them.
 		$codes = new Token_User( '_indieauth_code_', \get_current_user_id() );
 		$codes->check_expires();
@@ -150,7 +150,7 @@ class Token_UI {
 		<?php \wp_nonce_field( 'indieauth_newtoken', 'indieauth_nonce' ); ?>
 			<input type="hidden" name="action" id="action" value="indieauth_newtoken" />
 			<h4><?php \esc_html_e( 'Scopes', 'indieauth' ); ?></h4>
-			<?php $this->scopes(); ?>
+			<?php self::scopes(); ?>
 			<p><label><?php \esc_html_e( 'Set Expiry Time in Seconds(0 to disable)', 'indieauth' ); ?></label>
 			<input type="number" name="expires_in" id="expires_in" min="0" value="3600" />
 			</p>
@@ -163,7 +163,7 @@ class Token_UI {
 	/**
 	 * Render scopes checkboxes.
 	 */
-	public function scopes() {
+	public static function scopes() {
 		$scopes = Authorization_Controller::scopes();
 		echo '<ul>';
 		foreach ( $scopes as $scope => $description ) {
