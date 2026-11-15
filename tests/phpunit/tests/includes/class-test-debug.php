@@ -133,4 +133,33 @@ class Test_Debug extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'IndieAuth Error: 400 invalid_request', $this->read_log() );
 	}
+
+	// A token but no user and no IndieAuth response.
+	public function test_permissions_test_without_response() {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/test' );
+		$request->set_header( 'Authorization', 'Bearer abc' );
+
+		$result = ( new Debug() )->permissions_test( $request );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'No User is Currently Set', $result->get_error_message() );
+	}
+
+	// An IndieAuth response without a user is reported as such.
+	public function test_permissions_test_with_response_but_no_user() {
+		wp_set_current_user( 0 );
+		$request = new WP_REST_Request( 'GET', '/indieauth/1.0/test' );
+		$request->set_header( 'Authorization', 'Bearer abc' );
+		$response = function () {
+			return array( 'me' => 'https://example.org/' );
+		};
+		add_filter( 'indieauth_response', $response, 20 );
+
+		$result = ( new Debug() )->permissions_test( $request );
+
+		remove_filter( 'indieauth_response', $response, 20 );
+		$this->assertWPError( $result );
+		$this->assertSame( 'A Successful Auth Response was Given yet No User is Currently Set', $result->get_error_message() );
+	}
 }

@@ -113,7 +113,7 @@ class Debug {
 			return new \WP_Error( 'forbidden', \__( 'Could Not Find Token', 'indieauth' ), array( 'status' => 403 ) );
 		}
 		if ( 0 === \get_current_user_id() ) {
-			if ( empty( $this->response ) ) {
+			if ( empty( indieauth_get_response() ) ) {
 				return new \WP_Error(
 					'forbidden',
 					\__( 'No User is Currently Set', 'indieauth' ),
