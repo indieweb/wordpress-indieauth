@@ -21,9 +21,9 @@ class External_Token_Page {
 	 *
 	 * @access public
 	 */
-	public function __construct() {
-		\add_action( 'admin_init', array( $this, 'admin_init' ) );
-		\add_action( 'admin_menu', array( $this, 'admin_menu' ), 11 );
+	public static function init() {
+		\add_action( 'admin_init', array( self::class, 'admin_init' ) );
+		\add_action( 'admin_menu', array( self::class, 'admin_menu' ), 11 );
 	}
 
 	/**
@@ -31,7 +31,7 @@ class External_Token_Page {
 	 *
 	 * @access public
 	 */
-	public function admin_init() {
+	public static function admin_init() {
 	}
 
 	/**
@@ -39,8 +39,8 @@ class External_Token_Page {
 	 *
 	 * @access public
 	 */
-	public function admin_menu() {
-		\add_users_page( \__( 'Manage External Tokens', 'indieauth' ), \__( 'Manage External Tokens', 'indieauth' ), 'read', 'indieauth_external_token', array( $this, 'options_form' ) );
+	public static function admin_menu() {
+		\add_users_page( \__( 'Manage External Tokens', 'indieauth' ), \__( 'Manage External Tokens', 'indieauth' ), 'read', 'indieauth_external_token', array( self::class, 'options_form' ) );
 	}
 
 	/**
@@ -48,7 +48,7 @@ class External_Token_Page {
 	 *
 	 * @access public
 	 */
-	public function options_callback() {
+	public static function options_callback() {
 	}
 
 	/**
@@ -56,7 +56,7 @@ class External_Token_Page {
 	 *
 	 * @access public
 	 */
-	public function options_form() {
+	public static function options_form() {
 		// Check to see if the cleanup function is scheduled.
 		IndieAuth::schedule();
 

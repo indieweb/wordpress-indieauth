@@ -301,12 +301,12 @@ class IndieAuth {
 	 * Register admin hooks.
 	 */
 	private function register_admin_hooks() {
-		new Admin();
+		Admin::init();
+		Token_UI::init();
 		Health_Check::init();
-		new Token_UI();
 
 		if ( INDIEAUTH_TICKET_ENDPOINT ) {
-			new Ticket\External_Token_Page();
+			Ticket\External_Token_Page::init();
 		}
 	}
 

@@ -16,19 +16,19 @@ use function IndieAuth\add_query_params_to_url;
  */
 class Admin {
 	/**
-	 * Constructor.
+	 * Register the hooks.
 	 */
-	public function __construct() {
-		\add_action( 'init', array( $this, 'register_settings' ) );
-		\add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
-		\add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-		\add_action( 'admin_init', array( $this, 'admin_init' ) );
+	public static function init() {
+		\add_action( 'init', array( self::class, 'register_settings' ) );
+		\add_action( 'login_form_authdiag', array( self::class, 'login_form_authdiag' ) );
+		\add_action( 'admin_menu', array( self::class, 'admin_menu' ) );
+		\add_action( 'admin_init', array( self::class, 'admin_init' ) );
 	}
 
 	/**
 	 * Register plugin settings.
 	 */
-	public function register_settings() {
+	public static function register_settings() {
 		\register_setting(
 			'indieauth',
 			'indieauth_config',
@@ -64,11 +64,11 @@ class Admin {
 	/**
 	 * Admin init - add general settings link.
 	 */
-	public function admin_init() {
+	public static function admin_init() {
 		\add_settings_field(
 			'indieauth_general_settings',
 			\__( 'IndieAuth Settings', 'indieauth' ),
-			array( $this, 'general_settings' ),
+			array( self::class, 'general_settings' ),
 			'general',
 			'default'
 		);
@@ -77,7 +77,7 @@ class Admin {
 	/**
 	 * Add IndieAuth options to the WordPress general settings page.
 	 */
-	public function general_settings() {
+	public static function general_settings() {
 		if ( \class_exists( 'IndieWeb_Plugin' ) ) {
 			$path = 'admin.php?page=indieauth';
 		} else {
@@ -96,7 +96,7 @@ class Admin {
 	/**
 	 * Add admin menu entry.
 	 */
-	public function admin_menu() {
+	public static function admin_menu() {
 		$title = \__( 'IndieAuth', 'indieauth' );
 		// If the IndieWeb Plugin is installed use its menu.
 		if ( \class_exists( 'IndieWeb_Plugin' ) ) {
@@ -106,7 +106,7 @@ class Admin {
 				$title,
 				'manage_options',
 				'indieauth',
-				array( $this, 'settings_page' )
+				array( self::class, 'settings_page' )
 			);
 		} else {
 			$options_page = \add_options_page(
@@ -114,17 +114,17 @@ class Admin {
 				$title,
 				'manage_options',
 				'indieauth',
-				array( $this, 'settings_page' )
+				array( self::class, 'settings_page' )
 			);
 		}
 		\add_action( 'load-' . $options_page, array( Settings_Fields::class, 'init' ) );
-		\add_action( 'load-' . $options_page, array( $this, 'add_help_tab' ) );
+		\add_action( 'load-' . $options_page, array( self::class, 'add_help_tab' ) );
 	}
 
 	/**
 	 * Load settings page.
 	 */
-	public function settings_page() {
+	public static function settings_page() {
 		\load_template( INDIEAUTH_PLUGIN_DIR . 'templates/indieauth-settings.php' );
 	}
 
@@ -142,7 +142,7 @@ class Admin {
 	/**
 	 * Handle the auth diagnostic login form.
 	 */
-	public function login_form_authdiag() {
+	public static function login_form_authdiag() {
 		$return  = '';
 		$success = false;
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
@@ -189,7 +189,7 @@ class Admin {
 	/**
 	 * Add help tabs to the settings page.
 	 */
-	public function add_help_tab() {
+	public static function add_help_tab() {
 		\get_current_screen()->add_help_tab(
 			array(
 				'id'      => 'overview',
