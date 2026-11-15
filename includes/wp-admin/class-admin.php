@@ -7,6 +7,8 @@
 
 namespace IndieAuth\WP_Admin;
 
+use IndieAuth\Authorize;
+
 use function IndieAuth\add_query_params_to_url;
 
 /**
@@ -21,7 +23,6 @@ class Admin {
 		\add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
 		\add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		\add_action( 'admin_init', array( $this, 'admin_init' ) );
-		\add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
 	}
 
 	/**
@@ -128,119 +129,14 @@ class Admin {
 	}
 
 	/**
-	 * Add IndieAuth site health tests.
-	 *
-	 * @param array $tests Existing tests.
-	 * @return array Modified tests.
-	 */
-	public function add_indieauth_tests( $tests ) {
-		$tests['direct']['indieauth_header'] = array(
-			'label' => \__( 'IndieAuth Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_header_test' ),
-		);
-		$tests['direct']['indieauth_https']  = array(
-			'label' => \__( 'SSL Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_https_test' ),
-		);
-		return $tests;
-	}
-
-	/**
-	 * Site health test for HTTPS.
-	 *
-	 * @return array Test result.
-	 */
-	public function site_health_https_test() {
-		$result = array(
-			'label'       => \__( 'HTTPS Check Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => \__( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => \sprintf(
-				'<p>%s</p>',
-				\__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_https',
-		);
-
-		if ( ! \is_ssl() ) {
-			$result['status']         = 'critical';
-			$result['badge']['color'] = 'red';
-			$result['label']          = \__( 'HTTPS Test Failed', 'indieauth' );
-			$result['description']    = \sprintf(
-				'<p>%s</p>',
-				\__( 'You are not serving your site via HTTPS. This is a security risk if running IndieAuth.', 'indieauth' )
-			);
-			$result['actions']        = \__( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Site health test for authorization headers.
-	 *
-	 * @return array Test result.
-	 */
-	public function site_health_header_test() {
-		$result = array(
-			'label'       => \__( 'Authorization Header Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => \__( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => \sprintf(
-				'<p>%s</p>',
-				\__( 'Your hosting provider allows authorization headers to pass so IndieAuth should work', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_headers',
-		);
-
-		if ( ! self::test_auth() ) {
-			$result['status']         = 'critical';
-			$result['badge']['color'] = 'red';
-			$result['label']          = \__( 'Authorization Test Failed', 'indieauth' );
-			\ob_start();
-			include INDIEAUTH_PLUGIN_DIR . 'templates/authdiagfail.php';
-			$result['description'] = \ob_get_contents();
-			\ob_end_clean();
-			$result['actions'] = \sprintf( '<a href="%1$s" >%2$s</a>', 'https://github.com/indieweb/wordpress-indieauth/issues', \__( 'If contacting your hosting provider does not work you can open an issue on GitHub and we will try to assist', 'indieauth' ) );
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Test if authorization headers pass through.
+	 *
+	 * @deprecated Use Health_Check::test_header().
 	 *
 	 * @return bool True if authorization headers pass through, false otherwise.
 	 */
 	public static function test_auth() {
-		$response = \wp_remote_post(
-			add_query_params_to_url(
-				array(
-					'action' => 'authdiag',
-				),
-				\wp_login_url()
-			),
-			array(
-				'method'  => 'POST',
-				'headers' => array(
-					'Authorization' => 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG',
-					'Accept'        => 'application/json',
-				),
-			)
-		);
-		if ( \is_wp_error( $response ) ) {
-			return false;
-		}
-		$json = json_decode( \wp_remote_retrieve_body( $response ) );
-		return ! empty( $json->success );
+		return 'passed' === Health_Check::test_header();
 	}
 
 	/**
@@ -250,11 +146,9 @@ class Admin {
 		$return  = '';
 		$success = false;
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+			// Same lookup as real requests, so the test cannot fail where IndieAuth works.
+			if ( 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === Authorize::get_authorization_header() ) {
 				$return  = '<div class="notice notice-success"><p>' . \esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
-				$success = true;
-			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				$return  = '<div class="notice-success"><p>' . \esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 				$success = true;
 			}
 			if ( empty( $return ) ) {

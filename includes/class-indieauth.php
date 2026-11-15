@@ -8,6 +8,7 @@
 namespace IndieAuth;
 
 use IndieAuth\WP_Admin\Admin;
+use IndieAuth\WP_Admin\Health_Check;
 use IndieAuth\WP_Admin\Token_UI;
 use IndieAuth\Rest\Authorization_Controller;
 use IndieAuth\Rest\FedCM_Controller;
@@ -301,6 +302,7 @@ class IndieAuth {
 	 */
 	private function register_admin_hooks() {
 		new Admin();
+		Health_Check::init();
 		new Token_UI();
 
 		if ( INDIEAUTH_TICKET_ENDPOINT ) {
