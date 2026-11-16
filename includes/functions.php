@@ -545,7 +545,7 @@ if ( ! function_exists( 'IndieAuth\code_binding_failure' ) ) {
 
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
-	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
+	 * Normalize a URL by adding a slash if there is no path.
 	 *
 	 * @param string $url       URL to normalize.
 	 * @param bool   $force_ssl Whether to force SSL.

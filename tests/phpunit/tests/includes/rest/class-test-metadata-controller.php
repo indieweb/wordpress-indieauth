@@ -1,6 +1,7 @@
 <?php
 
 use IndieAuth\IndieAuth;
+use IndieAuth\Rest\Authorization_Controller;
 use IndieAuth\Rest\Metadata_Controller;
 use IndieAuth\Rest\Token_Controller;
 
@@ -137,32 +138,20 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'token_endpoint', $metadata );
 		$this->assertSame( array( 'none' ), $metadata['token_endpoint_auth_methods_supported'] );
 
-		// Without the token endpoint, nothing claims auth methods for it.
+		// Without the endpoints, nothing claims features of them.
 		remove_all_filters( 'indieauth_metadata' );
 		$data = rest_do_request( new WP_REST_Request( 'GET', '/indieauth/1.0/metadata' ) )->get_data();
 		$this->assertArrayNotHasKey( 'token_endpoint', $data );
 		$this->assertArrayNotHasKey( 'token_endpoint_auth_methods_supported', $data );
+		$this->assertArrayNotHasKey( 'client_id_metadata_document_supported', $data );
 	}
 
-	public function test_token_auth_methods_can_be_filtered() {
-		$methods = function ( $methods ) {
-			$methods[] = 'private_key_jwt';
-			return $methods;
-		};
-		add_filter( 'indieauth_token_auth_methods_supported', $methods );
+	// Client documents are fetched by the authorization flow.
+	public function test_client_id_metadata_document_comes_with_the_authorization_endpoint() {
+		$metadata = ( new Authorization_Controller() )->metadata( array() );
 
-		$metadata = ( new Token_Controller() )->metadata( array() );
-
-		$this->assertSame( array( 'none', 'private_key_jwt' ), $metadata['token_endpoint_auth_methods_supported'] );
-	}
-
-	// A site that blocks outgoing requests cannot fetch client documents.
-	public function test_client_id_metadata_document_support_can_be_turned_off() {
-		add_filter( 'indieauth_client_id_metadata_document_supported', '__return_false' );
-
-		$data = rest_do_request( new WP_REST_Request( 'GET', '/indieauth/1.0/metadata' ) )->get_data();
-
-		$this->assertFalse( $data['client_id_metadata_document_supported'] );
+		$this->assertArrayHasKey( 'authorization_endpoint', $metadata );
+		$this->assertTrue( $metadata['client_id_metadata_document_supported'] );
 	}
 
 	// Deactivating drops the stored rules, so they are rebuilt without the plugin.

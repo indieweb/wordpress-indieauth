@@ -347,6 +347,24 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 		$this->assertTrue( $discovery->is_discovered() );
 	}
 
+	// A client_id normalize_url() cannot read is not compared as equal to another one.
+	public function test_rejects_json_metadata_for_a_client_id_normalize_url_rejects() {
+		$this->mock_http(
+			array( 'content-type' => 'application/json' ),
+			wp_json_encode(
+				array(
+					'client_id'     => 'HTTPS://app.example.com/id',
+					'redirect_uris' => array( 'https://other.example.net/cb' ),
+				)
+			)
+		);
+		$discovery = new Client_Discovery( 'HTTPS://app.example.com/id' );
+		$discovery->discover();
+
+		$this->assertSame( array(), $discovery->get_redirect_uris() );
+		$this->assertFalse( $discovery->is_discovered() );
+	}
+
 	/**
 	 * A redirect to another document is not the client's own document.
 	 *

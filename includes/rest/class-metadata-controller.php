@@ -144,11 +144,10 @@ class Metadata_Controller extends \WP_REST_Controller {
 	 */
 	public function metadata( $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$metadata = array(
-			'issuer'                                => indieauth_get_issuer(),
-			'scopes_supported'                      => IndieAuth::$scopes->get_names(),
-			'service_documentation'                 => 'https://indieauth.spec.indieweb.org',
-			'code_challenge_methods_supported'      => array( 'S256' ),
-			'client_id_metadata_document_supported' => (bool) \apply_filters( 'indieauth_client_id_metadata_document_supported', true ),
+			'issuer'                           => indieauth_get_issuer(),
+			'scopes_supported'                 => IndieAuth::$scopes->get_names(),
+			'service_documentation'            => 'https://indieauth.spec.indieweb.org',
+			'code_challenge_methods_supported' => array( 'S256' ),
 		);
 
 		$metadata = \apply_filters( 'indieauth_metadata', $metadata );

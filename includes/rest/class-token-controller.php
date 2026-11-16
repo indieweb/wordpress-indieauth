@@ -83,25 +83,15 @@ class Token_Controller extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Get supported authentication methods for the token endpoint.
-	 *
-	 * All clients are public clients, so there is no client authentication.
-	 *
-	 * @return array Supported authentication methods.
-	 */
-	public function auth_methods_supported() {
-		return array_values( array_unique( \apply_filters( 'indieauth_token_auth_methods_supported', array( 'none' ) ) ) );
-	}
-
-	/**
 	 * Add token endpoint metadata.
 	 *
 	 * @param array $metadata Server metadata.
 	 * @return array Modified metadata.
 	 */
 	public function metadata( $metadata ) {
+		// All clients are public clients, so there is no client authentication.
 		$metadata['token_endpoint']                        = $this->get_endpoint();
-		$metadata['token_endpoint_auth_methods_supported'] = $this->auth_methods_supported();
+		$metadata['token_endpoint_auth_methods_supported'] = array( 'none' );
 		$metadata['grant_types_supported']                 = $this->get_grant_types();
 		return $metadata;
 	}

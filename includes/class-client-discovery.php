@@ -372,7 +372,8 @@ class Client_Discovery {
 			if ( isset( $response['http_response'] ) && $response['http_response'] instanceof \WP_HTTP_Requests_Response ) {
 				$fetched_url = $response['http_response']->get_response_object()->url;
 			}
-			if ( ! same_url( $this->json['client_id'], $fetched_url ) || normalize_url( $this->json['client_id'] ) !== normalize_url( $url ) ) {
+			$client_id = normalize_url( $url );
+			if ( ! same_url( $this->json['client_id'], $fetched_url ) || ! $client_id || normalize_url( $this->json['client_id'] ) !== $client_id ) {
 				return new \WP_Error( 'client_id_mismatch', \__( 'The Client ID in the JSON Client Metadata Does Not Match the URL It Was Fetched From', 'indieauth' ) );
 			}
 			$this->client_id = $this->json['client_id'];
