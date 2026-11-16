@@ -311,6 +311,24 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 		$this->assertFalse( $discovery->is_discovered() );
 	}
 
+	// IndieAuth treats a URL without a path as having the path "/".
+	public function test_accepts_json_metadata_with_root_path_for_a_client_id_without_path() {
+		$this->mock_http(
+			array( 'content-type' => 'application/json' ),
+			wp_json_encode(
+				array(
+					'client_id'     => 'https://app.example.com/',
+					'redirect_uris' => array( 'https://other.example.net/cb' ),
+				)
+			)
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com' );
+		$discovery->discover();
+
+		$this->assertSame( array( 'https://other.example.net/cb' ), $discovery->get_redirect_uris() );
+		$this->assertTrue( $discovery->is_discovered() );
+	}
+
 	/**
 	 * A redirect to another document is not the client's own document.
 	 *
