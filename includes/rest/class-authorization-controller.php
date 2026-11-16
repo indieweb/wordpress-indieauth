@@ -102,6 +102,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$metadata['authorization_endpoint']                         = $this->get_endpoint();
 		$metadata['response_types_supported']                       = $this->get_response_types();
 		$metadata['authorization_response_iss_parameter_supported'] = true;
+		$metadata['client_id_metadata_document_supported']          = true;
 		return $metadata;
 	}
 
