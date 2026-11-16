@@ -57,7 +57,7 @@ class Introspection_Controller extends \WP_REST_Controller {
 	 * @return array Supported authentication methods.
 	 */
 	public function auth_methods_supported() {
-		return array_unique( \apply_filters( 'indieauth_introspection_auth_methods_supported', array( 'Bearer' ) ) );
+		return array_values( array_unique( \apply_filters( 'indieauth_introspection_auth_methods_supported', array( 'Bearer' ) ) ) );
 	}
 
 	/**

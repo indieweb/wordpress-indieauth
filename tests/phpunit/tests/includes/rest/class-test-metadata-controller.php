@@ -118,6 +118,34 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 		$this->assertSame( $flushes, did_action( 'generate_rewrite_rules' ) );
 	}
 
+	/**
+	 * A duplicate added by a filter must not turn a list into a JSON object.
+	 *
+	 * array_unique() keeps the keys, so [ 'a', 'a', 'b' ] would become { "0": "a", "2": "b" }.
+	 */
+	public function test_filtered_lists_stay_lists() {
+		$duplicate = function ( $values ) {
+			$values[] = $values[0];
+			$values[] = 'extra';
+			return $values;
+		};
+		$filters   = array(
+			'indieauth_response_types_supported'            => 'response_types_supported',
+			'indieauth_grant_types_supported'               => 'grant_types_supported',
+			'indieauth_revocation_auth_methods_supported'   => 'revocation_endpoint_auth_methods_supported',
+			'indieauth_introspection_auth_methods_supported' => 'introspection_endpoint_auth_methods_supported',
+		);
+		foreach ( array_keys( $filters ) as $filter ) {
+			add_filter( $filter, $duplicate );
+		}
+
+		$data = rest_do_request( new WP_REST_Request( 'GET', '/indieauth/1.0/metadata' ) )->get_data();
+
+		foreach ( $filters as $key ) {
+			$this->assertSame( array_values( $data[ $key ] ), $data[ $key ], $key );
+		}
+	}
+
 	// Deactivating drops the stored rules, so they are rebuilt without the plugin.
 	public function test_deactivation_drops_the_stored_rules() {
 		Metadata_Controller::add_rewrite_rules();
