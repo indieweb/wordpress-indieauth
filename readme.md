@@ -191,7 +191,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 ### Unreleased
 
-* Add `client_id_metadata_document_supported` and `token_endpoint_auth_methods_supported` to the server metadata. The `client_id` of a JSON client metadata document now has to match the requested `client_id` exactly (#361)
+* Add `client_id_metadata_document_supported` and `token_endpoint_auth_methods_supported` to the server metadata (#361)
 
 ### 5.1.0
 

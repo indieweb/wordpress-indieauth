@@ -365,15 +365,12 @@ class Client_Discovery {
 				return new \WP_Error( 'missing_client_id', \__( 'No Client ID Found in JSON Client Metadata', 'indieauth' ) );
 			}
 			// The document MUST name the URL it was fetched from. The fetch follows
-			// redirects, so that is the requested and the final URL. The requested
-			// URL is compared as a plain string, as the Client ID Metadata Document
-			// draft says. IndieAuth treats a URL without a path as having the path "/".
+			// redirects, so that is the requested and the final URL.
 			$fetched_url = $url;
 			if ( isset( $response['http_response'] ) && $response['http_response'] instanceof \WP_HTTP_Requests_Response ) {
 				$fetched_url = $response['http_response']->get_response_object()->url;
 			}
-			$client_id = normalize_url( $url );
-			if ( ! same_url( $this->json['client_id'], $fetched_url ) || ! $client_id || normalize_url( $this->json['client_id'] ) !== $client_id ) {
+			if ( ! same_url( $this->json['client_id'], $url ) || ! same_url( $this->json['client_id'], $fetched_url ) ) {
 				return new \WP_Error( 'client_id_mismatch', \__( 'The Client ID in the JSON Client Metadata Does Not Match the URL It Was Fetched From', 'indieauth' ) );
 			}
 			$this->client_id = $this->json['client_id'];
