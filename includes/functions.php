@@ -547,9 +547,12 @@ if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
 	 * Normalize a URL by adding a slash if there is no path.
 	 *
+	 * A bare hostname is treated as the host, and a missing scheme becomes http
+	 * (or https with $force_ssl). The scheme and host keep their case.
+	 *
 	 * @param string $url       URL to normalize.
 	 * @param bool   $force_ssl Whether to force SSL.
-	 * @return string|false Normalized URL or false.
+	 * @return string|false Normalized URL, or false for a scheme other than lowercase http or https.
 	 */
 	function normalize_url( $url, $force_ssl = false ) {
 		$parts = \wp_parse_url( $url );

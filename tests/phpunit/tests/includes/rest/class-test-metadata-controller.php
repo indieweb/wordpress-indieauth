@@ -133,7 +133,7 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 	}
 
 	// RFC 8414 defines the auth methods only for an advertised token endpoint.
-	public function test_token_auth_methods_come_with_the_token_endpoint() {
+	public function test_endpoint_keys_come_with_their_endpoints() {
 		$metadata = ( new Token_Controller() )->metadata( array() );
 		$this->assertArrayHasKey( 'token_endpoint', $metadata );
 		$this->assertSame( array( 'none' ), $metadata['token_endpoint_auth_methods_supported'] );
