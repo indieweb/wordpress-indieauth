@@ -291,6 +291,27 @@ class Test_Client_Discovery extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The Client ID Metadata Document draft compares the client_id as a plain string,
+	 * so another spelling of the same URL is not a match.
+	 */
+	public function test_rejects_json_metadata_with_another_spelling_of_the_client_id() {
+		$this->mock_http(
+			array( 'content-type' => 'application/json' ),
+			wp_json_encode(
+				array(
+					'client_id'     => 'https://APP.example.com:443/id',
+					'redirect_uris' => array( 'https://app.example.com/cb' ),
+				)
+			)
+		);
+		$discovery = new Client_Discovery( 'https://app.example.com/id' );
+		$discovery->discover();
+
+		$this->assertSame( array(), $discovery->get_redirect_uris() );
+		$this->assertFalse( $discovery->is_discovered() );
+	}
+
+	/**
 	 * A redirect to another document is not the client's own document.
 	 *
 	 * The fetch follows redirects, so an open redirect on the client's host
