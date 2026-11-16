@@ -118,6 +118,17 @@ class Test_Metadata_Controller extends WP_UnitTestCase {
 		$this->assertSame( $flushes, did_action( 'generate_rewrite_rules' ) );
 	}
 
+	/**
+	 * The plugin reads client ID metadata documents and only has public clients.
+	 * Without token_endpoint_auth_methods_supported, RFC 8414 assumes client_secret_basic.
+	 */
+	public function test_metadata_lists_client_id_document_and_auth_methods() {
+		$data = rest_do_request( new WP_REST_Request( 'GET', '/indieauth/1.0/metadata' ) )->get_data();
+
+		$this->assertTrue( $data['client_id_metadata_document_supported'] );
+		$this->assertSame( array( 'none' ), $data['token_endpoint_auth_methods_supported'] );
+	}
+
 	// Deactivating drops the stored rules, so they are rebuilt without the plugin.
 	public function test_deactivation_drops_the_stored_rules() {
 		Metadata_Controller::add_rewrite_rules();
