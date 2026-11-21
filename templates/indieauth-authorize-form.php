@@ -68,7 +68,7 @@ login_header(
 		wp_nonce_field( 'indieauth_authorize' );
 	?>
 		<input type="hidden" name="client_id" value="<?php echo esc_url( $client_id ); ?>" />
-		<input type="hidden" name="redirect_uri" value="<?php echo esc_url( $redirect_uri ); ?>" />
+		<input type="hidden" name="redirect_uri" value="<?php echo esc_url( $redirect_uri, \IndieAuth\redirect_uri_protocols( $redirect_uri ) ); ?>" />
 		<input type="hidden" name="state" value="<?php echo esc_attr( $state ); ?>" />
 		<input type="hidden" name="me" value="<?php echo esc_url( $me ); ?>" />
 		<input type="hidden" name="response_type" value="<?php echo esc_attr( $response_type ); ?>" />
@@ -84,4 +84,4 @@ login_header(
 	</p>
 </form>
 <?php /* translators: 1. Redirect URI */ ?>
-<div class="message redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after approving this application.', 'indieauth' ), '<code>' . esc_url( $redirect_uri ) . '</code>' ); ?></div>
+<div class="message redirect-info"><?php printf( esc_html__( 'You will be redirected to %1$s after approving this application.', 'indieauth' ), '<code>' . esc_url( $redirect_uri, \IndieAuth\redirect_uri_protocols( $redirect_uri ) ) . '</code>' ); ?></div>

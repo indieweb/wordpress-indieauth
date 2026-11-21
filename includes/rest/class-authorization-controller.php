@@ -666,6 +666,15 @@ class Authorization_Controller extends \WP_REST_Controller {
 	public function authorize() {
 		// phpcs:disable
 		$client_id     = \esc_url_raw( \wp_unslash( $_GET['client_id'] ) );
+
+		// The form can be reached without passing through the REST endpoint. Stop
+		// here, before the client is stored, rather than render a consent page
+		// that confirmed() would reject.
+		$redirect_to = isset( $_GET['redirect_to'] ) ? \wp_unslash( $_GET['redirect_to'] ) : null;
+		if ( empty( $redirect_to ) || ! self::verify_redirect_uri( $client_id, $redirect_to ) ) {
+			\wp_die( \esc_html__( 'The redirect_uri does not match the client_id and is not published by the client.', 'indieauth' ) );
+		}
+
 		$client_term                 = Client_Taxonomy::add_client( $client_id );
 		if ( ! \is_wp_error( $client_term ) ) {
 			$client_name = $client_term['name'];
@@ -680,7 +689,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 			$client = sprintf( '<a href="%1$s">%1$s</a>', $client_id );
 		}
 
-		$redirect_uri  = isset( $_GET['redirect_to'] ) ? \wp_unslash( $_GET['redirect_to'] ) : null;
+		$redirect_uri  = $redirect_to;
 		$scope         = isset( $_GET['scope'] ) ? \sanitize_text_field( \wp_unslash( $_GET['scope'] ) ) : null;
 		$scopes        = array_filter( explode( ' ', $scope ) );
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
