@@ -323,7 +323,7 @@ class External_User_Token {
 			$token_endpoint,
 			array(
 				'headers' => array(
-					'Authorization' => 'Bearer: ' . $token['access_token'],
+					'Authorization' => 'Bearer ' . $token['access_token'],
 					'Accept'        => 'application/json',
 				),
 			)
