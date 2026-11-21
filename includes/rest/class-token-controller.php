@@ -79,7 +79,7 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return array List of supported grant types.
 	 */
 	public static function get_grant_types() {
-		return array_unique( \apply_filters( 'indieauth_grant_types_supported', array( 'authorization_code', 'refresh_token' ) ) );
+		return array_values( array_unique( \apply_filters( 'indieauth_grant_types_supported', array( 'authorization_code', 'refresh_token' ) ) ) );
 	}
 
 	/**
