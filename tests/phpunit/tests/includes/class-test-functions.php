@@ -51,7 +51,7 @@ class Test_Functions extends WP_UnitTestCase {
 	public function test_session_auth_time_returns_session_login() {
 		$this->start_session( static::$author_id, 1700000000 );
 
-		$this->assertSame( 1700000000, get_session_auth_time( static::$author_id ) );
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time( static::$author_id ) );
 	}
 
 	// Without a user ID, the current user's session is used.
@@ -59,20 +59,20 @@ class Test_Functions extends WP_UnitTestCase {
 		wp_set_current_user( static::$author_id );
 		$this->start_session( static::$author_id, 1700000000 );
 
-		$this->assertSame( 1700000000, get_session_auth_time() );
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time() );
 	}
 
 	public function test_session_auth_time_is_null_without_cookie() {
 		wp_set_current_user( static::$author_id );
 
-		$this->assertNull( get_session_auth_time( static::$author_id ) );
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
 	}
 
 	public function test_session_auth_time_is_null_without_user() {
 		$this->start_session( static::$author_id, 1700000000 );
 		wp_set_current_user( 0 );
 
-		$this->assertNull( get_session_auth_time() );
+		$this->assertNull( IndieAuth\get_session_auth_time() );
 	}
 
 	// A cookie for a session that no longer exists, for example after logging out elsewhere.
@@ -80,13 +80,13 @@ class Test_Functions extends WP_UnitTestCase {
 		$token = $this->start_session( static::$author_id, 1700000000 );
 		WP_Session_Tokens::get_instance( static::$author_id )->destroy( $token );
 
-		$this->assertNull( get_session_auth_time( static::$author_id ) );
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
 	}
 
 	public function test_session_auth_time_is_null_without_login_value() {
 		$this->start_session( static::$author_id, false );
 
-		$this->assertNull( get_session_auth_time( static::$author_id ) );
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
 	}
 
 	// Test Getting the Author URL through get_user_by_identifier.
