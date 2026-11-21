@@ -24,6 +24,80 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		self::delete_user( self::$author_id );
 	}
 
+	public function tear_down() {
+		unset( $_COOKIE[ LOGGED_IN_COOKIE ] );
+		$_POST = array();
+		parent::tear_down();
+	}
+
+	/**
+	 * Submit the consent form as the author and return the stored authorization code.
+	 *
+	 * The redirect is captured through the wp_redirect filter, which also stops
+	 * the header from being sent.
+	 *
+	 * @return array Stored code data.
+	 */
+	protected function submit_consent_and_get_code() {
+		$location = null;
+		$capture  = function ( $url ) use ( &$location ) {
+			$location = $url;
+			return false;
+		};
+		add_filter( 'wp_redirect', $capture );
+
+		// The nonce depends on the session token, so it is created after the cookie is set.
+		$_POST = array(
+			'_wpnonce'              => wp_create_nonce( 'indieauth_authorize' ),
+			'client_id'             => 'https://app.example.com/',
+			'redirect_uri'          => 'https://app.example.com/redirect',
+			'scope'                 => array( 'create' ),
+			'state'                 => 'abc123',
+			'response_type'         => 'code',
+			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+			'code_challenge_method' => 'S256',
+		);
+
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller->confirmed();
+
+		remove_filter( 'wp_redirect', $capture );
+
+		$this->assertNotNull( $location, 'confirmed() did not redirect' );
+		wp_parse_str( (string) wp_parse_url( $location, PHP_URL_QUERY ), $query );
+		$this->assertArrayHasKey( 'code', $query );
+
+		return $this->get_auth_code( $query['code'] );
+	}
+
+	// The consent form stores the session login time with the code.
+	public function test_confirmed_stores_auth_time() {
+		wp_set_current_user( self::$author_id );
+
+		$manager = WP_Session_Tokens::get_instance( self::$author_id );
+		$session = $manager->create( time() + DAY_IN_SECONDS );
+		$data    = $manager->get( $session );
+
+		$data['login'] = 1700000000;
+		$manager->update( $session, $data );
+		$_COOKIE[ LOGGED_IN_COOKIE ] = wp_generate_auth_cookie( self::$author_id, time() + DAY_IN_SECONDS, 'logged_in', $session );
+
+		$code = $this->submit_consent_and_get_code();
+
+		$this->assertSame( 'create', $code['scope'] );
+		$this->assertSame( 1700000000, $code['auth_time'] );
+	}
+
+	// Without a session login time, auth_time is left out of the code.
+	public function test_confirmed_omits_auth_time_without_session() {
+		wp_set_current_user( self::$author_id );
+
+		$code = $this->submit_consent_and_get_code();
+
+		$this->assertSame( 'create', $code['scope'] );
+		$this->assertArrayNotHasKey( 'auth_time', $code );
+	}
+
 	// Form Encoded Request
 	public function create_form( $method, $params = array(), $headers = array() ) {
 		$request = new WP_REST_Request( $method, '/indieauth/1.0/auth' );

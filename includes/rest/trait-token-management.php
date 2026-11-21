@@ -143,6 +143,10 @@ trait Token_Management {
 			'me'        => $token['me'],
 			'uuid'      => $token['uuid'], // Uses the token UUID from the access token and adds it to the refresh token allowing them to be associated.
 		);
+		// Keep the original login time, so it survives every refresh.
+		if ( isset( $token['auth_time'] ) ) {
+			$refresh['auth_time'] = (int) $token['auth_time'];
+		}
 		$this->refresh_tokens->set_user( $user );
 		$expires_in = array_key_exists( 'expires_in', $token ) ? $token['expires_in'] : null;
 
