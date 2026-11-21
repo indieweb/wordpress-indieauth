@@ -154,13 +154,13 @@ class External_User_Token {
 	}
 
 	/**
-	 * Retrieves a token
+	 * Retrieves a token by its access token.
 	 *
-	 * @param string $key token to retrieve.
+	 * @param string $key Access token of the token to retrieve.
 	 * @return array|boolean Token data or false if not found
 	 */
 	public function get( $key ) {
-		if ( ! is_string( $key ) ) {
+		if ( ! is_string( $key ) || '' === $key ) {
 			return false;
 		}
 
@@ -169,9 +169,13 @@ class External_User_Token {
 		}
 
 		$tokens = \get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
-		foreach ( $tokens as $key => $token ) {
-			if ( in_array( $token['access_token'], $key, true ) ) {
-				return $tokens[ $key ];
+		if ( ! is_array( $tokens ) ) {
+			return false;
+		}
+
+		foreach ( $tokens as $token ) {
+			if ( is_array( $token ) && isset( $token['access_token'] ) && hash_equals( (string) $token['access_token'], $key ) ) {
+				return $token;
 			}
 		}
 		return false;
