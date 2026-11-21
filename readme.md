@@ -192,6 +192,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 ### Unreleased
 
 * Add `client_id_metadata_document_supported` and `token_endpoint_auth_methods_supported` to the server metadata (#361)
+* Store the time the user logged in (`auth_time`) with authorization codes and carry it, unchanged, to access and refresh tokens. Introspection returns it (#362)
 
 ### 5.1.0
 

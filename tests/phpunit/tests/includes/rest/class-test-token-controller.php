@@ -431,6 +431,73 @@ class Test_Token_Controller extends WP_UnitTestCase {
 	}
 
 
+	// Redeems a code carrying auth_time and returns the response data.
+	protected function redeem_code_with( $extra ) {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		$code = $tokens->set( array_merge( static::$test_auth_code, $extra ), 600 );
+
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		return $response->get_data();
+	}
+
+	// auth_time on the code is stored on the access and refresh tokens, but not returned to the client.
+	public function test_auth_code_redemption_carries_auth_time() {
+		$data = $this->redeem_code_with( array( 'auth_time' => 1700000000 ) );
+
+		$this->assertArrayNotHasKey( 'auth_time', $data );
+
+		$access = $this->get_access_token( $data['access_token'] );
+		$this->assertSame( 1700000000, $access['auth_time'] );
+
+		$refresh = $this->get_refresh_token( $data['refresh_token'] );
+		$this->assertSame( 1700000000, $refresh['auth_time'] );
+	}
+
+	// A code without auth_time gives tokens without it.
+	public function test_auth_code_redemption_without_auth_time() {
+		$data = $this->redeem_code_with( array() );
+
+		$this->assertArrayNotHasKey( 'auth_time', $this->get_access_token( $data['access_token'] ) );
+		$this->assertArrayNotHasKey( 'auth_time', $this->get_refresh_token( $data['refresh_token'] ) );
+	}
+
+	// auth_time is kept unchanged through refreshes, while iat is reset.
+	public function test_refresh_token_keeps_auth_time() {
+		$tokens = new Token_User( '_indieauth_refresh_' );
+		$tokens->set_user( self::$author_id );
+		$refresh_token = $tokens->set( array_merge( static::$refresh_token, array( 'auth_time' => 1700000000 ) ) );
+
+		for ( $i = 0; $i < 2; $i++ ) {
+			$response = $this->create_form( 'POST',
+				array(
+					'grant_type'    => 'refresh_token',
+					'refresh_token' => $refresh_token,
+				)
+			);
+			$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+			$data = $response->get_data();
+
+			$this->assertArrayNotHasKey( 'auth_time', $data );
+
+			$access = $this->get_access_token( $data['access_token'] );
+			$this->assertSame( 1700000000, $access['auth_time'] );
+			$this->assertGreaterThan( static::$refresh_token['iat'], $access['iat'] );
+
+			$refresh_token = $data['refresh_token'];
+			$refresh       = $this->get_refresh_token( $refresh_token );
+			$this->assertSame( 1700000000, $refresh['auth_time'] );
+		}
+	}
+
 	/**
 	 * Sets a token and verifies it using Access Token Verification.
 	 *

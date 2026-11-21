@@ -351,6 +351,11 @@ class Token_Controller extends \WP_REST_Controller {
 
 				$return['iat'] = time();
 
+				// Carry the user's login time through unchanged. Unlike iat, it is not reset on refresh.
+				if ( isset( $response['auth_time'] ) ) {
+					$return['auth_time'] = (int) $response['auth_time'];
+				}
+
 				$expires = (int) \get_option( 'indieauth_expires_in' );
 
 				$return = array_filter( $return );

@@ -1014,3 +1014,30 @@ function wp_error_to_oauth_response( $error ) {
 		$status
 	);
 }
+
+/**
+ * Get the time the user last actively authenticated (`auth_time`).
+ *
+ * WordPress records `login` once, when a session is created, and does not
+ * change it when the cookie is renewed. It is only readable while the request
+ * carries the logged-in cookie, so it has to be captured when the
+ * authorization code is created.
+ *
+ * @param int|null $user_id User ID. Defaults to the current user.
+ * @return int|null Unix timestamp of the session login, or null if there is no session or it has no login time.
+ */
+function get_session_auth_time( $user_id = null ) {
+	$token = \wp_get_session_token();
+	if ( ! $token ) {
+		return null;
+	}
+
+	$user_id = $user_id ? (int) $user_id : \get_current_user_id();
+	if ( ! $user_id ) {
+		return null;
+	}
+
+	$session = \WP_Session_Tokens::get_instance( $user_id )->get( $token );
+
+	return isset( $session['login'] ) ? (int) $session['login'] : null;
+}

@@ -66,6 +66,7 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		unset( $GLOBALS['wp_rest_auth_cookie'] );
 		unset( $GLOBALS['wp']->query_vars['rest_route'] );
 		unset( $_SERVER['HTTP_SEC_FETCH_DEST'] );
+		unset( $_COOKIE[ LOGGED_IN_COOKIE ] );
 		$_SERVER['REQUEST_URI'] = $this->original_request_uri;
 		parent::tear_down();
 	}
@@ -843,6 +844,52 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'fedcm', $code_data );
 		$this->assertTrue( $code_data['fedcm'] );
+	}
+
+	/**
+	 * Send an assertion request and return the stored authorization code.
+	 *
+	 * @return array Stored code data.
+	 */
+	protected function assert_and_get_code() {
+		$response = $this->assertion_request();
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+
+		$token_data = json_decode( $response->get_data()['token'], true );
+		$tokens     = new Token_User( '_indieauth_code_' );
+
+		return $tokens->get( $token_data['code'] );
+	}
+
+	/**
+	 * Test that FedCM-issued codes store the session login time as auth_time.
+	 */
+	public function test_assertion_endpoint_stores_auth_time() {
+		wp_set_current_user( self::$author_id );
+
+		$manager = WP_Session_Tokens::get_instance( self::$author_id );
+		$session = $manager->create( time() + DAY_IN_SECONDS );
+		$data    = $manager->get( $session );
+
+		$data['login'] = 1700000000;
+		$manager->update( $session, $data );
+		$_COOKIE[ LOGGED_IN_COOKIE ] = wp_generate_auth_cookie( self::$author_id, time() + DAY_IN_SECONDS, 'logged_in', $session );
+
+		$code_data = $this->assert_and_get_code();
+
+		$this->assertArrayHasKey( 'auth_time', $code_data );
+		$this->assertSame( 1700000000, $code_data['auth_time'] );
+	}
+
+	/**
+	 * Test that FedCM-issued codes leave out auth_time when there is no session.
+	 */
+	public function test_assertion_endpoint_omits_auth_time_without_session() {
+		wp_set_current_user( self::$author_id );
+
+		$code_data = $this->assert_and_get_code();
+
+		$this->assertArrayNotHasKey( 'auth_time', $code_data );
 	}
 
 	public function unusable_code_challenge_provider() {
