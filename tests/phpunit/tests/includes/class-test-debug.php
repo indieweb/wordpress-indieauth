@@ -121,6 +121,44 @@ class Test_Debug extends WP_UnitTestCase {
 		$this->assertSame( '', $this->log_unknown_token( new WP_REST_Response( array(), 200 ) ) );
 	}
 
+	// The error hook follows the same rules as the log, but does not need WP_DEBUG.
+	public function test_unknown_token_fires_error_only_when_request_fails() {
+		$errors = array();
+		add_action(
+			'indieauth_error',
+			function ( $response ) use ( &$errors ) {
+				$errors[] = $response->get_data()['error'];
+			}
+		);
+
+		$this->log_unknown_token( new WP_REST_Response( array(), 200 ) );
+		$this->assertSame( array(), $errors );
+
+		$this->log_unknown_token( new WP_Error( 'rest_forbidden', 'Forbidden', array( 'status' => 401 ) ) );
+		$this->assertSame( array( 'invalid_token' ), $errors );
+	}
+
+	public function test_error_is_reported_once() {
+		$count = 0;
+		add_action(
+			'indieauth_error',
+			function () use ( &$count ) {
+				$count++;
+			}
+		);
+
+		$unlogged = new \IndieAuth\OAuth_Response( 'invalid_request', 'Invalid Request', 400, null, false );
+		$this->assertSame( 0, $count );
+
+		$unlogged->log();
+		$unlogged->log();
+		$this->assertSame( 1, $count );
+
+		$logged = new \IndieAuth\OAuth_Response( 'invalid_request', 'Invalid Request', 400 );
+		$logged->log();
+		$this->assertSame( 2, $count );
+	}
+
 	public function test_unknown_token_is_not_logged_on_lookup() {
 		$error = ( new Authorize() )->verify_access_token( 'not-an-indieauth-token' );
 

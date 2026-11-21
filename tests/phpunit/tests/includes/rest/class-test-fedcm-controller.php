@@ -892,6 +892,30 @@ class Test_FedCM_Controller extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'auth_time', $code_data );
 	}
 
+	/**
+	 * Test that a FedCM assertion fires the same hook as the consent form.
+	 */
+	public function test_assertion_endpoint_fires_authorization_approved() {
+		wp_set_current_user( self::$author_id );
+
+		$calls = array();
+		add_action(
+			'indieauth_authorization_approved',
+			function ( $token, $user_id ) use ( &$calls ) {
+				$calls[] = compact( 'token', 'user_id' );
+			},
+			10,
+			2
+		);
+
+		$code_data = $this->assert_and_get_code();
+
+		$this->assertCount( 1, $calls );
+		$this->assertSame( self::$author_id, $calls[0]['user_id'] );
+		$this->assertSame( $code_data['uuid'], $calls[0]['token']['uuid'] );
+		$this->assertTrue( $calls[0]['token']['fedcm'] );
+	}
+
 	public function unusable_code_challenge_provider() {
 		return array(
 			'array'         => array( array( 'abc' ) ),

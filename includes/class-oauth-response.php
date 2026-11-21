@@ -17,13 +17,20 @@ namespace IndieAuth;
 class OAuth_Response extends \WP_REST_Response {
 
 	/**
+	 * Whether the error was reported already.
+	 *
+	 * @var bool
+	 */
+	protected $logged = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string     $error             Error code.
 	 * @param string     $error_description Error description.
 	 * @param int        $code              HTTP status code.
 	 * @param array|null $debug             Optional debug information.
-	 * @param bool       $log               Whether to log the error when WP_DEBUG is on.
+	 * @param bool       $log               Whether to report the error right away, see log().
 	 */
 	public function __construct( $error, $error_description, $code = 200, $debug = null, $log = true ) {
 		$this->set_status( $code );
@@ -36,7 +43,35 @@ class OAuth_Response extends \WP_REST_Response {
 		if ( is_array( $debug ) && ! empty( $debug ) ) {
 			$this->set_debug( $debug );
 		}
-		if ( $log && WP_DEBUG ) {
+		if ( $log ) {
+			$this->log();
+		}
+	}
+
+	/**
+	 * Report the error, at most once.
+	 *
+	 * An error that may not be sent, like a default handed to a filter, is
+	 * created with `$log` set to false and reported here once it is returned.
+	 */
+	public function log() {
+		if ( $this->logged ) {
+			return;
+		}
+		$this->logged = true;
+
+		/**
+		 * Fires when IndieAuth answers a request with an error.
+		 *
+		 * Covers the IndieAuth endpoints and requests that fail with an IndieAuth
+		 * token. Anonymous requests can trigger it, so a listener that stores
+		 * the errors should limit how many it keeps.
+		 *
+		 * @param OAuth_Response $response The error response. Its data holds `error` and `error_description`.
+		 */
+		\do_action( 'indieauth_error', $this );
+
+		if ( WP_DEBUG ) {
 			\error_log( $this->to_log() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		}
 	}
