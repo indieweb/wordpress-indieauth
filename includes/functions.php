@@ -123,8 +123,11 @@ if ( ! function_exists( 'IndieAuth\parse_html_rels' ) ) {
 	 * @return array Rel values as indices to arrays of URLs, empty array if no rels at all.
 	 */
 	function parse_html_rels( $contents, $url ) {
-		// Unicode to HTML entities.
-		$contents = mb_convert_encoding( $contents, 'HTML-ENTITIES', mb_detect_encoding( $contents ) );
+		// Unicode to HTML entities, so DOMDocument does not read UTF-8 as ISO-8859-1.
+		// Same as the mf2 parser, the HTML-ENTITIES encoding is deprecated since PHP 8.2.
+		if ( \function_exists( 'mb_encode_numericentity' ) ) {
+			$contents = mb_encode_numericentity( $contents, array( 0x80, 0x1FFFFF, 0, 0x10FFFF ), mb_detect_encoding( $contents ), true );
+		}
 		libxml_use_internal_errors( true );
 		$doc = new \DOMDocument();
 		$doc->loadHTML( $contents );
@@ -545,11 +548,14 @@ if ( ! function_exists( 'IndieAuth\code_binding_failure' ) ) {
 
 if ( ! function_exists( 'IndieAuth\normalize_url' ) ) {
 	/**
-	 * Normalize a URL by adding slash if no path and converting hostname to lowercase.
+	 * Normalize a URL by adding a slash if there is no path.
+	 *
+	 * A bare hostname is treated as the host, and a missing scheme becomes http
+	 * (or https with $force_ssl). The scheme and host keep their case.
 	 *
 	 * @param string $url       URL to normalize.
 	 * @param bool   $force_ssl Whether to force SSL.
-	 * @return string|false Normalized URL or false.
+	 * @return string|false Normalized URL, or false for a scheme other than lowercase http or https.
 	 */
 	function normalize_url( $url, $force_ssl = false ) {
 		$parts = \wp_parse_url( $url );

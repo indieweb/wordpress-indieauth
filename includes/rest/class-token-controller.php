@@ -89,8 +89,10 @@ class Token_Controller extends \WP_REST_Controller {
 	 * @return array Modified metadata.
 	 */
 	public function metadata( $metadata ) {
-		$metadata['token_endpoint']        = $this->get_endpoint();
-		$metadata['grant_types_supported'] = $this->get_grant_types();
+		// All clients are public clients, so there is no client authentication.
+		$metadata['token_endpoint']                        = $this->get_endpoint();
+		$metadata['token_endpoint_auth_methods_supported'] = array( 'none' );
+		$metadata['grant_types_supported']                 = $this->get_grant_types();
 		return $metadata;
 	}
 

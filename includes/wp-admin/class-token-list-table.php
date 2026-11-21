@@ -151,13 +151,17 @@ class Token_List_Table extends \WP_List_Table {
 			case 'retrieve':
 				if ( is_string( $tokens ) ) {
 					$token = $t->get( $tokens, false );
-					$info  = new Client_Discovery( $token['client_id'] );
-					$name  = $info->get_name();
-					if ( isset( $name ) ) {
+					if ( ! $token || empty( $token['client_id'] ) || \admin_url() === $token['client_id'] ) {
+						break;
+					}
+					$info = new Client_Discovery( $token['client_id'] );
+					// Discovery returns empty strings when it finds nothing, keep what the token has then.
+					$name = $info->get_name();
+					if ( ! empty( $name ) ) {
 						$token['client_name'] = $name;
 					}
 					$icon = $info->get_icon();
-					if ( isset( $icon ) ) {
+					if ( ! empty( $icon ) ) {
 						$token['client_icon'] = $icon;
 					}
 					$t->update( $tokens, $token, true );
@@ -212,9 +216,11 @@ class Token_List_Table extends \WP_List_Table {
 	public function column_client_name( $item ) {
 		$uri     = \wp_doing_ajax() ? \wp_get_referer() : \sanitize_text_field( \wp_unslash( $_SERVER['REQUEST_URI'] ?? '' ) );
 		$uri     = rawurlencode( $uri );
-		$actions = array(
-			'retrieve' => sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s&_wpnonce=%4$s">%3$s</a>', $item['token'], $uri, \__( 'Retrieve Information', 'indieauth' ), \wp_create_nonce( 'bulk-' . $this->_args['plural'] ) ),
-		);
+		$actions = array();
+		// Manual tokens are issued to the admin URL, there is no client to ask.
+		if ( ! isset( $item['client_id'] ) || \admin_url() !== $item['client_id'] ) {
+			$actions['retrieve'] = sprintf( '<a href="?page=indieauth_user_token&action=retrieve&tokens=%1$s&wp_http_referer=%2$s&_wpnonce=%4$s">%3$s</a>', $item['token'], $uri, \__( 'Retrieve Information', 'indieauth' ), \wp_create_nonce( 'bulk-' . $this->_args['plural'] ) );
+		}
 		if ( ! isset( $item['client_name'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
 				$client = Client_Taxonomy::get_client( $item['client_id'] );
