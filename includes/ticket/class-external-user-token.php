@@ -84,10 +84,17 @@ class External_User_Token {
 				continue;
 			}
 
+			// A response without an access token is a failed refresh. Accepting it
+			// would drop the expiry below and the token would never be checked again.
 			$refresh = $this->refresh_token( $token );
-			if ( ! is_array( $refresh ) ) {
+			if ( ! is_array( $refresh ) || empty( $refresh['access_token'] ) ) {
 				continue;
 			}
+
+			// Only take the token fields, so the response cannot overwrite
+			// token_endpoint, resource or uuid. Without a new refresh_token the
+			// stored one is kept, RFC 6749 section 6.
+			$refresh = array_intersect_key( $refresh, array_flip( array( 'access_token', 'refresh_token', 'expires_in', 'scope' ) ) );
 
 			// The refresh response replaces the stored expiry. Without expires_in
 			// the server did not set one, so the old expiry must not be kept.
