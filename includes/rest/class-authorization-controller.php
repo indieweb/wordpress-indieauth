@@ -26,6 +26,8 @@ use function IndieAuth\add_deprecation_headers;
 use function IndieAuth\same_url;
 use function IndieAuth\code_binding_failure;
 use function IndieAuth\get_session_auth_time;
+use function IndieAuth\rest_is_valid_redirect_uri;
+use function IndieAuth\get_redirect_uri_scheme;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -431,36 +433,87 @@ class Authorization_Controller extends \WP_REST_Controller {
 	/**
 	 * Verify that a redirect_uri belongs to the client.
 	 *
-	 * If the URL scheme, host or port of the redirect_uri differ from the
-	 * client_id, the redirect_uri has to match one of the redirect URLs
-	 * published by the client.
+	 * A redirect_uri that is malformed or uses a blocked scheme is always
+	 * rejected, before the indieauth_verify_redirect_uri filter runs, so the
+	 * filter cannot approve it. The consent form reaches this method without
+	 * going through REST validation, so the check is repeated here.
+	 *
+	 * An http or https redirect_uri with the same scheme, host and port as the
+	 * client_id is accepted. So is any loopback redirect_uri for a loopback
+	 * client. Every other redirect_uri, including the custom schemes native
+	 * apps use, has to match one of the redirect URLs published by the client.
+	 * Schemes are case-insensitive, RFC 3986 section 3.1, so the scheme is
+	 * compared without case. The rest of the URI has to match exactly.
 	 *
 	 * @param string $client_id    The client identifier URL.
 	 * @param string $redirect_uri The redirect URI to verify.
 	 * @return bool Whether the redirect URI is valid for this client.
 	 */
 	public static function verify_redirect_uri( $client_id, $redirect_uri ) {
-		$valid = same_origin( $client_id, $redirect_uri );
+		if ( ! rest_is_valid_redirect_uri( $redirect_uri ) ) {
+			return false;
+		}
+
+		$is_web = in_array( get_redirect_uri_scheme( $redirect_uri ), array( 'http', 'https' ), true );
+		$valid  = $is_web && same_origin( $client_id, $redirect_uri );
 
 		// Native apps listen on an ephemeral loopback port and cannot publish
 		// anything at their client_id, so any loopback port is accepted for a
-		// loopback client. RFC 8252 section 7.3.
-		if ( ! $valid && is_loopback_url( $client_id ) && is_loopback_url( $redirect_uri ) ) {
+		// loopback client. RFC 8252 section 7.3. This only applies to http(s);
+		// a custom scheme such as "myapp://localhost/" is not a loopback redirect.
+		if ( ! $valid && $is_web && is_loopback_url( $client_id ) && is_loopback_url( $redirect_uri ) ) {
 			$valid = true;
 		}
 
 		if ( ! $valid ) {
-			$valid = in_array( $redirect_uri, self::get_client_redirect_uris( $client_id ), true );
+			foreach ( self::get_client_redirect_uris( $client_id ) as $published ) {
+				if ( self::same_redirect_uri( $redirect_uri, $published ) ) {
+					$valid = true;
+					break;
+				}
+			}
 		}
 
 		/**
 		 * Filter the result of the redirect URI verification.
 		 *
+		 * Not called for a redirect URI that is malformed or uses a blocked
+		 * scheme; those are always rejected.
+		 *
 		 * @param bool   $valid        Whether the redirect URI was verified.
 		 * @param string $redirect_uri The redirect URI.
 		 * @param string $client_id    The client identifier URL.
 		 */
-		return \apply_filters( 'indieauth_verify_redirect_uri', $valid, $redirect_uri, $client_id );
+		return (bool) \apply_filters( 'indieauth_verify_redirect_uri', $valid, $redirect_uri, $client_id );
+	}
+
+	/**
+	 * Compare a redirect_uri with one published by the client.
+	 *
+	 * The scheme is compared without case, since the REST sanitizer lowercases
+	 * it and a client may publish "Com.Example.App:/callback". Everything after
+	 * the scheme has to match exactly.
+	 *
+	 * @param string $redirect_uri The redirect URI from the request.
+	 * @param mixed  $published    A redirect URI published by the client.
+	 * @return bool Whether the two are the same redirect URI.
+	 */
+	protected static function same_redirect_uri( $redirect_uri, $published ) {
+		if ( ! is_string( $redirect_uri ) || ! is_string( $published ) ) {
+			return false;
+		}
+
+		if ( $redirect_uri === $published ) {
+			return true;
+		}
+
+		$scheme1 = get_redirect_uri_scheme( $redirect_uri );
+		$scheme2 = get_redirect_uri_scheme( $published );
+		if ( null === $scheme1 || $scheme1 !== $scheme2 ) {
+			return false;
+		}
+
+		return substr( $redirect_uri, strlen( $scheme1 ) ) === substr( $published, strlen( $scheme2 ) );
 	}
 
 	/**
