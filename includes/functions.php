@@ -123,8 +123,11 @@ if ( ! function_exists( 'IndieAuth\parse_html_rels' ) ) {
 	 * @return array Rel values as indices to arrays of URLs, empty array if no rels at all.
 	 */
 	function parse_html_rels( $contents, $url ) {
-		// Unicode to HTML entities.
-		$contents = mb_convert_encoding( $contents, 'HTML-ENTITIES', mb_detect_encoding( $contents ) );
+		// Unicode to HTML entities, so DOMDocument does not read UTF-8 as ISO-8859-1.
+		// Same as the mf2 parser, the HTML-ENTITIES encoding is deprecated since PHP 8.2.
+		if ( \function_exists( 'mb_encode_numericentity' ) ) {
+			$contents = mb_encode_numericentity( $contents, array( 0x80, 0x1FFFFF, 0, 0x10FFFF ), mb_detect_encoding( $contents ), true );
+		}
 		libxml_use_internal_errors( true );
 		$doc = new \DOMDocument();
 		$doc->loadHTML( $contents );
