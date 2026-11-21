@@ -408,6 +408,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 				array(
 					'grant_type' => 'refresh_token',
 					'refresh_token' => $refresh_token,
+					'client_id'     => static::$refresh_token['client_id'],
 				)
 		);
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
@@ -481,6 +482,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 				array(
 					'grant_type'    => 'refresh_token',
 					'refresh_token' => $refresh_token,
+					'client_id'     => static::$refresh_token['client_id'],
 				)
 			);
 			$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
@@ -544,6 +546,59 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		$this->assertNotContains( $data['refresh_token'], $token );
 	}
 
+	// A refresh request without client_id is rejected, and the refresh token is kept. IndieAuth section 5.5.1.
+	public function test_refresh_token_requires_client_id() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_request', $response->get_data()['error'] );
+		$this->assertNotFalse( $this->get_refresh_token( $refresh_token ), 'A request without client_id must not cost the client its token.' );
+	}
+
+	// A refresh token presented by another client is rejected and destroyed.
+	public function test_refresh_token_client_id_mismatch_destroys_token() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => 'https://evil.example.net/',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_grant', $response->get_data()['error'] );
+		$this->assertFalse( $this->get_refresh_token( $refresh_token ) );
+
+		// The real client cannot use it afterwards either.
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => static::$refresh_token['client_id'],
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_grant', $response->get_data()['error'] );
+	}
+
+	// An equivalent client_id, here without the trailing slash, is accepted.
+	public function test_refresh_token_tolerates_equivalent_client_id() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => untrailingslashit( static::$refresh_token['client_id'] ),
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+	}
+
 	// Using a refresh token fires the refreshed hook and keeps the uuid.
 	public function test_refresh_fires_token_refreshed() {
 		$tokens = new Token_User( '_indieauth_refresh_' );
@@ -555,6 +610,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 			array(
 				'grant_type'    => 'refresh_token',
 				'refresh_token' => $refresh_token,
+				'client_id'     => static::$refresh_token['client_id'],
 			)
 		);
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
