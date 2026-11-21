@@ -358,6 +358,78 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://evil.example.net/callback' ) );
 	}
 
+	/**
+	 * A native app's custom scheme redirect must match one the client published.
+	 *
+	 * The scheme is compared without case, RFC 3986 section 3.1; the rest of
+	 * the URI has to match exactly. RFC 8252 section 7.1.
+	 */
+	public function test_verify_redirect_uri_custom_scheme() {
+		$published_uris = function () {
+			return array( 'Com.Example.App:/callback', 'myapp://oauth/cb' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'com.example.app:/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'COM.EXAMPLE.APP:/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp://oauth/cb' ) );
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'com.example.app:/Callback' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp://oauth/cb?x=1' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'otherapp:/callback' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+	}
+
+	// A custom scheme on a loopback host is not a loopback redirect, RFC 8252 section 7.3 covers http only.
+	public function test_verify_redirect_uri_custom_scheme_is_not_loopback() {
+		$none = function () {
+			return array();
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $none );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'myapp://localhost/cb' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $none );
+	}
+
+	/**
+	 * A redirect URI that wp_parse_url() cannot parse is rejected, even if published.
+	 *
+	 * The code is added to the redirect URI after the user approves, which
+	 * needs a parsed URI. "myapp:///cb" used to pass and then fail in confirmed().
+	 */
+	public function test_verify_redirect_uri_rejects_unparseable_uri() {
+		$published_uris = function () {
+			return array( 'myapp:///cb', 'myapp:80/cb' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:///cb' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:80/cb' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+	}
+
+	// A blocked scheme is rejected even when the client publishes it and the filter approves it.
+	public function test_verify_redirect_uri_blocked_scheme_cannot_be_approved() {
+		$published_uris = function () {
+			return array( 'javascript:alert(1)' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		add_filter( 'indieauth_verify_redirect_uri', '__return_true' );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$valid = $controller::verify_redirect_uri( 'https://app.example.com', 'javascript:alert(1)' );
+
+		remove_filter( 'indieauth_verify_redirect_uri', '__return_true' );
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$this->assertFalse( $valid );
+	}
+
 	// Check For an Invalid Grant Type.
 	public function test_invalid_grant_type() {
 		$code = $this->set_auth_code();

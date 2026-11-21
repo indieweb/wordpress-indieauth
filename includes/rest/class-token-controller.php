@@ -119,8 +119,8 @@ class Token_Controller extends \WP_REST_Controller {
 						),
 						// The client's redirect URL, which MUST match the initial authentication request.
 						'redirect_uri'  => array(
-							'validate_callback' => 'IndieAuth\rest_is_valid_url',
-							'sanitize_callback' => 'esc_url_raw',
+							'validate_callback' => 'IndieAuth\rest_is_valid_redirect_uri',
+							'sanitize_callback' => 'IndieAuth\sanitize_redirect_uri',
 						),
 						// The original plaintext random string generated before starting the authorization request.
 						'code_verifier' => array(),

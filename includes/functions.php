@@ -284,6 +284,156 @@ function rest_is_valid_url( $url, $request = null, $key = null ) { // phpcs:igno
 }
 
 /**
+ * URL schemes that may never be used as a redirect_uri.
+ *
+ * Redirecting to these could run script in the browser or expose local
+ * resources. They are always blocked; the `indieauth_blocked_redirect_schemes`
+ * filter can add schemes but not remove these.
+ */
+const CORE_BLOCKED_REDIRECT_SCHEMES = array( 'javascript', 'data', 'vbscript', 'file', 'blob', 'filesystem' );
+
+/**
+ * Get the scheme of a redirect URI.
+ *
+ * The scheme must follow RFC 3986 section 3.1: a letter followed by letters,
+ * digits, "+", "-" or ".". Something must follow the colon.
+ *
+ * @param string $url The redirect URI.
+ * @return string|null The lowercased scheme, or null if the URI has no valid scheme.
+ */
+function get_redirect_uri_scheme( $url ) {
+	if ( ! is_string( $url ) || ! preg_match( '/^([a-z][a-z0-9+.\-]*):./i', $url, $matches ) ) {
+		return null;
+	}
+
+	return strtolower( $matches[1] );
+}
+
+/**
+ * Check whether a URL scheme is blocked for use as a redirect_uri.
+ *
+ * Whitespace and control characters are removed and the scheme is lowercased
+ * before the check, so variants such as "JaVaScRiPt" or "java\tscript" are
+ * caught.
+ *
+ * @param string $scheme The URL scheme, without the colon.
+ * @return bool Whether the scheme is blocked.
+ */
+function is_blocked_redirect_scheme( $scheme ) {
+	$scheme = strtolower( (string) preg_replace( '/[\s\x00-\x1F\x7F]+/', '', (string) $scheme ) );
+
+	/**
+	 * Filter additional URL schemes that may never be used as a redirect_uri.
+	 *
+	 * The core schemes (javascript, data, vbscript, file, blob, filesystem) are
+	 * always blocked and cannot be removed with this filter.
+	 *
+	 * @param string[] $schemes Additional schemes to block, without the colon. Default empty.
+	 */
+	$extra = (array) \apply_filters( 'indieauth_blocked_redirect_schemes', array() );
+	$extra = array_map( 'strtolower', array_filter( $extra, 'is_string' ) );
+
+	return in_array( $scheme, array_merge( CORE_BLOCKED_REDIRECT_SCHEMES, $extra ), true );
+}
+
+/**
+ * Get the protocols to allow when sanitizing or escaping a redirect URI.
+ *
+ * WordPress's URL escaping functions remove any URL whose scheme is not in
+ * the allowed list, which would empty the custom schemes native apps use
+ * (RFC 8252 section 7.1). This returns the WordPress list plus the URI's own
+ * scheme, if that scheme is valid and not blocked. Blocked schemes are
+ * removed even if another plugin added them to the WordPress list.
+ *
+ * @param string $url The redirect URI.
+ * @return string[] Protocols to pass to esc_url() or esc_url_raw().
+ */
+function redirect_uri_protocols( $url ) {
+	$protocols = \wp_allowed_protocols();
+	$scheme    = get_redirect_uri_scheme( $url );
+
+	if ( $scheme && ! in_array( $scheme, $protocols, true ) ) {
+		$protocols[] = $scheme;
+	}
+
+	return array_values(
+		array_filter(
+			$protocols,
+			function ( $protocol ) {
+				return ! is_blocked_redirect_scheme( $protocol );
+			}
+		)
+	);
+}
+
+/**
+ * Check whether a value is a valid redirect URI, for REST validation.
+ *
+ * URIs using http or https are validated as before, with FILTER_VALIDATE_URL.
+ * Other schemes, such as the custom schemes native apps use, are accepted if
+ * the scheme is valid and not blocked, and wp_parse_url() can parse the URI
+ * with that scheme. Whether the client actually published
+ * the redirect URI is checked separately, by
+ * Authorization_Controller::verify_redirect_uri().
+ *
+ * @param mixed                 $url     The value to validate.
+ * @param \WP_REST_Request|null $request REST request object. Unused.
+ * @param string|null           $key     Parameter key. Unused.
+ * @return bool Whether the value is a valid redirect URI.
+ */
+function rest_is_valid_redirect_uri( $url, $request = null, $key = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	if ( ! is_string( $url ) || '' === $url ) {
+		return false;
+	}
+
+	// Whitespace and control characters are never valid in a URI, and can be used to disguise a scheme.
+	if ( preg_match( '/[\s\x00-\x1F\x7F]/', $url ) ) {
+		return false;
+	}
+
+	$scheme = get_redirect_uri_scheme( $url );
+	if ( ! $scheme || is_blocked_redirect_scheme( $scheme ) ) {
+		return false;
+	}
+
+	// The URI must be one PHP can parse, with the same scheme, or the code
+	// cannot be added to it later. "myapp:///cb" does not parse at all, and
+	// "myapp:80/cb" parses as a host and port with no scheme.
+	$parts = \wp_parse_url( $url );
+	if ( ! is_array( $parts ) || ! isset( $parts['scheme'] ) || strtolower( $parts['scheme'] ) !== $scheme ) {
+		return false;
+	}
+
+	if ( in_array( $scheme, array( 'http', 'https' ), true ) ) {
+		return false !== \filter_var( $url, FILTER_VALIDATE_URL );
+	}
+
+	return true;
+}
+
+/**
+ * Sanitize a redirect URI, for REST sanitization.
+ *
+ * Works like esc_url_raw(), but keeps a valid custom scheme instead of
+ * removing the whole URI. The scheme is lowercased by esc_url_raw().
+ *
+ * The REST API passes the request and parameter key as extra arguments, so
+ * they are accepted here and ignored.
+ *
+ * @param mixed                 $url     The value to sanitize.
+ * @param \WP_REST_Request|null $request REST request object. Unused.
+ * @param string|null           $key     Parameter key. Unused.
+ * @return string The sanitized redirect URI, or an empty string if it is not valid.
+ */
+function sanitize_redirect_uri( $url, $request = null, $key = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	if ( ! rest_is_valid_redirect_uri( $url ) ) {
+		return '';
+	}
+
+	return \esc_url_raw( $url, redirect_uri_protocols( $url ) );
+}
+
+/**
  * Get REST URL that works even when called early.
  *
  * @param string $path Optional path to append.
@@ -377,20 +527,25 @@ if ( ! function_exists( 'IndieAuth\build_url' ) ) {
 	 * Slightly modified from p3k-utils (https://github.com/aaronpk/p3k-utils)
 	 * Copyright 2017 Aaron Parecki, used with permission under MIT License.
 	 *
+	 * A URL without an authority (host, user or port), such as the custom-scheme
+	 * redirect `com.example.app:/callback`, gets only "scheme:" and not
+	 * "scheme://", so it is rebuilt exactly as it was parsed.
+	 *
 	 * @link http://php.net/parse_url
 	 * @param array $parsed_url The parsed URL (wp_parse_url).
 	 * @return string The final URL.
 	 */
 	function build_url( $parsed_url ) {
-		$scheme   = ! empty( $parsed_url['scheme'] ) ? $parsed_url['scheme'] . '://' : '';
-		$host     = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
-		$port     = ! empty( $parsed_url['port'] ) ? ':' . $parsed_url['port'] : '';
-		$user     = ! empty( $parsed_url['user'] ) ? $parsed_url['user'] : '';
-		$pass     = ! empty( $parsed_url['pass'] ) ? ':' . $parsed_url['pass'] : '';
-		$pass     = ( $user || $pass ) ? "$pass@" : '';
-		$path     = ! empty( $parsed_url['path'] ) ? $parsed_url['path'] : '';
-		$query    = ! empty( $parsed_url['query'] ) ? '?' . $parsed_url['query'] : '';
-		$fragment = ! empty( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
+		$authority = ! empty( $parsed_url['host'] ) || ! empty( $parsed_url['user'] ) || ! empty( $parsed_url['port'] );
+		$scheme    = ! empty( $parsed_url['scheme'] ) ? $parsed_url['scheme'] . ( $authority ? '://' : ':' ) : '';
+		$host      = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
+		$port      = ! empty( $parsed_url['port'] ) ? ':' . $parsed_url['port'] : '';
+		$user      = ! empty( $parsed_url['user'] ) ? $parsed_url['user'] : '';
+		$pass      = ! empty( $parsed_url['pass'] ) ? ':' . $parsed_url['pass'] : '';
+		$pass      = ( $user || $pass ) ? "$pass@" : '';
+		$path      = ! empty( $parsed_url['path'] ) ? $parsed_url['path'] : '';
+		$query     = ! empty( $parsed_url['query'] ) ? '?' . $parsed_url['query'] : '';
+		$fragment  = ! empty( $parsed_url['fragment'] ) ? '#' . $parsed_url['fragment'] : '';
 
 		return "$scheme$user$pass$host$port$path$query$fragment";
 	}
@@ -592,6 +747,9 @@ if ( ! function_exists( 'IndieAuth\same_url' ) ) {
 	 * with "https://app.example.com/" means the same URL, and the binding check
 	 * must not destroy the code over that.
 	 *
+	 * A URI without a host, such as a native app's custom scheme redirect, is
+	 * compared exactly except for the case of the scheme.
+	 *
 	 * @param string $url1 First URL.
 	 * @param string $url2 Second URL.
 	 * @return bool True if both URLs are equivalent.
@@ -603,6 +761,18 @@ if ( ! function_exists( 'IndieAuth\same_url' ) ) {
 
 		if ( $url1 === $url2 ) {
 			return true;
+		}
+
+		// A URI without a host, such as the native app redirect
+		// "com.example.app:/callback", has no origin to normalize. Only the
+		// case of the scheme is ignored; the rest has to match exactly.
+		if ( empty( \wp_parse_url( $url1, PHP_URL_HOST ) ) || empty( \wp_parse_url( $url2, PHP_URL_HOST ) ) ) {
+			$scheme1 = get_redirect_uri_scheme( $url1 );
+			$scheme2 = get_redirect_uri_scheme( $url2 );
+			if ( null === $scheme1 || $scheme1 !== $scheme2 ) {
+				return false;
+			}
+			return substr( $url1, strlen( $scheme1 ) ) === substr( $url2, strlen( $scheme2 ) );
 		}
 
 		$defaults  = array(
