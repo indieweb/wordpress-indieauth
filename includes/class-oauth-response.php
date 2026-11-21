@@ -63,8 +63,10 @@ class OAuth_Response extends \WP_REST_Response {
 		/**
 		 * Fires when IndieAuth answers a request with an error.
 		 *
-		 * Covers the IndieAuth endpoints and requests that fail with an IndieAuth
-		 * token. Anonymous requests can trigger it, so a listener that stores
+		 * Covers the IndieAuth endpoints and requests with an IndieAuth token. It
+		 * also fires for a request to any other REST route that fails with a
+		 * bearer token IndieAuth does not know, if no other plugin authenticated
+		 * the user. Anonymous requests can trigger it, so a listener that stores
 		 * the errors should limit how many it keeps.
 		 *
 		 * @param OAuth_Response $response The error response. Its data holds `error` and `error_description`.
