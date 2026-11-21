@@ -35,8 +35,10 @@ class Test_External_User_Token extends WP_UnitTestCase {
 	/**
 	 * Calls the protected refresh_token() and returns the body it sent.
 	 *
-	 * The endpoint is a TEST-NET address, so wp_http_validate_url() accepts it
-	 * without a DNS lookup, and the request is answered by pre_http_request.
+	 * The endpoint is a TEST-NET address, so no DNS lookup is needed, and the
+	 * request is answered by pre_http_request. Newer WordPress versions reject
+	 * reserved ranges such as TEST-NET in wp_http_validate_url() unless
+	 * http_request_host_is_external allows them, so that host is allowed here.
 	 *
 	 * @param array $token Stored token data.
 	 * @return array|null The request body, or null if no request was sent.
@@ -55,12 +57,17 @@ class Test_External_User_Token extends WP_UnitTestCase {
 				'cookies'  => array(),
 			);
 		};
+		$external = function ( $is_external, $host ) {
+			return '203.0.113.10' === $host ? true : $is_external;
+		};
 		add_filter( 'pre_http_request', $capture, 10, 2 );
+		add_filter( 'http_request_host_is_external', $external, 10, 2 );
 
 		$method = new ReflectionMethod( External_User_Token::class, 'refresh_token' );
 		$method->setAccessible( true );
 		$method->invoke( new External_User_Token( 1 ), $token );
 
+		remove_filter( 'http_request_host_is_external', $external, 10 );
 		remove_filter( 'pre_http_request', $capture, 10 );
 		return $sent;
 	}
