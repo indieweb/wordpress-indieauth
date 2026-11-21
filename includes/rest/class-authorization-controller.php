@@ -25,6 +25,7 @@ use function IndieAuth\deprecation_notice;
 use function IndieAuth\add_deprecation_headers;
 use function IndieAuth\same_url;
 use function IndieAuth\code_binding_failure;
+use function IndieAuth\get_session_auth_time;
 
 /**
  * IndieAuth Authorization Controller class.
@@ -706,8 +707,11 @@ class Authorization_Controller extends \WP_REST_Controller {
 		// Add UUID for reference.
 		$uuid = \wp_generate_uuid4();
 
+		// When the user last logged in. Only readable here, while the session cookie is present.
+		$auth_time = get_session_auth_time( $user );
+
 		/// phpcs:enable
-		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid' );
+		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid', 'auth_time' );
 		$token = array_filter( $token );
 		$code  = $this->set_code( $current_user->ID, $token );
 		$url   = add_query_params_to_url(

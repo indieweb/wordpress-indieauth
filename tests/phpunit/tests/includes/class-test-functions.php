@@ -16,6 +16,79 @@ class Test_Functions extends WP_UnitTestCase {
 		self::delete_user( self::$author_id );
 	}
 
+	public function tear_down() {
+		unset( $_COOKIE[ LOGGED_IN_COOKIE ] );
+		parent::tear_down();
+	}
+
+	/**
+	 * Start a WordPress session for a user and set the logged-in cookie for it.
+	 *
+	 * @param int            $user_id User ID.
+	 * @param int|false|null $login   Login time to store. False removes it. Null keeps the time set by WordPress.
+	 * @return string Session token.
+	 */
+	protected function start_session( $user_id, $login = null ) {
+		$manager = WP_Session_Tokens::get_instance( $user_id );
+		$token   = $manager->create( time() + DAY_IN_SECONDS );
+
+		if ( null !== $login ) {
+			$session = $manager->get( $token );
+			if ( false === $login ) {
+				unset( $session['login'] );
+			} else {
+				$session['login'] = $login;
+			}
+			$manager->update( $token, $session );
+		}
+
+		$_COOKIE[ LOGGED_IN_COOKIE ] = wp_generate_auth_cookie( $user_id, time() + DAY_IN_SECONDS, 'logged_in', $token );
+
+		return $token;
+	}
+
+	// auth_time is the login time recorded in the user's session.
+	public function test_session_auth_time_returns_session_login() {
+		$this->start_session( static::$author_id, 1700000000 );
+
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	// Without a user ID, the current user's session is used.
+	public function test_session_auth_time_defaults_to_current_user() {
+		wp_set_current_user( static::$author_id );
+		$this->start_session( static::$author_id, 1700000000 );
+
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time() );
+	}
+
+	public function test_session_auth_time_is_null_without_cookie() {
+		wp_set_current_user( static::$author_id );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	public function test_session_auth_time_is_null_without_user() {
+		$this->start_session( static::$author_id, 1700000000 );
+		wp_set_current_user( 0 );
+
+		$this->assertNull( IndieAuth\get_session_auth_time() );
+	}
+
+	// A cookie for a session that no longer exists, for example after logging out elsewhere.
+	public function test_session_auth_time_is_null_for_destroyed_session() {
+		$token = $this->start_session( static::$author_id, 1700000000 );
+		WP_Session_Tokens::get_instance( static::$author_id )->destroy( $token );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	public function test_session_auth_time_is_null_without_login_value() {
+		$this->start_session( static::$author_id, false );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
 	// Test Getting the Author URL through get_user_by_identifier.
 	public function test_authorurl() {
 		// Remove port from site URL for IndieAuth URL validation compatibility.
