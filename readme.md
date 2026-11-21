@@ -193,6 +193,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 
 * Add `client_id_metadata_document_supported` and `token_endpoint_auth_methods_supported` to the server metadata (#361)
 * Store the time the user logged in (`auth_time`) with authorization codes and carry it, unchanged, to access and refresh tokens. Introspection returns it (#362)
+* Accept custom URI scheme redirect URLs for native apps, such as `com.example.app:/callback` (RFC 8252). They must exactly match a redirect URL published by the client, and the consent screen says the user will be returned to an app. `javascript`, `data`, `vbscript`, `file`, `blob` and `filesystem` are always rejected; more schemes can be blocked with the `indieauth_blocked_redirect_schemes` filter. The consent screen is no longer shown for a `redirect_uri` the client has not published (#367)
 
 ### 5.1.0
 
