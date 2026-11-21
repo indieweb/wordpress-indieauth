@@ -115,7 +115,28 @@ class External_Token_List_Table extends \WP_List_Table {
 				$tokens->destroy( $t );
 				break;
 			case 'verify':
-				$tokens->verify( $t );
+				foreach ( $t as $token ) {
+					$item = $tokens->get( $token );
+					if ( ! $item ) {
+						continue;
+					}
+
+					if ( $tokens->verify( $token ) ) {
+						$type = 'success';
+						// translators: Host of the resource the token is for.
+						$message = \__( 'The token for %s is valid.', 'indieauth' );
+					} else {
+						$type = 'error';
+						// translators: Host of the resource the token is for.
+						$message = \__( 'The token for %s could not be verified.', 'indieauth' );
+					}
+
+					\printf(
+						'<div class="notice notice-%1$s"><p>%2$s</p></div>',
+						\esc_attr( $type ),
+						\esc_html( \sprintf( $message, $this->column_resource( $item ) ) )
+					);
+				}
 				break;
 			default:
 		}

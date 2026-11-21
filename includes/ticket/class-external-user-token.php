@@ -220,7 +220,7 @@ class External_User_Token {
 				$found = $key;
 			}
 		}
-		if ( ! $found ) {
+		if ( null === $found ) {
 			// Add local unique identifier to distinguish if multiple tokens are issued.
 			$info['uuid'] = \wp_generate_uuid4();
 
@@ -244,6 +244,9 @@ class External_User_Token {
 		}
 
 		$tokens = \get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
+		if ( ! is_array( $tokens ) ) {
+			return false;
+		}
 
 		if ( is_string( $destroy ) ) {
 			$destroy = array( $destroy );
@@ -298,7 +301,7 @@ class External_User_Token {
 	/**
 	 * Verifies an External token.
 	 *
-	 * @param array $key Token to verify.
+	 * @param string $key Access token of the token to verify.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */
 	public function verify( $key ) {
