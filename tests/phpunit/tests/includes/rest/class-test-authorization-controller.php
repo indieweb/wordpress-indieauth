@@ -2,6 +2,14 @@
 
 use IndieAuth\Token\User as Token_User;
 
+// The consent templates use these functions of wp-login.php, which cannot be loaded in a test.
+if ( ! function_exists( 'login_header' ) ) {
+	function login_header() {}
+}
+if ( ! function_exists( 'login_footer' ) ) {
+	function login_footer() {}
+}
+
 class Test_Authorization_Controller extends WP_UnitTestCase {
 
 	protected static $author_id;
@@ -119,6 +127,43 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertSame( 'https://app.example.com/', $calls[0]['token']['client_id'] );
 		$this->assertSame( 'create', $calls[0]['token']['scope'] );
 		$this->assertSame( $code['uuid'], $calls[0]['token']['uuid'] );
+	}
+
+	// The consent form hands the user and the client to plugins that add their own fields.
+	public function test_authorization_form_action_gets_the_user_and_client() {
+		wp_set_current_user( self::$author_id );
+
+		$calls = array();
+		add_action(
+			'indieauth_authorization_form',
+			function ( $user_id, $client_id ) use ( &$calls ) {
+				$calls[] = array( $user_id, $client_id );
+			},
+			10,
+			2
+		);
+
+		// A client that is known already, so nothing is fetched.
+		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+
+		$_GET = array(
+			'client_id'             => 'https://app.example.com/',
+			'redirect_to'           => 'https://app.example.com/redirect',
+			'scope'                 => 'create',
+			'state'                 => 'abc123',
+			'response_type'         => 'code',
+			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+			'code_challenge_method' => 'S256',
+		);
+
+		ob_start();
+		( new IndieAuth\Rest\Authorization_Controller() )->authorize();
+		$output = ob_get_clean();
+
+		$_GET = array();
+
+		$this->assertSame( array( array( self::$author_id, 'https://app.example.com/' ) ), $calls );
+		$this->assertStringContainsString( get_userdata( self::$author_id )->display_name, $output );
 	}
 
 	// Form Encoded Request
