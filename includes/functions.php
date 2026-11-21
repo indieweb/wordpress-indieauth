@@ -738,6 +738,9 @@ if ( ! function_exists( 'IndieAuth\same_url' ) ) {
 	 * with "https://app.example.com/" means the same URL, and the binding check
 	 * must not destroy the code over that.
 	 *
+	 * A URI without a host, such as a native app's custom scheme redirect, is
+	 * compared exactly except for the case of the scheme.
+	 *
 	 * @param string $url1 First URL.
 	 * @param string $url2 Second URL.
 	 * @return bool True if both URLs are equivalent.
@@ -749,6 +752,18 @@ if ( ! function_exists( 'IndieAuth\same_url' ) ) {
 
 		if ( $url1 === $url2 ) {
 			return true;
+		}
+
+		// A URI without a host, such as the native app redirect
+		// "com.example.app:/callback", has no origin to normalize. Only the
+		// case of the scheme is ignored; the rest has to match exactly.
+		if ( empty( \wp_parse_url( $url1, PHP_URL_HOST ) ) || empty( \wp_parse_url( $url2, PHP_URL_HOST ) ) ) {
+			$scheme1 = get_redirect_uri_scheme( $url1 );
+			$scheme2 = get_redirect_uri_scheme( $url2 );
+			if ( null === $scheme1 || $scheme1 !== $scheme2 ) {
+				return false;
+			}
+			return substr( $url1, strlen( $scheme1 ) ) === substr( $url2, strlen( $scheme2 ) );
 		}
 
 		$defaults  = array(
