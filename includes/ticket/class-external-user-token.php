@@ -74,19 +74,30 @@ class External_User_Token {
 			return false;
 		}
 		foreach ( $tokens as $key => $token ) {
-			if ( array_key_exists( 'expiration', $token ) && $this->is_expired( $token['expiration'] ) ) {
-				if ( array_key_exists( 'refresh_token' ) ) {
-					$refresh = $this->refresh_token( $token );
-					if ( is_array( $refresh ) ) {
-						$token[ $key ] = array_merge( $token[ $key ], $refresh );
-						if ( array_key_exists( 'expires_in', $token[ $key ] ) ) {
-							$token[ $key ]['expiration'] = time() + $token[ $key ]['expires_in'];
-						}
-					}
-				} else {
-					unset( $token[ $key ] );
-				}
+			if ( ! array_key_exists( 'expiration', $token ) || ! $this->is_expired( $token['expiration'] ) ) {
+				continue;
 			}
+
+			// An expired token that cannot be refreshed is removed.
+			if ( ! array_key_exists( 'refresh_token', $token ) ) {
+				unset( $tokens[ $key ] );
+				continue;
+			}
+
+			$refresh = $this->refresh_token( $token );
+			if ( ! is_array( $refresh ) ) {
+				continue;
+			}
+
+			// The refresh response replaces the stored expiry. Without expires_in
+			// the server did not set one, so the old expiry must not be kept.
+			unset( $token['expires_in'], $token['expiration'] );
+			$token = array_merge( $token, $refresh );
+			if ( array_key_exists( 'expires_in', $refresh ) && is_numeric( $refresh['expires_in'] ) ) {
+				$token['expiration'] = time() + (int) $refresh['expires_in'];
+			}
+
+			$tokens[ $key ] = $token;
 		}
 		\update_user_meta( $this->user_id, 'indieauth_external_tokens', $tokens );
 		return true;
