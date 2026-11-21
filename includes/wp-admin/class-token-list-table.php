@@ -123,10 +123,10 @@ class Token_List_Table extends \WP_List_Table {
 		switch ( $this->current_action() ) {
 			case 'revoke':
 				if ( is_string( $tokens ) ) {
-					$t->destroy( $tokens );
+					$t->revoke( $tokens );
 				} elseif ( is_array( $tokens ) ) {
 					foreach ( $tokens as $token ) {
-						$t->destroy( $token );
+						$t->revoke( $token );
 					}
 				}
 				break;
@@ -196,12 +196,12 @@ class Token_List_Table extends \WP_List_Table {
 		$tokens = $t->get_all();
 		foreach ( $tokens as $key => $token ) {
 			if ( ! isset( $token['last_accessed'] ) ) {
-				$t->destroy( $key );
+				$t->revoke( $key );
 			} else {
 				$time      = (int) $token['last_accessed'];
 				$time_diff = time() - $time;
 				if ( $time_diff > 0 && $time_diff > $diff ) {
-					$t->destroy( $key );
+					$t->revoke( $key );
 				}
 			}
 		}

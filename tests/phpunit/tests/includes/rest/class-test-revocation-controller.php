@@ -121,6 +121,30 @@ class Test_Revocation_Controller extends WP_UnitTestCase {
 		$this->assertFalse( $check, $check );
 	}
 
+	// Revoking fires the hook with what was stored, and only for a token that existed.
+	public function test_token_revocation_fires_token_revoked() {
+		$calls = array();
+		add_action(
+			'indieauth_token_revoked',
+			function ( $token, $user_id ) use ( &$calls ) {
+				$calls[] = compact( 'token', 'user_id' );
+			},
+			10,
+			2
+		);
+
+		$this->create_form( 'POST', array( 'token' => 'not-a-token' ) );
+		$this->assertCount( 0, $calls );
+
+		$token = self::set_access_token();
+		$this->create_form( 'POST', array( 'token' => $token ) );
+
+		$this->assertCount( 1, $calls );
+		$this->assertSame( self::$author_id, $calls[0]['user_id'] );
+		$this->assertSame( static::$test_token['uuid'], $calls[0]['token']['uuid'] );
+		$this->assertNotContains( $token, $calls[0]['token'] );
+	}
+
 	// RFC 8414 names the key revocation_endpoint_auth_methods_supported; the old key stays for existing readers.
 	public function test_metadata_uses_rfc8414_auth_methods_key() {
 		$controller = new IndieAuth\Rest\Revocation_Controller();

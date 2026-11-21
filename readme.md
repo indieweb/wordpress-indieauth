@@ -91,6 +91,16 @@ If any of these return null, the value was not set, and IndieAuth is not being u
 
 The scope description can be customized with the filter `indieauth_scope_description( $description, $scope )`
 
+To log what happens or to send notifications, the plugin fires these actions:
+
+* `indieauth_authorization_approved( $token, $user_id )` when a user approved an app and a code was issued
+* `indieauth_token_issued( $token, $user_id )` when a code was exchanged for a token
+* `indieauth_token_refreshed( $token, $user_id )` when a refresh token was used
+* `indieauth_token_revoked( $token, $user_id )` when a token was revoked by the app or in the admin
+* `indieauth_error( $response )` when a request was answered with an error
+
+`$token` is the data stored with the code or token, never the code or token itself. Its `uuid` stays the same from the approval to the revocation. `indieauth_error` can be triggered by anonymous requests, so limit what you store.
+
 ### What if I just want to use the REST API without OAuth exchange?
 
 The plugin allows you to generate a token under User->Manage Tokens with access. You can provide this to an application manually.
@@ -194,6 +204,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Add `client_id_metadata_document_supported` and `token_endpoint_auth_methods_supported` to the server metadata (#361)
 * Store the time the user logged in (`auth_time`) with authorization codes and carry it, unchanged, to access and refresh tokens. Introspection returns it (#362)
 * Accept custom URI scheme redirect URLs for native apps, such as `com.example.app:/callback` (RFC 8252). They must exactly match a redirect URL published by the client, and the consent screen says the user will be returned to an app. `javascript`, `data`, `vbscript`, `file`, `blob` and `filesystem` are always rejected; more schemes can be blocked with the `indieauth_blocked_redirect_schemes` filter. The consent screen is no longer shown for a `redirect_uri` the client has not published (#367)
+* Add actions for logging and notifications: `indieauth_authorization_approved`, `indieauth_token_issued`, `indieauth_token_refreshed`, `indieauth_token_revoked` and `indieauth_error`. The token endpoint no longer writes its default "Invalid Request" error to the debug log on requests that succeed (#261)
 
 ### 5.1.0
 

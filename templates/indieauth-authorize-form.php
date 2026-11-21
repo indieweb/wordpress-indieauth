@@ -6,6 +6,7 @@ login_header(
 	'',
 	$login_errors
 );
+$current_user = wp_get_current_user();
 ?>
 <form method="post" action="<?php echo esc_url( $url ); ?>">
 	<div class="client-info">
@@ -63,7 +64,7 @@ login_header(
 	<p class="submit">
 	<?php
 		// Hook to allow adding to form
-		do_action( 'indieauth_authorization_form', $current_user->user_id, $client_id );
+		do_action( 'indieauth_authorization_form', $current_user->ID, $client_id );
 		// Add nonce for CSRF protection
 		wp_nonce_field( 'indieauth_authorize' );
 	?>

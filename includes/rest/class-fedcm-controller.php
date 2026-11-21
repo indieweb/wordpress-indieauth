@@ -750,6 +750,11 @@ class FedCM_Controller extends \WP_REST_Controller {
 		$this->codes->set_user( $user->ID );
 		$code = $this->codes->set( $token, 600 );
 
+		if ( $code ) {
+			/** This action is documented in includes/rest/class-authorization-controller.php */
+			\do_action( 'indieauth_authorization_approved', $token, $user->ID );
+		}
+
 		// Build the token response.
 		$token_response = array(
 			'code'              => $code,
