@@ -332,4 +332,102 @@ class Test_Functions extends WP_UnitTestCase {
 		$this->assertSame( 'https://example.com/auth/grüße', $rels['authorization_endpoint'] );
 		$this->assertSame( 'https://example.com/über', $rels['me'] );
 	}
+
+	public function blocked_redirect_uri_provider() {
+		return array(
+			'javascript'           => array( 'javascript:alert(1)' ),
+			'mixed case'           => array( 'JaVaScRiPt:alert(1)' ),
+			'leading space'        => array( ' javascript:alert(1)' ),
+			'tab inside scheme'    => array( "java\tscript:alert(1)" ),
+			'newline inside'       => array( "java\nscript:alert(1)" ),
+			'null byte'            => array( "javascript\0:alert(1)" ),
+			'data'                 => array( 'data:text/html,<script>alert(1)</script>' ),
+			'vbscript'             => array( 'vbscript:msgbox(1)' ),
+			'file'                 => array( 'file:///etc/passwd' ),
+			'blob'                 => array( 'blob:https://example.com/uuid' ),
+			'filesystem'           => array( 'filesystem:https://example.com/temporary/x' ),
+		);
+	}
+
+	/**
+	 * Blocked schemes are rejected in the usual disguises, and sanitize to ''.
+	 *
+	 * @dataProvider blocked_redirect_uri_provider
+	 *
+	 * @param string $url The redirect URI.
+	 */
+	public function test_blocked_redirect_uri_is_rejected( $url ) {
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( $url ) );
+		$this->assertSame( '', IndieAuth\sanitize_redirect_uri( $url ) );
+	}
+
+	public function invalid_redirect_uri_provider() {
+		return array(
+			'empty'                => array( '' ),
+			'not a string'         => array( array( 'https://example.com/' ) ),
+			'no scheme'            => array( 'not a url' ),
+			'nothing after colon'  => array( 'myapp:' ),
+			'scheme starts digit'  => array( '1app:/cb' ),
+			'space in path'        => array( 'myapp:/c b' ),
+			'empty authority'      => array( 'myapp:///cb' ),
+			'parses as host:port'  => array( 'myapp:80/cb' ),
+			'https without host'   => array( 'https://' ),
+		);
+	}
+
+	/**
+	 * Malformed redirect URIs are rejected.
+	 *
+	 * @dataProvider invalid_redirect_uri_provider
+	 *
+	 * @param mixed $url The redirect URI.
+	 */
+	public function test_invalid_redirect_uri_is_rejected( $url ) {
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( $url ) );
+	}
+
+	// Custom schemes are accepted and kept by the sanitizer, with the scheme lowercased.
+	public function test_custom_scheme_redirect_uri_is_accepted() {
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'com.example.app:/callback' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb?x=1' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'https://app.example.com/cb' ) );
+
+		$this->assertSame( 'com.example.app:/callback', IndieAuth\sanitize_redirect_uri( 'Com.Example.App:/callback' ) );
+		// REST passes the request and key as extra arguments.
+		$this->assertSame( 'myapp://oauth/cb', IndieAuth\sanitize_redirect_uri( 'myapp://oauth/cb', new WP_REST_Request(), 'redirect_uri' ) );
+	}
+
+	// The filter can add blocked schemes, case-insensitively, but cannot remove the core ones.
+	public function test_blocked_redirect_schemes_filter_is_add_only() {
+		$add = function () {
+			return array( 'MyApp' );
+		};
+		add_filter( 'indieauth_blocked_redirect_schemes', $add );
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb' ) );
+		remove_filter( 'indieauth_blocked_redirect_schemes', $add );
+
+		add_filter( 'indieauth_blocked_redirect_schemes', '__return_empty_array' );
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( 'javascript:alert(1)' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb' ) );
+		remove_filter( 'indieauth_blocked_redirect_schemes', '__return_empty_array' );
+	}
+
+	/**
+	 * The URI's own scheme is added to the escaping protocols unless blocked,
+	 * and a scheme WordPress allows is removed once it is blocked.
+	 */
+	public function test_redirect_uri_protocols_exclude_blocked_schemes() {
+		$this->assertContains( 'myapp', IndieAuth\redirect_uri_protocols( 'myapp:/cb' ) );
+		$this->assertNotContains( 'javascript', IndieAuth\redirect_uri_protocols( 'javascript:alert(1)' ) );
+
+		// ftp is in wp_allowed_protocols() by default.
+		$this->assertContains( 'ftp', IndieAuth\redirect_uri_protocols( 'myapp:/cb' ) );
+		$block_ftp = function () {
+			return array( 'ftp' );
+		};
+		add_filter( 'indieauth_blocked_redirect_schemes', $block_ftp );
+		$protocols = IndieAuth\redirect_uri_protocols( 'myapp:/cb' );
+		remove_filter( 'indieauth_blocked_redirect_schemes', $block_ftp );
+		$this->assertNotContains( 'ftp', $protocols );
+	}
 }

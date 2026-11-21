@@ -371,7 +371,8 @@ function redirect_uri_protocols( $url ) {
  *
  * URIs using http or https are validated as before, with FILTER_VALIDATE_URL.
  * Other schemes, such as the custom schemes native apps use, are accepted if
- * the scheme is valid and not blocked. Whether the client actually published
+ * the scheme is valid and not blocked, and wp_parse_url() can parse the URI
+ * with that scheme. Whether the client actually published
  * the redirect URI is checked separately, by
  * Authorization_Controller::verify_redirect_uri().
  *
@@ -392,6 +393,14 @@ function rest_is_valid_redirect_uri( $url, $request = null, $key = null ) { // p
 
 	$scheme = get_redirect_uri_scheme( $url );
 	if ( ! $scheme || is_blocked_redirect_scheme( $scheme ) ) {
+		return false;
+	}
+
+	// The URI must be one PHP can parse, with the same scheme, or the code
+	// cannot be added to it later. "myapp:///cb" does not parse at all, and
+	// "myapp:80/cb" parses as a host and port with no scheme.
+	$parts = \wp_parse_url( $url );
+	if ( ! is_array( $parts ) || ! isset( $parts['scheme'] ) || strtolower( $parts['scheme'] ) !== $scheme ) {
 		return false;
 	}
 
