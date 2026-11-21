@@ -240,4 +240,23 @@ class Test_Functions extends WP_UnitTestCase {
 		$this->assertSame( $expected, IndieAuth\code_binding_failure( $token, $params ) );
 	}
 
+	// Non-ASCII characters must survive, and PHP 8.2+ must not report a deprecation.
+	public function test_parse_html_rels_keeps_unicode_without_deprecation() {
+		$html = '<html><head><title>Grüße</title><link rel="authorization_endpoint" href="/auth/grüße"></head><body><a rel="me" href="https://example.com/über">Über mich</a></body></html>';
+
+		$deprecations = array();
+		set_error_handler( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler
+			function ( $errno, $errstr ) use ( &$deprecations ) {
+				$deprecations[] = $errstr;
+				return true;
+			},
+			E_DEPRECATED
+		);
+		$rels = \IndieAuth\parse_html_rels( $html, 'https://example.com/' );
+		restore_error_handler();
+
+		$this->assertSame( array(), $deprecations );
+		$this->assertSame( 'https://example.com/auth/grüße', $rels['authorization_endpoint'] );
+		$this->assertSame( 'https://example.com/über', $rels['me'] );
+	}
 }

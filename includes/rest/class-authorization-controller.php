@@ -78,7 +78,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 	 * @return array List of supported response types.
 	 */
 	public static function get_response_types() {
-		return array_unique( \apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) );
+		return array_values( array_unique( \apply_filters( 'indieauth_response_types_supported', array( 'code' ) ) ) );
 	}
 
 	/**
