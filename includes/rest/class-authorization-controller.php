@@ -714,7 +714,20 @@ class Authorization_Controller extends \WP_REST_Controller {
 		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid', 'auth_time' );
 		$token = array_filter( $token );
 		$code  = $this->set_code( $current_user->ID, $token );
-		$url   = add_query_params_to_url(
+
+		if ( $code ) {
+			/**
+			 * Fires when a user approved an authorization request and a code was issued.
+			 *
+			 * The `uuid` stays the same on the access and refresh tokens issued for this code.
+			 *
+			 * @param array $token   The data stored with the authorization code, without the code itself.
+			 * @param int   $user_id The user who approved the request.
+			 */
+			\do_action( 'indieauth_authorization_approved', $token, $current_user->ID );
+		}
+
+		$url = add_query_params_to_url(
 			array(
 				'code'  => $code,
 				'state' => $state,

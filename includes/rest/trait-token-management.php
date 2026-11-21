@@ -87,18 +87,18 @@ trait Token_Management {
 		switch ( $type ) {
 			case 'access_token':
 				$this->tokens->set_user( $user_id );
-				return $this->tokens->destroy( $id );
+				return $this->tokens->revoke( $id );
 			case 'refresh_token':
 				$this->refresh_tokens->set_user( $user_id );
-				return $this->refresh_tokens->destroy( $id );
+				return $this->refresh_tokens->revoke( $id );
 			default:
 				$this->tokens->set_user( $user_id );
-				$token = $this->tokens->destroy( $id );
+				$token = $this->tokens->revoke( $id );
 				if ( $token ) {
 					return $token;
 				}
 				$this->refresh_tokens->set_user( $user_id );
-				return $this->refresh_tokens->destroy( $id );
+				return $this->refresh_tokens->revoke( $id );
 		}
 	}
 
