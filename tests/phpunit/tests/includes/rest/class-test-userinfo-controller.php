@@ -1,6 +1,6 @@
 <?php
 
-use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 
 class Test_Userinfo_Controller extends WP_UnitTestCase {
 
@@ -45,14 +45,14 @@ class Test_Userinfo_Controller extends WP_UnitTestCase {
 
 	// Sets a test access token
 	public function set_access_token() {
-		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens    = new Tokens( 'access' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
 	}
 
 	// Gets a test access token
 	public function get_access_token( $token ) {
-		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens    = new Tokens( 'access' );
 		return $tokens->get( $token );
 	}
 
@@ -108,7 +108,7 @@ class Test_Userinfo_Controller extends WP_UnitTestCase {
 
 	// A refresh token is not a bearer credential.
 	public function test_userinfo_endpoint_rejects_refresh_token() {
-		$tokens = new Token_User( '_indieauth_refresh_' );
+		$tokens = new Tokens( 'refresh' );
 		$tokens->set_user( self::$author_id );
 		$token = $tokens->set( array( 'scope' => 'profile', 'client_id' => 'https://quill.p3k.io/' ) );
 

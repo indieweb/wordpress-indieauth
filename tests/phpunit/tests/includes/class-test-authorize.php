@@ -1,6 +1,7 @@
 <?php
 
 use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 use IndieAuth\Authorize as Indieauth_Authorize;
 
 class Test_Authorize extends WP_UnitTestCase {
@@ -59,7 +60,7 @@ class Test_Authorize extends WP_UnitTestCase {
 
 	// Sets a test token
 	public function set_token() {
-		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens    = new Tokens( 'access' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
 	}
@@ -69,6 +70,20 @@ class Test_Authorize extends WP_UnitTestCase {
 	 * (case-insensitive) is treated as a PHP4-style constructor on PHP < 8.0, which
 	 * bypasses the PHPUnit TestCase constructor and breaks the whole test class.
 	 */
+	// A token issued before tokens became posts still logs the user in, and is moved.
+	public function test_authorize_with_access_token_from_user_meta() {
+		$legacy = new Token_User( '_indieauth_token_', self::$author_id );
+		$token  = $legacy->set( static::$test_token );
+
+		$_REQUEST['micropub']  = 'endpoint';
+		$_POST['access_token'] = $token;
+		$authorize             = new Indieauth_Authorize();
+
+		$this->assertEquals( self::$author_id, $authorize->determine_current_user( false ) );
+		$this->assertSame( array(), $legacy->get_all() );
+		$this->assertCount( 1, ( new Tokens( 'access', self::$author_id ) )->get_all() );
+	}
+
 	public function test_authorize_with_access_token() {
 		$token = self::set_token();
 		$_REQUEST['micropub']       = 'endpoint';

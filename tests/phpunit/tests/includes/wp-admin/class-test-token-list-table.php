@@ -1,6 +1,7 @@
 <?php
 
 use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 use IndieAuth\WP_Admin\Token_List_Table;
 
 class Test_Token_List_Table extends WP_UnitTestCase {
@@ -22,7 +23,7 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 		set_current_screen( 'users_page_indieauth_user_token' );
 
 		// A manual token, as created on the Manage Tokens page.
-		$tokens = new Token_User( '_indieauth_token_', $user_id );
+		$tokens = new Tokens( 'access', $user_id );
 		$token  = $tokens->set(
 			array(
 				'token_type'  => 'Bearer',
@@ -41,7 +42,7 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 
 		$_REQUEST['action'] = 'retrieve';
 		// The row action passes the stored, hashed key.
-		$_REQUEST['tokens']   = base64_encode( \IndieAuth\indieauth_hash( $token ) );
+		$_REQUEST['tokens']   = hash( 'sha256', $token );
 		$_REQUEST['_wpnonce'] = wp_create_nonce( 'bulk-' . $args->getValue( $table )['plural'] );
 
 		$table->process_action();
@@ -59,7 +60,7 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 		wp_set_current_user( $user_id );
 		set_current_screen( 'users_page_indieauth_user_token' );
 
-		$tokens = new Token_User( '_indieauth_token_', $user_id );
+		$tokens = new Tokens( 'access', $user_id );
 		$token  = $tokens->set(
 			array(
 				'token_type' => 'Bearer',
@@ -86,7 +87,7 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 
 		$_REQUEST['action'] = 'revoke';
 		// The row action passes the stored, hashed key.
-		$_REQUEST['tokens']   = base64_encode( \IndieAuth\indieauth_hash( $token ) );
+		$_REQUEST['tokens']   = hash( 'sha256', $token );
 		$_REQUEST['_wpnonce'] = wp_create_nonce( 'bulk-' . $args->getValue( $table )['plural'] );
 
 		$table->process_action();
@@ -100,6 +101,26 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 	}
 
 	// Manual tokens have no client to ask, so there is nothing to retrieve (#278).
+	// A token from before tokens became posts is listed, and can be revoked from the list.
+	public function test_token_from_user_meta_is_listed() {
+		$user_id = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user_id );
+		set_current_screen( 'users_page_indieauth_user_token' );
+
+		$token = ( new Token_User( '_indieauth_token_', $user_id ) )->set(
+			array(
+				'scope'     => 'create',
+				'me'        => home_url( '/' ),
+				'client_id' => 'https://quill.p3k.io/',
+			)
+		);
+
+		$table = new Token_List_Table();
+		$table->prepare_items();
+
+		$this->assertSame( array( hash( 'sha256', $token ) ), wp_list_pluck( $table->items, 'token' ) );
+	}
+
 	public function test_manual_token_has_no_retrieve_action() {
 		set_current_screen( 'users_page_indieauth_user_token' );
 		$_SERVER['REQUEST_URI'] = '/wp-admin/users.php?page=indieauth_user_token';

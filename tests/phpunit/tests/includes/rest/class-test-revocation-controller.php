@@ -1,6 +1,6 @@
 <?php
 
-use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 
 class Test_Revocation_Controller extends WP_UnitTestCase {
 
@@ -61,27 +61,27 @@ class Test_Revocation_Controller extends WP_UnitTestCase {
 
 	// Sets a test access token
 	public function set_access_token() {
-		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens    = new Tokens( 'access' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$test_token );
 	}
 
 	// Sets a test access token
 	public function set_refresh_token() {
-		$tokens    = new Token_User( '_indieauth_refresh_' );
+		$tokens    = new Tokens( 'refresh' );
 		$tokens->set_user( self::$author_id );
 		return $tokens->set( static::$refresh_token );
 	}
 
 	// Gets a test access token
 	public function get_access_token( $token ) {
-		$tokens    = new Token_User( '_indieauth_token_' );
+		$tokens    = new Tokens( 'access' );
 		return $tokens->get( $token );
 	}
 
 	// Gets a test refresh  token
 	public function get_refresh_token( $token ) {
-		$tokens    = new Token_User( '_indieauth_refresh_' );
+		$tokens    = new Tokens( 'refresh' );
 		return $tokens->get( $token );
 	}
 
