@@ -518,7 +518,12 @@ class Tokens {
 		$destroyed = $this->destroy( $key );
 
 		if ( $token && $destroyed ) {
-			/** This action is documented in includes/token/class-user.php */
+			/**
+			 * Fires when an access or refresh token was revoked.
+			 *
+			 * @param array $token   The data stored with the token, without the token value.
+			 * @param int   $user_id The user the token belonged to.
+			 */
 			\do_action( 'indieauth_token_revoked', $token, (int) $token['user'] );
 		}
 

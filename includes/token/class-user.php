@@ -102,37 +102,6 @@ class User extends Generic {
 	}
 
 	/**
-	 * Revokes a token.
-	 *
-	 * Like destroy(), but for a token that is taken away by a client or a user.
-	 * A used authorization code, a rotated refresh token or an expired token is
-	 * not revoked, those go through destroy().
-	 *
-	 * @param string $key Token to revoke.
-	 * @return bool Return if successfully revoked or not.
-	 */
-	public function revoke( $key ) {
-		$token = $this->get( $key, false );
-		if ( ! $token ) {
-			$token = $this->get( $key );
-		}
-
-		$destroyed = $this->destroy( $key );
-
-		if ( $token && $destroyed ) {
-			/**
-			 * Fires when an access or refresh token was revoked.
-			 *
-			 * @param array $token   The data stored with the token, without the token value.
-			 * @param int   $user_id The user the token belonged to.
-			 */
-			\do_action( 'indieauth_token_revoked', $token, (int) $token['user'] );
-		}
-
-		return $destroyed;
-	}
-
-	/**
 	 * Destroys all tokens.
 	 *
 	 * @return bool|void Return false if no user_id, void otherwise.
