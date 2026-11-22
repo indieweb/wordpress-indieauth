@@ -1,5 +1,7 @@
 <?php
 
+use IndieAuth\Client_Taxonomy;
+use IndieAuth\Rest\Authorization_Controller;
 use IndieAuth\Token\User as Token_User;
 
 // The consent templates use these functions of wp-login.php, which cannot be loaded in a test.
@@ -67,7 +69,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 			'code_challenge_method' => 'S256',
 		);
 
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 		$controller->confirmed();
 
 		remove_filter( 'wp_redirect', $capture );
@@ -142,7 +144,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	// The consent screen does not offer a scope the user cannot use.
 	public function test_authorization_form_hides_scopes_the_user_cannot_use() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'contributor' ) ) );
-		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
 
 		$_GET = array(
 			'client_id'     => 'https://app.example.com/',
@@ -153,7 +155,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		);
 
 		ob_start();
-		( new IndieAuth\Rest\Authorization_Controller() )->authorize();
+		( new Authorization_Controller() )->authorize();
 		$output = ob_get_clean();
 
 		$_GET = array();
@@ -177,7 +179,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		);
 
 		// A client that is known already, so nothing is fetched.
-		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
 
 		$_GET = array(
 			'client_id'             => 'https://app.example.com/',
@@ -190,7 +192,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		);
 
 		ob_start();
-		( new IndieAuth\Rest\Authorization_Controller() )->authorize();
+		( new Authorization_Controller() )->authorize();
 		$output = ob_get_clean();
 
 		$_GET = array();
@@ -371,7 +373,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	 * RFC 8252 section 7.3.
 	 */
 	public function test_verify_redirect_uri_allows_any_loopback_port() {
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 
 		$this->assertTrue( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'http://127.0.0.1:53821/callback' ) );
 		$this->assertTrue( $controller::verify_redirect_uri( 'http://localhost:8080/', 'http://localhost:53821/callback' ) );
@@ -384,7 +386,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 
 	// Verifies the same scheme/host/port comparison directly.
 	public function test_verify_redirect_uri_same_origin() {
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'https://app.example.com/callback' ) );
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'http://app.example.com/callback' ) );
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://app.example.com:8443/callback' ) );
@@ -402,7 +404,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 			return array( 'Com.Example.App:/callback', 'myapp://oauth/cb' );
 		};
 		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 
 		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'com.example.app:/callback' ) );
 		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'COM.EXAMPLE.APP:/callback' ) );
@@ -421,7 +423,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 			return array();
 		};
 		add_filter( 'pre_indieauth_client_redirect_uris', $none );
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 
 		$this->assertFalse( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'myapp://localhost/cb' ) );
 
@@ -439,7 +441,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 			return array( 'myapp:///cb', 'myapp:80/cb' );
 		};
 		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:///cb' ) );
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:80/cb' ) );
@@ -454,7 +456,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		};
 		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
 		add_filter( 'indieauth_verify_redirect_uri', '__return_true' );
-		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller = new Authorization_Controller();
 
 		$valid = $controller::verify_redirect_uri( 'https://app.example.com', 'javascript:alert(1)' );
 

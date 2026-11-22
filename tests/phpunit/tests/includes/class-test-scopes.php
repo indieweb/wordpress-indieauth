@@ -4,6 +4,9 @@
  *
  * @package IndieAuth
  */
+
+use IndieAuth\IndieAuth;
+
 class Test_Scopes extends WP_UnitTestCase {
 
 	public function for_user_provider() {
@@ -23,7 +26,7 @@ class Test_Scopes extends WP_UnitTestCase {
 	public function test_for_user( $role, $requested, $expected ) {
 		$user_id = self::factory()->user->create( array( 'role' => $role ) );
 
-		$this->assertSame( $expected, IndieAuth\IndieAuth::$scopes->for_user( $requested, $user_id ) );
+		$this->assertSame( $expected, IndieAuth::$scopes->for_user( $requested, $user_id ) );
 	}
 
 	// A user without a role on the site can still log in with an app.
@@ -31,6 +34,6 @@ class Test_Scopes extends WP_UnitTestCase {
 		$user_id = self::factory()->user->create();
 		get_userdata( $user_id )->set_role( '' );
 
-		$this->assertSame( array( 'profile', 'email' ), IndieAuth\IndieAuth::$scopes->for_user( array( 'profile', 'email', 'create' ), $user_id ) );
+		$this->assertSame( array( 'profile', 'email' ), IndieAuth::$scopes->for_user( array( 'profile', 'email', 'create' ), $user_id ) );
 	}
 }
