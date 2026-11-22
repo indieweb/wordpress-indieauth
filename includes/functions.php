@@ -863,7 +863,7 @@ function indieauth_get_client_data() {
 	if ( is_null( $response ) || ! isset( $response['client_id'] ) ) {
 		return null;
 	}
-	return Client_Taxonomy::get_client( $response['client_id'] );
+	return Clients::get_client( $response['client_id'] );
 }
 
 /**

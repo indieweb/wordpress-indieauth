@@ -9,7 +9,7 @@ namespace IndieAuth\Rest;
 
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\OAuth_Response;
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Clients;
 use function IndieAuth\get_oauth_error;
 use function IndieAuth\indieauth_get_user;
 use function IndieAuth\get_user_by_identifier;
@@ -331,7 +331,7 @@ class Token_Controller extends \WP_REST_Controller {
 
 			// Issue a token.
 			if ( ! empty( $scopes ) ) {
-				$client = Client_Taxonomy::add_client( $response['client_id'] );
+				$client = Clients::add_client( $response['client_id'] );
 				if ( \is_wp_error( $client ) ) {
 					$client = array( 'id' => $client->get_error_message() );
 				}

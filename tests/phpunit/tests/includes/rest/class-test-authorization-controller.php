@@ -144,7 +144,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		);
 
 		// A client that is known already, so nothing is fetched.
-		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		IndieAuth\Clients::add_client( 'https://app.example.com/', 'Example App' );
 
 		$_GET = array(
 			'client_id'             => 'https://app.example.com/',

@@ -9,7 +9,7 @@ namespace IndieAuth\Rest;
 
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\OAuth_Response;
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Clients;
 use IndieAuth\Client_Discovery;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\indieauth_validate_user_identifier;
@@ -675,7 +675,7 @@ class Authorization_Controller extends \WP_REST_Controller {
 			\wp_die( \esc_html__( 'The redirect_uri does not match the client_id and is not published by the client.', 'indieauth' ) );
 		}
 
-		$client_term                 = Client_Taxonomy::add_client( $client_id );
+		$client_term                 = Clients::add_client( $client_id );
 		if ( ! \is_wp_error( $client_term ) ) {
 			$client_name = $client_term['name'];
 			$client_icon = $client_term['icon'];
