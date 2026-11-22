@@ -84,6 +84,35 @@ class Test_Authorize extends WP_UnitTestCase {
 		$this->assertCount( 1, ( new Tokens( 'access', self::$author_id ) )->get_all() );
 	}
 
+	// The last use is stored, but not on every request.
+	public function test_last_access_is_stored_once_per_hour() {
+		$token  = self::set_token();
+		$tokens = new Tokens( 'access', self::$author_id );
+
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.1';
+		$authorize              = new Indieauth_Authorize();
+		$authorize->verify_access_token( $token );
+		$first = $tokens->get( $token );
+
+		$this->assertEqualsWithDelta( time(), $first['last_accessed'], 5 );
+		$this->assertSame( '203.0.113.1', $first['last_ip'] );
+
+		// A second use shortly after is not written.
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.2';
+		$this->assertSame( '203.0.113.2', $authorize->verify_access_token( $token )['last_ip'] );
+		$this->assertSame( '203.0.113.1', $tokens->get( $token )['last_ip'] );
+
+		// After more than an hour it is.
+		$tokens->update( $token, array( 'last_accessed' => time() - 2 * HOUR_IN_SECONDS ) + $first );
+		$authorize->verify_access_token( $token );
+		$stored = $tokens->get( $token );
+
+		unset( $_SERVER['REMOTE_ADDR'] );
+
+		$this->assertEqualsWithDelta( time(), $stored['last_accessed'], 5 );
+		$this->assertSame( '203.0.113.2', $stored['last_ip'] );
+	}
+
 	public function test_authorize_with_access_token() {
 		$token = self::set_token();
 		$_REQUEST['micropub']       = 'endpoint';
