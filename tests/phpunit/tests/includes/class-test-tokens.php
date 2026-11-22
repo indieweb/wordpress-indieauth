@@ -6,6 +6,7 @@
  */
 
 use IndieAuth\Client_Taxonomy;
+use IndieAuth\Token\User as Token_User;
 use IndieAuth\Tokens;
 
 class Test_Tokens extends WP_UnitTestCase {
@@ -364,5 +365,115 @@ class Test_Tokens extends WP_UnitTestCase {
 
 		$this->assertFalse( $tokens->update( $key, 'scope' ) );
 		$this->assertSame( 'create update', $tokens->get( $key )['scope'] );
+	}
+
+	/**
+	 * Counts the tokens of a user that are still in user meta.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $prefix  Meta key prefix.
+	 * @return int Number of tokens.
+	 */
+	private function count_legacy( $user_id, $prefix = '_indieauth_token_' ) {
+		return count( ( new Token_User( $prefix, $user_id ) )->get_all() );
+	}
+
+	// A token from before tokens became posts keeps working and is moved when it is used.
+	public function test_legacy_token_is_moved_when_it_is_used() {
+		$user_id = self::factory()->user->create();
+		$data    = $this->token_data();
+		$key     = ( new Token_User( '_indieauth_token_', $user_id ) )->set( $data, 300 );
+		$tokens  = new Tokens( 'access' );
+
+		$first = $tokens->get( $key );
+
+		$this->assertSame( $data['uuid'], $first['uuid'] );
+		$this->assertSame( $user_id, $first['user'] );
+		$this->assertSame( 0, $this->count_legacy( $user_id ) );
+		$this->assertSame( array( hash( 'sha256', $key ) ), array_keys( ( new Tokens( 'access', $user_id ) )->get_all() ) );
+
+		// The second read comes from the post and returns the same data.
+		$this->assertSame( $first, $tokens->get( $key ) );
+	}
+
+	public function test_legacy_tokens_keep_their_kind() {
+		$user_id = self::factory()->user->create();
+		$refresh = ( new Token_User( '_indieauth_refresh_', $user_id ) )->set( $this->token_data(), 300 );
+		$code    = ( new Token_User( '_indieauth_code_', $user_id ) )->set( $this->token_data(), 300 );
+
+		$this->assertFalse( ( new Tokens( 'access' ) )->get( $refresh ) );
+		$this->assertFalse( ( new Tokens( 'access' ) )->get( $code ) );
+		$this->assertFalse( ( new Tokens( 'refresh' ) )->get( $code ) );
+		$this->assertSame( 1, $this->count_legacy( $user_id, '_indieauth_refresh_' ) );
+		$this->assertSame( 1, $this->count_legacy( $user_id, '_indieauth_code_' ) );
+
+		$this->assertIsArray( ( new Tokens( 'refresh' ) )->get( $refresh ) );
+		$this->assertSame( 0, $this->count_legacy( $user_id, '_indieauth_refresh_' ) );
+	}
+
+	public function test_expired_legacy_token_is_not_moved() {
+		$user_id = self::factory()->user->create();
+		$key     = ( new Token_User( '_indieauth_token_', $user_id ) )->set( $this->token_data(), -30 );
+
+		$this->assertFalse( ( new Tokens( 'access' ) )->get( $key ) );
+		$this->assertSame( array(), ( new Tokens( 'access', $user_id ) )->get_all() );
+		$this->assertSame( 0, $this->count_legacy( $user_id ) );
+	}
+
+	// Listing the tokens moves all of them, for one user or for all.
+	public function test_get_all_moves_legacy_tokens() {
+		$user_id = self::factory()->user->create();
+		$other   = self::factory()->user->create();
+		$mine    = ( new Token_User( '_indieauth_token_', $user_id ) )->set( $this->token_data() );
+		$theirs  = ( new Token_User( '_indieauth_token_', $other ) )->set( $this->token_data() );
+
+		$this->assertSame( array( hash( 'sha256', $mine ) ), array_keys( ( new Tokens( 'access', $user_id ) )->get_all() ) );
+		$this->assertSame( 1, $this->count_legacy( $other ) );
+
+		$this->assertCount( 2, ( new Tokens( 'access' ) )->get_all() );
+		$this->assertSame( 0, $this->count_legacy( $other ) );
+		$this->assertSame( $other, ( new Tokens( 'access' ) )->get( $theirs )['user'] );
+	}
+
+	public function test_destroy_and_revoke_reach_legacy_tokens() {
+		$user_id = self::factory()->user->create();
+		$legacy  = new Token_User( '_indieauth_token_', $user_id );
+		$first   = $legacy->set( $this->token_data() );
+		$second  = $legacy->set( $this->token_data() );
+		$third   = $legacy->set( $this->token_data() );
+		$tokens  = new Tokens( 'access', $user_id );
+
+		$this->assertTrue( $tokens->destroy( $first ) );
+		$this->assertFalse( $tokens->get( $first ) );
+
+		$revoked = 0;
+		add_action(
+			'indieauth_token_revoked',
+			function () use ( &$revoked ) {
+				$revoked++;
+			}
+		);
+		$this->assertTrue( $tokens->revoke( $second ) );
+		$this->assertSame( 1, $revoked );
+		$this->assertFalse( $tokens->get( $second ) );
+
+		$this->assertTrue( $tokens->destroy_all() );
+		$this->assertFalse( $tokens->get( $third ) );
+		$this->assertSame( 0, $this->count_legacy( $user_id ) );
+	}
+
+	// A token that was copied but not removed from user meta must not get a second post.
+	public function test_legacy_token_is_not_moved_twice() {
+		$user_id = self::factory()->user->create();
+		$data    = $this->token_data();
+		$key     = ( new Token_User( '_indieauth_token_', $user_id ) )->set( $data );
+		( new Tokens( 'access' ) )->get( $key );
+
+		// Put the user meta row back, as if removing it had failed.
+		add_user_meta( $user_id, '_indieauth_token_' . base64_encode( hash( 'sha256', $key, true ) ), $data, true );
+
+		$this->assertCount( 1, ( new Tokens( 'access', $user_id ) )->get_all() );
+		$this->assertSame( 0, $this->count_legacy( $user_id ) );
+		$this->assertIsArray( ( new Tokens( 'access' ) )->get( $key ) );
 	}
 }

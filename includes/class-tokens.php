@@ -7,6 +7,8 @@
 
 namespace IndieAuth;
 
+use IndieAuth\Token\User as Token_User;
+
 /**
  * The access tokens and refresh tokens of the site.
  *
@@ -31,6 +33,23 @@ class Tokens {
 	const TYPES = array( 'access', 'refresh' );
 
 	/**
+	 * The user meta prefixes tokens were stored under before they became posts.
+	 *
+	 * @var string[]
+	 */
+	const LEGACY_PREFIXES = array(
+		'access'  => '_indieauth_token_',
+		'refresh' => '_indieauth_refresh_',
+	);
+
+	/**
+	 * Kind of token, `access` or `refresh`.
+	 *
+	 * @var string
+	 */
+	private $type;
+
+	/**
 	 * Post status of the tokens this store handles.
 	 *
 	 * @var string
@@ -51,6 +70,7 @@ class Tokens {
 	 * @param int|null $user_id Optional user ID.
 	 */
 	public function __construct( $type, $user_id = null ) {
+		$this->type    = $type;
 		$this->status  = 'indieauth_' . $type;
 		$this->user_id = $user_id;
 	}
@@ -265,14 +285,30 @@ class Tokens {
 			$info['exp'] = time() + (int) $expiration;
 		}
 
-		$key     = \wp_generate_password( 128, false );
+		$key = \wp_generate_password( 128, false );
+
+		return $this->insert( $this->hash( $key ), $this->user_id, $info ) ? $key : false;
+	}
+
+	/**
+	 * Creates the post of a token.
+	 *
+	 * @param string $name    Hash of the token.
+	 * @param int    $user_id The user the token belongs to.
+	 * @param array  $info    Token data.
+	 * @return bool Whether the post was created.
+	 */
+	private function insert( $name, $user_id, $info ) {
+		// `issued_at` is the name tokens used before 4.1.0.
+		$issued = isset( $info['iat'] ) ? $info['iat'] : ( isset( $info['issued_at'] ) ? $info['issued_at'] : null );
+
 		$post_id = \wp_insert_post(
 			array(
 				'post_type'     => self::POST_TYPE,
 				'post_status'   => $this->status,
-				'post_author'   => $this->user_id,
-				'post_name'     => $this->hash( $key ),
-				'post_date_gmt' => gmdate( 'Y-m-d H:i:s', isset( $info['iat'] ) && is_numeric( $info['iat'] ) ? (int) $info['iat'] : time() ),
+				'post_author'   => $user_id,
+				'post_name'     => $name,
+				'post_date_gmt' => gmdate( 'Y-m-d H:i:s', is_numeric( $issued ) ? (int) $issued : time() ),
 			)
 		);
 		if ( ! $post_id ) {
@@ -293,7 +329,59 @@ class Tokens {
 			\wp_set_object_terms( $post_id, $client, 'indieauth_client' );
 		}
 
-		return $key;
+		return true;
+	}
+
+	/**
+	 * The store tokens were kept in before they became posts.
+	 *
+	 * @return Token_User|null The user meta store, or null for an unknown kind of token.
+	 */
+	private function legacy() {
+		if ( ! $this->is_ready() || ! isset( self::LEGACY_PREFIXES[ $this->type ] ) ) {
+			return null;
+		}
+
+		return new Token_User( self::LEGACY_PREFIXES[ $this->type ], $this->user_id );
+	}
+
+	/**
+	 * Moves a token from user meta to a post.
+	 *
+	 * @param string $legacy_key The hash the token is stored under in user meta, base64.
+	 * @param array  $info       Token data, with the user it belongs to.
+	 * @return array|false Token data, or false if the token could not be moved.
+	 */
+	private function import( $legacy_key, $info ) {
+		$name = bin2hex( (string) base64_decode( $legacy_key, true ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		if ( empty( $info['user'] ) || 64 !== strlen( $name ) ) {
+			return false;
+		}
+		// The post can exist already, if the user meta could not be removed last time.
+		if ( ! $this->find( $name ) && ! $this->insert( $name, (int) $info['user'], $info ) ) {
+			return false;
+		}
+
+		$legacy = new Token_User( self::LEGACY_PREFIXES[ $this->type ], (int) $info['user'] );
+		$legacy->destroy( $legacy_key );
+
+		$info['user'] = (int) $info['user'];
+		return $info;
+	}
+
+	/**
+	 * Moves all tokens that are still in user meta to posts.
+	 *
+	 * For the current user, or for all users if there is none.
+	 */
+	private function import_all() {
+		$legacy = $this->legacy();
+		if ( ! $legacy ) {
+			return;
+		}
+		foreach ( $legacy->get_all() as $legacy_key => $info ) {
+			$this->import( $legacy_key, $info );
+		}
 	}
 
 	/**
@@ -306,7 +394,11 @@ class Tokens {
 	public function get( $key, $hash = true ) {
 		$post = $this->find( $hash ? $this->hash( $key ) : $key );
 		if ( ! $post ) {
-			return false;
+			// A token from before tokens became posts is moved over when it is used.
+			$legacy = $hash ? $this->legacy() : null;
+			$info   = $legacy ? $legacy->get( $key ) : false;
+
+			return $info ? $this->import( base64_encode( indieauth_hash( $key ) ), $info ) : false; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		}
 
 		$info = $this->read( $post );
@@ -355,7 +447,13 @@ class Tokens {
 			$post = $this->find( $this->hash( $key ) );
 		}
 
-		return $post ? (bool) \wp_delete_post( $post->ID, true ) : false;
+		if ( $post ) {
+			return (bool) \wp_delete_post( $post->ID, true );
+		}
+
+		// It may still be in user meta.
+		$legacy = $this->legacy();
+		return $legacy ? (bool) $legacy->destroy( $key ) : false;
 	}
 
 	/**
@@ -432,6 +530,10 @@ class Tokens {
 		if ( ! $this->user_id ) {
 			return false;
 		}
+		$legacy = $this->legacy();
+		if ( $legacy ) {
+			$legacy->destroy_all();
+		}
 		foreach ( $this->query( array( 'fields' => 'ids' ) ) as $post_id ) {
 			\wp_delete_post( $post_id, true );
 		}
@@ -446,6 +548,8 @@ class Tokens {
 	 * @return array Token data, keyed by the hash of the token.
 	 */
 	public function get_all() {
+		$this->import_all();
+
 		$tokens = array();
 		foreach ( $this->query() as $post ) {
 			$info = $this->read( $post );
