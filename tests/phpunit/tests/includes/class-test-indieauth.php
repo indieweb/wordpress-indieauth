@@ -26,6 +26,7 @@ class Test_IndieAuth extends WP_UnitTestCase {
 		$data    = array(
 			'scope'     => 'create',
 			'client_id' => 'https://app.example.com/',
+			'issued_by' => rest_url( 'indieauth/1.0/token' ),
 		);
 		$stores  = array();
 		foreach ( array( '_indieauth_token_', '_indieauth_refresh_', '_indieauth_code_' ) as $prefix ) {

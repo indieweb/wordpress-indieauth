@@ -150,6 +150,18 @@ class Tokens {
 	}
 
 	/**
+	 * Turns a stored hash into the post name of the token.
+	 *
+	 * @param string $key Hash of a token, as hex or in the base64 form user meta used.
+	 * @return string The hash as hex, or the key itself if it is no hash.
+	 */
+	private function name( $key ) {
+		$binary = is_string( $key ) ? base64_decode( $key, true ) : false; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+
+		return false !== $binary && 32 === strlen( $binary ) ? bin2hex( $binary ) : $key;
+	}
+
+	/**
 	 * Checks that the kind of token is known and its post status is registered.
 	 *
 	 * A query for a status that is not registered is not limited to it, and
@@ -314,6 +326,12 @@ class Tokens {
 		if ( ! $post_id ) {
 			return false;
 		}
+		// WordPress changes the name if a post with it exists already, and a token
+		// under another name can never be found.
+		if ( \get_post_field( 'post_name', $post_id ) !== $name ) {
+			\wp_delete_post( $post_id, true );
+			return false;
+		}
 
 		$this->write( $post_id, $info );
 
@@ -346,19 +364,43 @@ class Tokens {
 	}
 
 	/**
+	 * Checks if a token from user meta may be moved to this site.
+	 *
+	 * User meta is shared by all sites of a network, posts are not. So on a
+	 * network a token is only moved by the site that issued it.
+	 *
+	 * @param array $info   Token data.
+	 * @param bool  $in_use Whether the token is being used right now. A token that does
+	 *                      not say where it was issued is only moved by the site it is used on.
+	 * @return bool Whether the token belongs to this site.
+	 */
+	private function belongs_here( $info, $in_use ) {
+		if ( ! \is_multisite() ) {
+			return true;
+		}
+		if ( empty( $info['issued_by'] ) ) {
+			return $in_use;
+		}
+
+		return \rest_url( 'indieauth/1.0/token' ) === $info['issued_by'];
+	}
+
+	/**
 	 * Moves a token from user meta to a post.
 	 *
 	 * @param string $legacy_key The hash the token is stored under in user meta, base64.
 	 * @param array  $info       Token data, with the user it belongs to.
-	 * @return array|false Token data, or false if the token could not be moved.
+	 * @param bool   $in_use     Whether the token is being used right now.
+	 * @return array|false Token data, or false if the token was not moved.
 	 */
-	private function import( $legacy_key, $info ) {
+	private function import( $legacy_key, $info, $in_use = false ) {
 		$name = bin2hex( (string) base64_decode( $legacy_key, true ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
-		if ( empty( $info['user'] ) || 64 !== strlen( $name ) ) {
+		if ( empty( $info['user'] ) || 64 !== strlen( $name ) || ! $this->belongs_here( $info, $in_use ) ) {
 			return false;
 		}
-		// The post can exist already, if the user meta could not be removed last time.
-		if ( ! $this->find( $name ) && ! $this->insert( $name, (int) $info['user'], $info ) ) {
+		// The post can exist already: the user meta could not be removed last
+		// time, or another request is moving the token right now.
+		if ( ! $this->find( $name ) && ! $this->insert( $name, (int) $info['user'], $info ) && ! $this->find( $name ) ) {
 			return false;
 		}
 
@@ -392,13 +434,14 @@ class Tokens {
 	 * @return array|false Token data, or false if there is no such token.
 	 */
 	public function get( $key, $hash = true ) {
-		$post = $this->find( $hash ? $this->hash( $key ) : $key );
+		$post = $this->find( $hash ? $this->hash( $key ) : $this->name( $key ) );
 		if ( ! $post ) {
 			// A token from before tokens became posts is moved over when it is used.
-			$legacy = $hash ? $this->legacy() : null;
-			$info   = $legacy ? $legacy->get( $key ) : false;
+			// Without hashing, the key is the hash a token list from before the update sent.
+			$legacy = $this->legacy();
+			$info   = $legacy ? $legacy->get( $key, $hash ) : false;
 
-			return $info ? $this->import( base64_encode( indieauth_hash( $key ) ), $info ) : false; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			return $info ? $this->import( $hash ? base64_encode( indieauth_hash( $key ) ) : $key, $info, true ) : false; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		}
 
 		$info = $this->read( $post );
@@ -426,7 +469,7 @@ class Tokens {
 			return false;
 		}
 
-		$post = $this->find( $hash ? $key : $this->hash( $key ) );
+		$post = $this->find( $hash ? $this->name( $key ) : $this->hash( $key ) );
 		if ( ! $post || (int) $post->post_author !== (int) $this->user_id ) {
 			return false;
 		}
@@ -442,7 +485,7 @@ class Tokens {
 	 * @return bool Whether a token was destroyed.
 	 */
 	public function destroy( $key ) {
-		$post = $this->find( $key );
+		$post = $this->find( $this->name( $key ) );
 		if ( ! $post ) {
 			$post = $this->find( $this->hash( $key ) );
 		}
@@ -530,9 +573,12 @@ class Tokens {
 		if ( ! $this->user_id ) {
 			return false;
 		}
+		// The ones still in user meta go too, unless another site of the network issued them.
 		$legacy = $this->legacy();
-		if ( $legacy ) {
-			$legacy->destroy_all();
+		foreach ( $legacy ? $legacy->get_all() : array() as $legacy_key => $info ) {
+			if ( $this->belongs_here( $info, true ) ) {
+				$legacy->destroy( $legacy_key );
+			}
 		}
 		foreach ( $this->query( array( 'fields' => 'ids' ) ) as $post_id ) {
 			\wp_delete_post( $post_id, true );

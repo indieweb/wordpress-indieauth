@@ -112,6 +112,7 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 				'scope'     => 'create',
 				'me'        => home_url( '/' ),
 				'client_id' => 'https://quill.p3k.io/',
+				'issued_by' => rest_url( 'indieauth/1.0/token' ),
 			)
 		);
 

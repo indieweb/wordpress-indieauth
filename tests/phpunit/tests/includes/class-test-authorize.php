@@ -73,7 +73,7 @@ class Test_Authorize extends WP_UnitTestCase {
 	// A token issued before tokens became posts still logs the user in, and is moved.
 	public function test_authorize_with_access_token_from_user_meta() {
 		$legacy = new Token_User( '_indieauth_token_', self::$author_id );
-		$token  = $legacy->set( static::$test_token );
+		$token  = $legacy->set( array( 'issued_by' => rest_url( 'indieauth/1.0/token' ) ) + static::$test_token );
 
 		$_REQUEST['micropub']  = 'endpoint';
 		$_POST['access_token'] = $token;

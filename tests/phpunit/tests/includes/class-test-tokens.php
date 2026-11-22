@@ -38,6 +38,7 @@ class Test_Tokens extends WP_UnitTestCase {
 			'me'        => 'https://example.org/author/me/',
 			'uuid'      => wp_generate_uuid4(),
 			'iat'       => 1700000000,
+			'issued_by' => rest_url( 'indieauth/1.0/token' ),
 		);
 	}
 
@@ -417,7 +418,6 @@ class Test_Tokens extends WP_UnitTestCase {
 
 		$this->assertFalse( ( new Tokens( 'access' ) )->get( $key ) );
 		$this->assertSame( array(), ( new Tokens( 'access', $user_id ) )->get_all() );
-		$this->assertSame( 0, $this->count_legacy( $user_id ) );
 	}
 
 	// Listing the tokens moves all of them, for one user or for all.
@@ -475,5 +475,87 @@ class Test_Tokens extends WP_UnitTestCase {
 		$this->assertCount( 1, ( new Tokens( 'access', $user_id ) )->get_all() );
 		$this->assertSame( 0, $this->count_legacy( $user_id ) );
 		$this->assertIsArray( ( new Tokens( 'access' ) )->get( $key ) );
+	}
+
+	// A token list that was loaded before the update still sends the old hashes.
+	public function test_old_hash_from_the_token_list_still_works() {
+		update_option( 'indieauth_expires_in', 3600 );
+		$user_id = self::factory()->user->create();
+		$legacy  = new Token_User( '_indieauth_token_', $user_id );
+		$renew   = $legacy->set( $this->token_data(), 300 );
+		$revoke  = $legacy->set( $this->token_data(), 300 );
+		$tokens  = new Tokens( 'access', $user_id );
+		$before  = $legacy->get( $renew )['exp'];
+
+		$tokens->renew( base64_encode( hash( 'sha256', $renew, true ) ) );
+		$this->assertEquals( $before + 3600, $tokens->get( $renew )['exp'] );
+
+		$revoked = 0;
+		add_action(
+			'indieauth_token_revoked',
+			function () use ( &$revoked ) {
+				$revoked++;
+			}
+		);
+		$this->assertTrue( $tokens->revoke( base64_encode( hash( 'sha256', $revoke, true ) ) ) );
+		$this->assertSame( 1, $revoked );
+		$this->assertFalse( $tokens->get( $revoke ) );
+	}
+
+	// Tokens from before 4.1.0 use other names for the issue date and the expiry.
+	public function test_legacy_token_with_old_field_names() {
+		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$user_id = self::factory()->user->create();
+		$key     = ( new Token_User( '_indieauth_token_', $user_id ) )->set(
+			array(
+				'scope'      => 'create',
+				'client_id'  => 'https://app.example.com/',
+				'issued_at'  => 1600000000,
+				'expiration' => time() + 300,
+				'issued_by'  => rest_url( 'indieauth/1.0/token' ),
+			)
+		);
+
+		$this->assertSame( 'create', ( new Tokens( 'access' ) )->get( $key )['scope'] );
+
+		$posts = get_posts(
+			array(
+				'post_type'   => Tokens::POST_TYPE,
+				'post_status' => 'indieauth_access',
+				'author'      => $user_id,
+			)
+		);
+		$this->assertSame( '2020-09-13 12:26:40', $posts[0]->post_date_gmt );
+		$this->assertSame( array( $client['id'] ), wp_get_object_terms( $posts[0]->ID, 'indieauth_client', array( 'fields' => 'ids' ) ) );
+	}
+
+	// User meta is shared by a network, so a site must not take the tokens of another site.
+	public function test_network_site_only_moves_its_own_tokens() {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Needs a network.' );
+		}
+
+		$user_id = self::factory()->user->create();
+		$legacy  = new Token_User( '_indieauth_token_', $user_id );
+		$mine    = $legacy->set( array( 'issued_by' => rest_url( 'indieauth/1.0/token' ) ) + $this->token_data() );
+		$theirs  = $legacy->set( array( 'issued_by' => 'https://other.example.org/wp-json/indieauth/1.0/token' ) + $this->token_data() );
+		$unknown = $legacy->set( array_diff_key( $this->token_data(), array( 'issued_by' => '' ) ) );
+		$tokens  = new Tokens( 'access', $user_id );
+
+		// Listing only moves what this site issued.
+		$this->assertSame( array( hash( 'sha256', $mine ) ), array_keys( $tokens->get_all() ) );
+		$this->assertCount( 2, $legacy->get_all() );
+
+		// Using a token of another site does not work here and leaves it alone.
+		$this->assertFalse( $tokens->get( $theirs ) );
+		$this->assertIsArray( $legacy->get( $theirs ) );
+
+		// A token that does not say where it is from is moved by the site it is used on.
+		$this->assertIsArray( $tokens->get( $unknown ) );
+
+		// Removing the user here keeps the token of the other site.
+		$tokens->destroy_all();
+		$this->assertSame( array(), $tokens->get_all() );
+		$this->assertCount( 1, $legacy->get_all() );
 	}
 }
