@@ -157,7 +157,7 @@ class IndieAuth {
 
 		new Authorize();
 		Client_Taxonomy::init();
-		Token\Post::init();
+		Tokens::init();
 		new Web_Signin();
 
 		if ( \WP_DEBUG ) {

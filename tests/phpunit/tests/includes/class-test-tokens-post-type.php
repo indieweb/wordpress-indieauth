@@ -5,13 +5,14 @@
  * @package IndieAuth
  */
 
-use IndieAuth\Token\Post as Token_Post;
+use IndieAuth\Client_Taxonomy;
+use IndieAuth\Tokens;
 
-class Test_Token_Post extends WP_UnitTestCase {
+class Test_Tokens_Post_Type extends WP_UnitTestCase {
 
 	// Tokens must not show up anywhere a post can be read.
 	public function test_post_type_is_private() {
-		$type = get_post_type_object( Token_Post::POST_TYPE );
+		$type = get_post_type_object( Tokens::POST_TYPE );
 
 		$this->assertNotNull( $type );
 		$this->assertFalse( $type->public );
@@ -20,8 +21,8 @@ class Test_Token_Post extends WP_UnitTestCase {
 		$this->assertFalse( $type->show_ui );
 		$this->assertFalse( $type->show_in_rest );
 		$this->assertFalse( $type->can_export );
-		$this->assertFalse( post_type_supports( Token_Post::POST_TYPE, 'revisions' ) );
-		$this->assertArrayNotHasKey( '/wp/v2/' . Token_Post::POST_TYPE, rest_get_server()->get_routes() );
+		$this->assertFalse( post_type_supports( Tokens::POST_TYPE, 'revisions' ) );
+		$this->assertArrayNotHasKey( '/wp/v2/' . Tokens::POST_TYPE, rest_get_server()->get_routes() );
 	}
 
 	/**
@@ -41,7 +42,7 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	public function test_set_and_get() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$data    = $this->token_data();
 		$key     = $tokens->set( $data );
 
@@ -49,22 +50,22 @@ class Test_Token_Post extends WP_UnitTestCase {
 		$this->assertSame( $data + array( 'user' => $user_id ), $tokens->get( $key ) );
 
 		// A store without a user finds the token too, as a request only brings the token.
-		$this->assertSame( $data + array( 'user' => $user_id ), ( new Token_Post( 'access' ) )->get( $key ) );
+		$this->assertSame( $data + array( 'user' => $user_id ), ( new Tokens( 'access' ) )->get( $key ) );
 	}
 
 	public function test_set_needs_a_user_and_an_array() {
-		$this->assertFalse( ( new Token_Post( 'access' ) )->set( $this->token_data() ) );
-		$this->assertFalse( ( new Token_Post( 'access', self::factory()->user->create() ) )->set( 'token' ) );
+		$this->assertFalse( ( new Tokens( 'access' ) )->set( $this->token_data() ) );
+		$this->assertFalse( ( new Tokens( 'access', self::factory()->user->create() ) )->set( 'token' ) );
 	}
 
 	// Only the hash of the token is stored, as the post name.
 	public function test_token_is_stored_as_a_hash() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( $this->token_data() );
 		$posts   = get_posts(
 			array(
-				'post_type'   => Token_Post::POST_TYPE,
+				'post_type'   => Tokens::POST_TYPE,
 				'post_status' => 'indieauth_access',
 				'author'      => $user_id,
 			)
@@ -81,8 +82,8 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	public function test_access_and_refresh_tokens_are_kept_apart() {
 		$user_id = self::factory()->user->create();
-		$access  = new Token_Post( 'access', $user_id );
-		$refresh = new Token_Post( 'refresh', $user_id );
+		$access  = new Tokens( 'access', $user_id );
+		$refresh = new Tokens( 'refresh', $user_id );
 		$key     = $access->set( $this->token_data() );
 
 		$this->assertFalse( $refresh->get( $key ) );
@@ -93,16 +94,16 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	public function test_expired_token_is_destroyed() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( $this->token_data(), -30 );
 
 		$this->assertFalse( $tokens->get( $key ) );
-		$this->assertSame( array(), get_posts( array( 'post_type' => Token_Post::POST_TYPE, 'post_status' => 'indieauth_access' ) ) );
+		$this->assertSame( array(), get_posts( array( 'post_type' => Tokens::POST_TYPE, 'post_status' => 'indieauth_access' ) ) );
 	}
 
 	public function test_destroy() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( $this->token_data(), 300 );
 		$hashed  = $tokens->set( $this->token_data(), 300 );
 
@@ -117,7 +118,7 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	public function test_revoke_fires_the_hook() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$data    = $this->token_data();
 		$key     = $tokens->set( $data );
 
@@ -139,14 +140,14 @@ class Test_Token_Post extends WP_UnitTestCase {
 	public function test_update_is_limited_to_the_user() {
 		$user_id = self::factory()->user->create();
 		$other   = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$data    = $this->token_data();
 		$key     = $tokens->set( $data, 300 );
 
 		$changed = array( 'scope' => 'read' ) + $data;
 
-		$this->assertFalse( ( new Token_Post( 'access' ) )->update( $key, $changed ) );
-		$this->assertFalse( ( new Token_Post( 'access', $other ) )->update( $key, $changed ) );
+		$this->assertFalse( ( new Tokens( 'access' ) )->update( $key, $changed ) );
+		$this->assertFalse( ( new Tokens( 'access', $other ) )->update( $key, $changed ) );
 		$this->assertSame( 'create update', $tokens->get( $key )['scope'] );
 
 		$this->assertTrue( $tokens->update( $key, $changed ) );
@@ -157,7 +158,7 @@ class Test_Token_Post extends WP_UnitTestCase {
 	public function test_renew_and_noexpire() {
 		update_option( 'indieauth_expires_in', 3600 );
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( $this->token_data(), 300 );
 		$hash    = hash( 'sha256', $key );
 		$before  = $tokens->get( $key )['exp'];
@@ -167,22 +168,22 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 		$tokens->noexpire( $hash );
 		$this->assertArrayNotHasKey( 'exp', $tokens->get( $key ) );
-		$this->assertSame( array(), get_post_meta( get_posts( array( 'post_type' => Token_Post::POST_TYPE, 'post_status' => 'indieauth_access' ) )[0]->ID, '_indieauth_token_exp' ) );
+		$this->assertSame( array(), get_post_meta( get_posts( array( 'post_type' => Tokens::POST_TYPE, 'post_status' => 'indieauth_access' ) )[0]->ID, '_indieauth_token_exp' ) );
 	}
 
 	public function test_get_all_and_destroy_all() {
 		$user_id = self::factory()->user->create();
 		$other   = self::factory()->user->create();
-		$mine    = new Token_Post( 'access', $user_id );
-		$theirs  = new Token_Post( 'access', $other );
+		$mine    = new Tokens( 'access', $user_id );
+		$theirs  = new Tokens( 'access', $other );
 		$key     = $mine->set( $this->token_data() );
 		$mine->set( $this->token_data(), -30 );
 		$theirs->set( $this->token_data() );
 
 		$this->assertSame( array( hash( 'sha256', $key ) ), array_keys( $mine->get_all() ) );
-		$this->assertCount( 2, ( new Token_Post( 'access' ) )->get_all() );
+		$this->assertCount( 2, ( new Tokens( 'access' ) )->get_all() );
 
-		$this->assertFalse( ( new Token_Post( 'access' ) )->destroy_all() );
+		$this->assertFalse( ( new Tokens( 'access' ) )->destroy_all() );
 		$this->assertTrue( $mine->destroy_all() );
 		$this->assertSame( array(), $mine->get_all() );
 		$this->assertCount( 1, $theirs->get_all() );
@@ -190,7 +191,7 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	public function test_check_expires() {
 		$user_id = self::factory()->user->create();
-		$tokens  = new Token_Post( 'access', $user_id );
+		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( $this->token_data(), 300 );
 
 		$this->assertFalse( $tokens->check_expires() );
@@ -203,17 +204,17 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	// The client and the uuid can be queried, which user meta could not do.
 	public function test_tokens_can_be_found_by_client_and_uuid() {
-		$client  = IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
 		$user_id = self::factory()->user->create();
 		$data    = $this->token_data();
 
 		// The access token knows the term, the refresh token only the URL.
-		( new Token_Post( 'access', $user_id ) )->set( array( 'client_uid' => $client['id'] ) + $data );
-		( new Token_Post( 'refresh', $user_id ) )->set( $data );
-		( new Token_Post( 'access', $user_id ) )->set( array( 'client_id' => 'https://other.example.com/' ) + $this->token_data() );
+		( new Tokens( 'access', $user_id ) )->set( array( 'client_uid' => $client['id'] ) + $data );
+		( new Tokens( 'refresh', $user_id ) )->set( $data );
+		( new Tokens( 'access', $user_id ) )->set( array( 'client_id' => 'https://other.example.com/' ) + $this->token_data() );
 
 		$query = array(
-			'post_type'   => Token_Post::POST_TYPE,
+			'post_type'   => Tokens::POST_TYPE,
 			'post_status' => array( 'indieauth_access', 'indieauth_refresh' ),
 			'fields'      => 'ids',
 		);
@@ -241,9 +242,9 @@ class Test_Token_Post extends WP_UnitTestCase {
 
 	// Tokens are no content: not in the search and not counted for the client.
 	public function test_tokens_do_not_show_up_as_content() {
-		$client  = IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
 		$user_id = self::factory()->user->create();
-		( new Token_Post( 'access', $user_id ) )->set( array( 'client_uid' => $client['id'] ) + $this->token_data() );
+		( new Tokens( 'access', $user_id ) )->set( array( 'client_uid' => $client['id'] ) + $this->token_data() );
 
 		$this->assertSame( array(), get_posts( array( 'post_type' => 'any', 'post_status' => 'any', 'author' => $user_id ) ) );
 		$this->assertSame( 0, get_term( $client['id'], 'indieauth_client' )->count );
@@ -254,15 +255,108 @@ class Test_Token_Post extends WP_UnitTestCase {
 		$user_id = self::factory()->user->create();
 		$heir    = self::factory()->user->create();
 		$post_id = self::factory()->post->create( array( 'post_author' => $user_id ) );
-		$access  = ( new Token_Post( 'access', $user_id ) )->set( $this->token_data() );
-		$refresh = ( new Token_Post( 'refresh', $user_id ) )->set( $this->token_data() );
+		$access  = ( new Tokens( 'access', $user_id ) )->set( $this->token_data() );
+		$refresh = ( new Tokens( 'refresh', $user_id ) )->set( $this->token_data() );
 
 		wp_delete_user( $user_id, $heir );
 
 		// The reassign did happen, so the tokens were at risk.
 		$this->assertSame( $heir, (int) get_post( $post_id )->post_author );
-		$this->assertFalse( ( new Token_Post( 'access' ) )->get( $access ) );
-		$this->assertFalse( ( new Token_Post( 'refresh' ) )->get( $refresh ) );
-		$this->assertSame( array(), ( new Token_Post( 'access', $heir ) )->get_all() );
+		$this->assertFalse( ( new Tokens( 'access' ) )->get( $access ) );
+		$this->assertFalse( ( new Tokens( 'refresh' ) )->get( $refresh ) );
+		$this->assertSame( array(), ( new Tokens( 'access', $heir ) )->get_all() );
+	}
+
+	// Nobody may touch a token as a post, or an editor could hand a token to an administrator.
+	public function test_no_role_can_edit_tokens_as_posts() {
+		$owner   = self::factory()->user->create( array( 'role' => 'editor' ) );
+		$admin   = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$tokens  = new Tokens( 'access', $owner );
+		$post_id = get_posts(
+			array(
+				'post_type'   => Tokens::POST_TYPE,
+				'post_status' => 'indieauth_access',
+				'name'        => hash( 'sha256', $tokens->set( $this->token_data() ) ),
+				'fields'      => 'ids',
+			)
+		)[0];
+		$type    = get_post_type_object( Tokens::POST_TYPE );
+
+		foreach ( array( $owner, $admin ) as $user_id ) {
+			foreach ( array( 'edit_post', 'delete_post', 'read_post' ) as $cap ) {
+				$this->assertFalse( user_can( $user_id, $cap, $post_id ), $cap );
+			}
+			foreach ( get_object_vars( $type->cap ) as $name => $cap ) {
+				$this->assertFalse( user_can( $user_id, $cap ), $name );
+			}
+		}
+	}
+
+	// A post without token data is not a token.
+	public function test_post_without_token_data_is_no_token() {
+		$user_id = self::factory()->user->create();
+		$name    = hash( 'sha256', 'made-up' );
+		wp_insert_post(
+			array(
+				'post_type'   => Tokens::POST_TYPE,
+				'post_status' => 'indieauth_access',
+				'post_author' => $user_id,
+				'post_name'   => $name,
+			)
+		);
+		$tokens = new Tokens( 'access', $user_id );
+
+		$this->assertFalse( $tokens->get( 'made-up' ) );
+		$this->assertFalse( $tokens->get( $name, false ) );
+		$this->assertSame( array(), $tokens->get_all() );
+	}
+
+	// A kind that does not exist must not fall through to the tokens of every kind.
+	public function test_unknown_kind_finds_and_stores_nothing() {
+		$user_id = self::factory()->user->create();
+		$access  = new Tokens( 'access', $user_id );
+		$key     = $access->set( $this->token_data(), 300 );
+		$unknown = new Tokens( 'code', $user_id );
+
+		$this->assertFalse( $unknown->set( $this->token_data() ) );
+		$this->assertFalse( $unknown->get( $key ) );
+		$this->assertSame( array(), $unknown->get_all() );
+		$this->assertFalse( $unknown->check_expires() );
+		$unknown->destroy_all();
+
+		$this->assertIsArray( $access->get( $key ) );
+	}
+
+	// Deleting a token removes its link to the client.
+	public function test_destroy_removes_the_client_link() {
+		global $wpdb;
+
+		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$user_id = self::factory()->user->create();
+		$tokens  = new Tokens( 'access', $user_id );
+		$key     = $tokens->set( array( 'client_uid' => $client['id'] ) + $this->token_data() );
+		$linked  = "SELECT COUNT(*) FROM $wpdb->term_relationships tr JOIN $wpdb->term_taxonomy tt USING ( term_taxonomy_id ) WHERE tt.term_id = %d";
+
+		$this->assertSame( '1', $wpdb->get_var( $wpdb->prepare( $linked, $client['id'] ) ) );
+		$tokens->destroy( $key );
+		$this->assertSame( '0', $wpdb->get_var( $wpdb->prepare( $linked, $client['id'] ) ) );
+	}
+
+	// Tokens from before 4.1.0 carry their expiry as `expiration`.
+	public function test_old_expiration_key_expires_a_token() {
+		$user_id = self::factory()->user->create();
+		$tokens  = new Tokens( 'access', $user_id );
+		$key     = $tokens->set( array( 'expiration' => time() - 30 ) + $this->token_data() );
+
+		$this->assertFalse( $tokens->get( $key ) );
+	}
+
+	public function test_update_needs_an_array() {
+		$user_id = self::factory()->user->create();
+		$tokens  = new Tokens( 'access', $user_id );
+		$key     = $tokens->set( $this->token_data() );
+
+		$this->assertFalse( $tokens->update( $key, 'scope' ) );
+		$this->assertSame( 'create update', $tokens->get( $key )['scope'] );
 	}
 }

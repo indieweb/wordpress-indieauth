@@ -1,22 +1,22 @@
 <?php
 /**
- * Token Post class file.
+ * Tokens class file.
  *
  * @package IndieAuth
  */
 
-namespace IndieAuth\Token;
+namespace IndieAuth;
 
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Token\Generic;
 
 /**
- * Class for tokens stored as posts of a private post type.
+ * The access tokens and refresh tokens of the site.
  *
- * One post per token. The post name is the hash of the token, the author is
- * the user the token belongs to, and the status tells access tokens and
- * refresh tokens apart.
+ * Stored as posts of a private post type, one post per token. The post name
+ * is the hash of the token, the author is the user the token belongs to, and
+ * the status tells access tokens and refresh tokens apart.
  */
-class Post extends Generic {
+class Tokens extends Generic {
 
 	/**
 	 * The post type tokens are stored in.
@@ -85,8 +85,18 @@ class Post extends Generic {
 				'query_var'           => false,
 				'supports'            => array( 'author' ),
 				'delete_with_user'    => true,
+				// Nobody may read, create or change a token as a post. Without this
+				// the post type would get the capabilities of posts, and an editor
+				// could change the author of a token.
+				'capabilities'        => array_fill_keys(
+					array( 'edit_post', 'read_post', 'delete_post', 'edit_posts', 'edit_others_posts', 'delete_posts', 'publish_posts', 'read_private_posts', 'create_posts' ),
+					'do_not_allow'
+				),
 			)
 		);
+
+		// So the link to the client is removed with the token.
+		\register_taxonomy_for_object_type( 'indieauth_client', self::POST_TYPE );
 
 		foreach ( self::TYPES as $type ) {
 			\register_post_status( 'indieauth_' . $type, array( 'internal' => true ) );
@@ -118,7 +128,19 @@ class Post extends Generic {
 	 * @return string Hashed token.
 	 */
 	protected function hash( $token_string ) {
-		return bin2hex( \IndieAuth\indieauth_hash( $token_string ) );
+		return bin2hex( indieauth_hash( $token_string ) );
+	}
+
+	/**
+	 * Checks that the kind of token is known and its post status is registered.
+	 *
+	 * A query for a status that is not registered is not limited to it, and
+	 * would return tokens of every kind.
+	 *
+	 * @return bool Whether tokens can be read and written.
+	 */
+	private function is_ready() {
+		return null !== \get_post_status_object( $this->status );
 	}
 
 	/**
@@ -129,7 +151,7 @@ class Post extends Generic {
 	 */
 	private function find( $name ) {
 		// Anything that is not a hash, like a token that was not hashed yet, cannot be a post name.
-		if ( ! is_string( $name ) || ! preg_match( '/^[0-9a-f]{64}$/', $name ) ) {
+		if ( ! $this->is_ready() || ! is_string( $name ) || ! preg_match( '/^[0-9a-f]{64}$/', $name ) ) {
 			return null;
 		}
 
@@ -154,6 +176,10 @@ class Post extends Generic {
 	 * @return \WP_Post[] The posts.
 	 */
 	private function query( $args = array() ) {
+		if ( ! $this->is_ready() ) {
+			return array();
+		}
+
 		$args = array_merge(
 			array(
 				'post_type'              => self::POST_TYPE,
@@ -175,12 +201,12 @@ class Post extends Generic {
 	 * Reads the token data of a post.
 	 *
 	 * @param \WP_Post $post The post of a token.
-	 * @return array Token data, with the user it belongs to.
+	 * @return array|null Token data, with the user it belongs to. Null for a post without token data.
 	 */
 	private function read( $post ) {
 		$info = \get_post_meta( $post->ID, '_indieauth_token', true );
-		if ( ! is_array( $info ) ) {
-			$info = array();
+		if ( ! is_array( $info ) || empty( $info ) ) {
+			return null;
 		}
 		$info['user'] = (int) $post->post_author;
 
@@ -217,7 +243,8 @@ class Post extends Generic {
 	 * @return bool Whether the token is expired.
 	 */
 	private function has_expired( $info ) {
-		return isset( $info['exp'] ) && $this->is_expired( $info['exp'] );
+		// `expiration` is the name tokens used before 4.1.0.
+		return ( isset( $info['exp'] ) && $this->is_expired( $info['exp'] ) ) || ( isset( $info['expiration'] ) && $this->is_expired( $info['expiration'] ) );
 	}
 
 	/**
@@ -228,7 +255,7 @@ class Post extends Generic {
 	 * @return string|false The token, or false if it could not be stored.
 	 */
 	public function set( $info, $expiration = null ) {
-		if ( ! $this->user_id || ! is_array( $info ) ) {
+		if ( ! $this->is_ready() || ! $this->user_id || ! is_array( $info ) ) {
 			return false;
 		}
 		if ( $expiration ) {
@@ -280,6 +307,9 @@ class Post extends Generic {
 		}
 
 		$info = $this->read( $post );
+		if ( ! $info ) {
+			return false;
+		}
 		if ( $this->has_expired( $info ) ) {
 			\wp_delete_post( $post->ID, true );
 			return false;
@@ -297,7 +327,7 @@ class Post extends Generic {
 	 * @return bool Whether the token was updated.
 	 */
 	public function update( $key, $info, $hash = false ) {
-		if ( ! $this->user_id ) {
+		if ( ! $this->user_id || ! is_array( $info ) ) {
 			return false;
 		}
 
@@ -351,6 +381,9 @@ class Post extends Generic {
 		$tokens = array();
 		foreach ( $this->query() as $post ) {
 			$info = $this->read( $post );
+			if ( ! $info ) {
+				continue;
+			}
 			if ( $this->has_expired( $info ) ) {
 				\wp_delete_post( $post->ID, true );
 			} else {
