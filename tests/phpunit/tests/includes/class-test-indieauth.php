@@ -4,6 +4,9 @@
  *
  * @package IndieAuth
  */
+
+use IndieAuth\Token\User as Token_User;
+
 class Test_IndieAuth extends WP_UnitTestCase {
 
 	/**
@@ -24,7 +27,7 @@ class Test_IndieAuth extends WP_UnitTestCase {
 	private function add_tokens( $user_id ) {
 		$stores = array();
 		foreach ( array( '_indieauth_token_', '_indieauth_refresh_', '_indieauth_code_' ) as $prefix ) {
-			$stores[ $prefix ] = new \IndieAuth\Token\User( $prefix, $user_id );
+			$stores[ $prefix ] = new Token_User( $prefix, $user_id );
 			$stores[ $prefix ]->set(
 				array(
 					'client_id' => 'https://app.example.com/',
