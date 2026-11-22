@@ -154,7 +154,7 @@ class Test_Tokens extends WP_UnitTestCase {
 		$this->assertSame( $changed + array( 'user' => $user_id ), $tokens->get( $key ) );
 	}
 
-	// renew() and noexpire() come from the base class and work on the hash.
+	// renew() and noexpire() work on the hash, as the token list has no token.
 	public function test_renew_and_noexpire() {
 		update_option( 'indieauth_expires_in', 3600 );
 		$user_id = self::factory()->user->create();
@@ -164,6 +164,12 @@ class Test_Tokens extends WP_UnitTestCase {
 		$before  = $tokens->get( $key )['exp'];
 
 		$tokens->renew( $hash );
+		$this->assertSame( $before + 3600, $tokens->get( $key )['exp'] );
+
+		// Another user cannot change the lifetime of the token.
+		$other = new Tokens( 'access', self::factory()->user->create() );
+		$other->renew( $hash );
+		$other->noexpire( $hash );
 		$this->assertSame( $before + 3600, $tokens->get( $key )['exp'] );
 
 		$tokens->noexpire( $hash );

@@ -7,8 +7,6 @@
 
 namespace IndieAuth;
 
-use IndieAuth\Token\Generic;
-
 /**
  * The access tokens and refresh tokens of the site.
  *
@@ -16,7 +14,7 @@ use IndieAuth\Token\Generic;
  * is the hash of the token, the author is the user the token belongs to, and
  * the status tells access tokens and refresh tokens apart.
  */
-class Tokens extends Generic {
+class Tokens {
 
 	/**
 	 * The post type tokens are stored in.
@@ -127,7 +125,7 @@ class Tokens extends Generic {
 	 * @param string $token_string Token to hash.
 	 * @return string Hashed token.
 	 */
-	protected function hash( $token_string ) {
+	private function hash( $token_string ) {
 		return bin2hex( indieauth_hash( $token_string ) );
 	}
 
@@ -244,7 +242,12 @@ class Tokens extends Generic {
 	 */
 	private function has_expired( $info ) {
 		// `expiration` is the name tokens used before 4.1.0.
-		return ( isset( $info['exp'] ) && $this->is_expired( $info['exp'] ) ) || ( isset( $info['expiration'] ) && $this->is_expired( $info['expiration'] ) );
+		foreach ( array( 'exp', 'expiration' ) as $field ) {
+			if ( isset( $info[ $field ] ) && is_numeric( $info[ $field ] ) && $info[ $field ] <= time() ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -259,10 +262,10 @@ class Tokens extends Generic {
 			return false;
 		}
 		if ( $expiration ) {
-			$info['exp'] = $this->expires( $expiration );
+			$info['exp'] = time() + (int) $expiration;
 		}
 
-		$key     = $this->generate_token();
+		$key     = \wp_generate_password( 128, false );
 		$post_id = \wp_insert_post(
 			array(
 				'post_type'     => self::POST_TYPE,
@@ -353,6 +356,71 @@ class Tokens extends Generic {
 		}
 
 		return $post ? (bool) \wp_delete_post( $post->ID, true ) : false;
+	}
+
+	/**
+	 * Revokes a token.
+	 *
+	 * Like destroy(), but for a token that is taken away by a client or a user.
+	 * A rotated refresh token or an expired token is not revoked, those go
+	 * through destroy().
+	 *
+	 * @param string $key Token, hashed or not.
+	 * @return bool Whether a token was revoked.
+	 */
+	public function revoke( $key ) {
+		$token = $this->get( $key, false );
+		if ( ! $token ) {
+			$token = $this->get( $key );
+		}
+
+		$destroyed = $this->destroy( $key );
+
+		if ( $token && $destroyed ) {
+			/** This action is documented in includes/token/class-user.php */
+			\do_action( 'indieauth_token_revoked', $token, (int) $token['user'] );
+		}
+
+		return $destroyed;
+	}
+
+	/**
+	 * Extends the lifetime of a token by the default lifetime.
+	 *
+	 * @param string $key Hash of the token.
+	 */
+	public function renew( $key ) {
+		$token   = $this->get( $key, false );
+		$expires = (int) \get_option( 'indieauth_expires_in' );
+		// Tokens do not expire if the default lifetime is 0.
+		if ( ! $token || 0 === $expires ) {
+			return;
+		}
+
+		// `expiration` is the name tokens used before 4.1.0.
+		if ( isset( $token['expiration'] ) ) {
+			$token['exp'] = $token['expiration'];
+			unset( $token['expiration'] );
+		}
+		$token['exp'] = ( isset( $token['exp'] ) ? (int) $token['exp'] : time() ) + $expires;
+
+		$this->update( $key, $token, true );
+	}
+
+	/**
+	 * Removes the expiry of a token.
+	 *
+	 * @param string $key Hash of the token.
+	 */
+	public function noexpire( $key ) {
+		$token = $this->get( $key, false );
+		if ( ! $token ) {
+			return;
+		}
+
+		unset( $token['exp'], $token['expiration'], $token['expires_in'] );
+
+		$this->update( $key, $token, true );
 	}
 
 	/**
