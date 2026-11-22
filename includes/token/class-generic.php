@@ -38,6 +38,8 @@ abstract class Generic {
 	 * @return void
 	 */
 	public function renew( $key ) {
+		\_deprecated_function( __METHOD__, '5.2.0', 'IndieAuth\Tokens::renew()' );
+
 		$token = $this->get( $key, false );
 		if ( ! $token ) {
 			return;
@@ -67,6 +69,8 @@ abstract class Generic {
 	 * @return void
 	 */
 	public function noexpire( $key ) {
+		\_deprecated_function( __METHOD__, '5.2.0', 'IndieAuth\Tokens::noexpire()' );
+
 		$token = $this->get( $key, false );
 		if ( ! $token ) {
 			return;

@@ -8,6 +8,7 @@
 namespace IndieAuth\WP_Admin;
 
 use IndieAuth\IndieAuth;
+use IndieAuth\Tokens;
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\Rest\Authorization_Controller;
 
@@ -100,7 +101,7 @@ class Token_UI {
 	 */
 	private function generate_local_token( $name, $scopes, $expires_in = 0 ) {
 		$user_id = \get_current_user_id();
-		$tokens  = new Token_User( '_indieauth_token_' );
+		$tokens  = new Tokens( 'access' );
 		$tokens->set_user( $user_id );
 		$token = array(
 			'token_type'  => 'Bearer',

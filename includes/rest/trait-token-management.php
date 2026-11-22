@@ -7,7 +7,7 @@
 
 namespace IndieAuth\Rest;
 
-use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 use function IndieAuth\get_user_by_identifier;
 
 /**
@@ -20,14 +20,14 @@ trait Token_Management {
 	/**
 	 * Token storage.
 	 *
-	 * @var Token_User
+	 * @var Tokens
 	 */
 	protected $tokens;
 
 	/**
 	 * Refresh token storage.
 	 *
-	 * @var Token_User
+	 * @var Tokens
 	 */
 	protected $refresh_tokens;
 
@@ -35,8 +35,8 @@ trait Token_Management {
 	 * Initialize token storage.
 	 */
 	protected function init_tokens() {
-		$this->tokens         = new Token_User( '_indieauth_token_' );
-		$this->refresh_tokens = new Token_User( '_indieauth_refresh_' );
+		$this->tokens         = new Tokens( 'access' );
+		$this->refresh_tokens = new Tokens( 'refresh' );
 	}
 
 	/**

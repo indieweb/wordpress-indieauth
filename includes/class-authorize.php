@@ -362,7 +362,7 @@ class Authorize {
 	 * @return array|OAuth_Response Return either the token information or an OAuth Error Object.
 	 */
 	public function verify_access_token( $token ) {
-		$tokens = new Token_User( '_indieauth_token_' );
+		$tokens = new Tokens( 'access' );
 		$return = $tokens->get( $token );
 		if ( empty( $return ) ) {
 			// Not logged here, the token may belong to another plugin. Logged in rest_request_after_callbacks() if the request fails.

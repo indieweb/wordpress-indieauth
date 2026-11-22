@@ -9,7 +9,7 @@ namespace IndieAuth\WP_Admin;
 
 use IndieAuth\Client_Discovery;
 use IndieAuth\Client_Taxonomy;
-use IndieAuth\Token\User as Token_User;
+use IndieAuth\Tokens;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
@@ -72,11 +72,9 @@ class Token_List_Table extends \WP_List_Table {
 		$hidden  = array();
 		$this->process_action();
 		$this->_column_headers = array( $columns, $hidden, $this->get_sortable_columns() );
-		$t                     = new Token_User( '_indieauth_token_', \get_current_user_id() );
-		// Always refresh the list of token users while loading this page.
-		$t->find_token_users( true );
-		$tokens      = $t->get_all();
-		$this->items = array();
+		$t                     = new Tokens( 'access', \get_current_user_id() );
+		$tokens                = $t->get_all();
+		$this->items           = array();
 		$this->set_pagination_args(
 			array(
 				'total_items' => count( $tokens ),
@@ -116,7 +114,7 @@ class Token_List_Table extends \WP_List_Table {
 	 */
 	public function process_action() {
 		$tokens = isset( $_REQUEST['tokens'] ) ? $_REQUEST['tokens'] : array(); // phpcs:ignore
-		$t      = new Token_User( '_indieauth_token_', \get_current_user_id() );
+		$t      = new Tokens( 'access', \get_current_user_id() );
 		if ( $this->current_action() ) {
 			\check_admin_referer( 'bulk-' . $this->_args['plural'] );
 		}
@@ -173,8 +171,8 @@ class Token_List_Table extends \WP_List_Table {
 	/**
 	 * Destroy tokens older than specified time period.
 	 *
-	 * @param Token_User $t          Token user instance.
-	 * @param string     $older_than Time period (year, month, week, day, hour).
+	 * @param Tokens $t          Token store.
+	 * @param string $older_than Time period (year, month, week, day, hour).
 	 */
 	public function destroy_older_than( $t, $older_than = 'day' ) {
 		switch ( strtolower( $older_than ) ) {
