@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.4', '8.3']
+        php-versions: ['7.4', '8.3', '8.5', '8.6']
         cp-version: ['latest']
     steps:
       - name: Install svn

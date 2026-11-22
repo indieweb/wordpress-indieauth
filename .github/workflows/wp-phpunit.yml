@@ -32,13 +32,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.4', '8.3', '8.5']
+        php-versions: ['7.4', '8.3', '8.5', '8.6']
         wp-version: ['latest']
         include:
           - wp-version: '6.5'
             php-versions: '7.4'
           - wp-version: trunk
-            php-versions: '8.5'
+            php-versions: '8.6'
     steps:
       - name: Install svn
         run: |
