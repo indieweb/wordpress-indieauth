@@ -20,17 +20,20 @@ on:
       - 'phpcs.xml'
       - '.github/workflows/cp-phpunit.yml'
       - 'bin/install-cp-tests.sh'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   phpunit:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb:10.4
+        image: mariadb:11.4
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=10s --health-retries=10
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=10s --health-retries=10
     strategy:
       fail-fast: false
       matrix:

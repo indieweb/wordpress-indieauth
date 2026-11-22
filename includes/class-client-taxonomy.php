@@ -355,6 +355,10 @@ final class Client_Taxonomy {
 	 * @return string|false URL to downloaded image or false on failure.
 	 */
 	public static function sideload_icon( $url, $client_id ) {
+		if ( empty( $url ) ) {
+			return false;
+		}
+
 		// If the URL is inside the upload directory.
 		if ( false !== strpos( $url, self::upload_directory( '', true ) ) ) {
 			return $url;
