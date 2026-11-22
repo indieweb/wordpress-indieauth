@@ -8,7 +8,7 @@
 use IndieAuth\Client_Taxonomy;
 use IndieAuth\Tokens;
 
-class Test_Tokens_Post_Type extends WP_UnitTestCase {
+class Test_Tokens extends WP_UnitTestCase {
 
 	// Tokens must not show up anywhere a post can be read.
 	public function test_post_type_is_private() {
