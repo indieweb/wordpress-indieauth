@@ -143,6 +143,28 @@ class IndieAuth {
 	private function register_hooks() {
 		\add_action( 'init', array( $this, 'init_plugin' ), 2 );
 		\add_action( 'admin_init', array( self::class, 'maybe_flush_rewrite_rules' ) );
+		\add_action( 'after_password_reset', array( self::class, 'revoke_user_tokens' ) );
+	}
+
+	/**
+	 * Revoke all tokens of a user after a password reset.
+	 *
+	 * A password reset can mean that the account was compromised, so apps have
+	 * to be authorized again. A password change in the profile does not do this.
+	 *
+	 * @param \WP_User $user The user whose password was reset.
+	 */
+	public static function revoke_user_tokens( $user ) {
+		foreach ( array( '_indieauth_token_', '_indieauth_refresh_' ) as $prefix ) {
+			$tokens = new Token_User( $prefix, $user->ID );
+			foreach ( array_keys( $tokens->get_all() ) as $key ) {
+				$tokens->revoke( $key );
+			}
+		}
+
+		// Authorization codes that were not exchanged yet.
+		$codes = new Token_User( '_indieauth_code_', $user->ID );
+		$codes->destroy_all();
 	}
 
 	/**
