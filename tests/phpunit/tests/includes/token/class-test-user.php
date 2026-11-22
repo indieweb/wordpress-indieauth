@@ -63,7 +63,29 @@ class Test_Token_User extends WP_UnitTestCase {
 		$this->assertFalse( $get );
 	}
 
+	/**
+	 * Access and refresh tokens moved to IndieAuth\Tokens, so changing the
+	 * lifetime of a token in user meta still works, but is deprecated.
+	 *
+	 * @expectedDeprecated IndieAuth\Token\Generic::renew
+	 * @expectedDeprecated IndieAuth\Token\Generic::noexpire
+	 */
+	public function test_renew_and_noexpire_are_deprecated() {
+		update_option( 'indieauth_expires_in', 3600 );
+		$user_id = self::factory()->user->create();
+		$tokens  = new Token_User( '_indieauth_token_', $user_id );
+		$key     = $tokens->set( array( 'scope' => 'create' ), 300 );
+		$hash    = base64_encode( hash( 'sha256', $key, true ) );
+		$before  = $tokens->get( $key )['exp'];
 
+		$tokens->renew( $hash );
+		$this->assertEquals( $before + 3600, $tokens->get( $key )['exp'] );
 
+		$tokens->noexpire( $hash );
+		$this->assertArrayNotHasKey( 'exp', $tokens->get( $key ) );
+	}
 
+	public function test_revoke_is_gone() {
+		$this->assertFalse( method_exists( Token_User::class, 'revoke' ) );
+	}
 }
