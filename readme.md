@@ -207,6 +207,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Add actions for logging and notifications: `indieauth_authorization_approved`, `indieauth_token_issued`, `indieauth_token_refreshed`, `indieauth_token_revoked` and `indieauth_error`. The token endpoint no longer writes its default "Invalid Request" error to the debug log on requests that succeed (#261)
 * Store access and refresh tokens as a private post type instead of user meta. Existing tokens keep working and are moved when they are used or listed (#232)
 * Deprecate `Token\Generic::renew()` and `Token\Generic::noexpire()`, use the same methods of `IndieAuth\Tokens`
+* Fix "Last Accessed" in the token list, it was never stored. It is updated at most once per hour
 
 ### 5.1.0
 

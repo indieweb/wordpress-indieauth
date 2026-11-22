@@ -377,9 +377,15 @@ class Authorize {
 		if ( is_oauth_error( $return ) ) {
 			return $return;
 		}
+		// Stored at most once per hour, so not every request writes to the database.
+		$stale = empty( $return['last_accessed'] ) || $return['last_accessed'] < time() - HOUR_IN_SECONDS;
+
 		$return['last_accessed'] = time();
 		$return['last_ip']       = isset( $_SERVER['REMOTE_ADDR'] ) ? \sanitize_text_field( \wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$tokens->update( $token, $return );
+		if ( $stale ) {
+			$tokens->set_user( $return['user'] );
+			$tokens->update( $token, $return );
+		}
 		if ( array_key_exists( 'exp', $return ) ) {
 			$return['expires_in'] = $return['exp'] - time();
 		}
