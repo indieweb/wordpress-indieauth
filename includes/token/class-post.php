@@ -91,6 +91,24 @@ class Post extends Generic {
 		foreach ( self::TYPES as $type ) {
 			\register_post_status( 'indieauth_' . $type, array( 'internal' => true ) );
 		}
+
+		\add_action( 'delete_user', array( self::class, 'delete_user_tokens' ) );
+		\add_action( 'remove_user_from_blog', array( self::class, 'delete_user_tokens' ) );
+	}
+
+	/**
+	 * Delete the tokens of a user who is deleted or removed from the site.
+	 *
+	 * WordPress can hand the posts of that user to another user. Tokens must
+	 * never change their owner, so they are deleted before that happens.
+	 *
+	 * @param int $user_id User ID.
+	 */
+	public static function delete_user_tokens( $user_id ) {
+		foreach ( self::TYPES as $type ) {
+			$tokens = new self( $type, $user_id );
+			$tokens->destroy_all();
+		}
 	}
 
 	/**

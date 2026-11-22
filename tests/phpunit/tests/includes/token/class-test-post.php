@@ -248,4 +248,21 @@ class Test_Token_Post extends WP_UnitTestCase {
 		$this->assertSame( array(), get_posts( array( 'post_type' => 'any', 'post_status' => 'any', 'author' => $user_id ) ) );
 		$this->assertSame( 0, get_term( $client['id'], 'indieauth_client' )->count );
 	}
+
+	// Deleting a user can hand their posts to someone else. Tokens must not go along.
+	public function test_tokens_are_deleted_before_posts_are_reassigned() {
+		$user_id = self::factory()->user->create();
+		$heir    = self::factory()->user->create();
+		$post_id = self::factory()->post->create( array( 'post_author' => $user_id ) );
+		$access  = ( new Token_Post( 'access', $user_id ) )->set( $this->token_data() );
+		$refresh = ( new Token_Post( 'refresh', $user_id ) )->set( $this->token_data() );
+
+		wp_delete_user( $user_id, $heir );
+
+		// The reassign did happen, so the tokens were at risk.
+		$this->assertSame( $heir, (int) get_post( $post_id )->post_author );
+		$this->assertFalse( ( new Token_Post( 'access' ) )->get( $access ) );
+		$this->assertFalse( ( new Token_Post( 'refresh' ) )->get( $refresh ) );
+		$this->assertSame( array(), ( new Token_Post( 'access', $heir ) )->get_all() );
+	}
 }
