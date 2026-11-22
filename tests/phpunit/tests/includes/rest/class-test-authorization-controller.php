@@ -44,9 +44,10 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 	 * The redirect is captured through the wp_redirect filter, which also stops
 	 * the header from being sent.
 	 *
+	 * @param array $scope Scopes that were checked in the form.
 	 * @return array Stored code data.
 	 */
-	protected function submit_consent_and_get_code() {
+	protected function submit_consent_and_get_code( $scope = array( 'create' ) ) {
 		$location = null;
 		$capture  = function ( $url ) use ( &$location ) {
 			$location = $url;
@@ -59,7 +60,7 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 			'_wpnonce'              => wp_create_nonce( 'indieauth_authorize' ),
 			'client_id'             => 'https://app.example.com/',
 			'redirect_uri'          => 'https://app.example.com/redirect',
-			'scope'                 => array( 'create' ),
+			'scope'                 => $scope,
 			'state'                 => 'abc123',
 			'response_type'         => 'code',
 			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
@@ -127,6 +128,38 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertSame( 'https://app.example.com/', $calls[0]['token']['client_id'] );
 		$this->assertSame( 'create', $calls[0]['token']['scope'] );
 		$this->assertSame( $code['uuid'], $calls[0]['token']['uuid'] );
+	}
+
+	// A scope the user cannot use is not stored with the code, even if the form sends it.
+	public function test_confirmed_drops_scopes_the_user_cannot_use() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+
+		$code = $this->submit_consent_and_get_code( array( 'profile', 'create', 'media' ) );
+
+		$this->assertSame( 'profile', $code['scope'] );
+	}
+
+	// The consent screen does not offer a scope the user cannot use.
+	public function test_authorization_form_hides_scopes_the_user_cannot_use() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'contributor' ) ) );
+		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+
+		$_GET = array(
+			'client_id'     => 'https://app.example.com/',
+			'redirect_to'   => 'https://app.example.com/redirect',
+			'scope'         => 'create media',
+			'state'         => 'abc123',
+			'response_type' => 'code',
+		);
+
+		ob_start();
+		( new IndieAuth\Rest\Authorization_Controller() )->authorize();
+		$output = ob_get_clean();
+
+		$_GET = array();
+
+		$this->assertStringContainsString( 'value="create"', $output );
+		$this->assertStringNotContainsString( 'value="media"', $output );
 	}
 
 	// The consent form hands the user and the client to plugins that add their own fields.

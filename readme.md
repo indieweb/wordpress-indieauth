@@ -205,6 +205,7 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Store the time the user logged in (`auth_time`) with authorization codes and carry it, unchanged, to access and refresh tokens. Introspection returns it (#362)
 * Accept custom URI scheme redirect URLs for native apps, such as `com.example.app:/callback` (RFC 8252). They must exactly match a redirect URL published by the client, and the consent screen says the user will be returned to an app. `javascript`, `data`, `vbscript`, `file`, `blob` and `filesystem` are always rejected; more schemes can be blocked with the `indieauth_blocked_redirect_schemes` filter. The consent screen is no longer shown for a `redirect_uri` the client has not published (#367)
 * Add actions for logging and notifications: `indieauth_authorization_approved`, `indieauth_token_issued`, `indieauth_token_refreshed`, `indieauth_token_revoked` and `indieauth_error`. The token endpoint no longer writes its default "Invalid Request" error to the debug log on requests that succeed (#261)
+* Do not offer or issue scopes the user cannot use, for example `create` for a subscriber. Scopes that only need `read`, like `profile`, are not affected (#147)
 
 ### 5.1.0
 
