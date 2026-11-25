@@ -74,19 +74,37 @@ class External_User_Token {
 			return false;
 		}
 		foreach ( $tokens as $key => $token ) {
-			if ( array_key_exists( 'expiration', $token ) && $this->is_expired( $token['expiration'] ) ) {
-				if ( array_key_exists( 'refresh_token' ) ) {
-					$refresh = $this->refresh_token( $token );
-					if ( is_array( $refresh ) ) {
-						$token[ $key ] = array_merge( $token[ $key ], $refresh );
-						if ( array_key_exists( 'expires_in', $token[ $key ] ) ) {
-							$token[ $key ]['expiration'] = time() + $token[ $key ]['expires_in'];
-						}
-					}
-				} else {
-					unset( $token[ $key ] );
-				}
+			if ( ! array_key_exists( 'expiration', $token ) || ! $this->is_expired( $token['expiration'] ) ) {
+				continue;
 			}
+
+			// An expired token that cannot be refreshed is removed.
+			if ( ! array_key_exists( 'refresh_token', $token ) ) {
+				unset( $tokens[ $key ] );
+				continue;
+			}
+
+			// A response without an access token is a failed refresh. Accepting it
+			// would drop the expiry below and the token would never be checked again.
+			$refresh = $this->refresh_token( $token );
+			if ( ! is_array( $refresh ) || empty( $refresh['access_token'] ) ) {
+				continue;
+			}
+
+			// Only take the token fields, so the response cannot overwrite
+			// token_endpoint, resource or uuid. Without a new refresh_token the
+			// stored one is kept, RFC 6749 section 6.
+			$refresh = array_intersect_key( $refresh, array_flip( array( 'access_token', 'refresh_token', 'expires_in', 'scope' ) ) );
+
+			// The refresh response replaces the stored expiry. Without expires_in
+			// the server did not set one, so the old expiry must not be kept.
+			unset( $token['expires_in'], $token['expiration'] );
+			$token = array_merge( $token, $refresh );
+			if ( array_key_exists( 'expires_in', $refresh ) && is_numeric( $refresh['expires_in'] ) ) {
+				$token['expiration'] = time() + (int) $refresh['expires_in'];
+			}
+
+			$tokens[ $key ] = $token;
 		}
 		\update_user_meta( $this->user_id, 'indieauth_external_tokens', $tokens );
 		return true;
@@ -127,6 +145,13 @@ class External_User_Token {
 			$args['body']['resource'] = $token['resource'];
 		}
 
+		// IndieAuth asks for the client_id the refresh token was issued to. A
+		// ticket is redeemed without one, as client_id is optional in Ticket
+		// Auth, so it is only known, and only sent, if the issuer returned it.
+		if ( ! empty( $token['client_id'] ) && is_string( $token['client_id'] ) ) {
+			$args['body']['client_id'] = $token['client_id'];
+		}
+
 		$resp = \wp_safe_remote_post(
 			$token_endpoint,
 			$args
@@ -143,13 +168,13 @@ class External_User_Token {
 	}
 
 	/**
-	 * Retrieves a token
+	 * Retrieves a token by its access token.
 	 *
-	 * @param string $key token to retrieve.
+	 * @param string $key Access token of the token to retrieve.
 	 * @return array|boolean Token data or false if not found
 	 */
 	public function get( $key ) {
-		if ( ! is_string( $key ) ) {
+		if ( ! is_string( $key ) || '' === $key ) {
 			return false;
 		}
 
@@ -158,9 +183,13 @@ class External_User_Token {
 		}
 
 		$tokens = \get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
-		foreach ( $tokens as $key => $token ) {
-			if ( in_array( $token['access_token'], $key, true ) ) {
-				return $tokens[ $key ];
+		if ( ! is_array( $tokens ) ) {
+			return false;
+		}
+
+		foreach ( $tokens as $token ) {
+			if ( is_array( $token ) && isset( $token['access_token'] ) && hash_equals( (string) $token['access_token'], $key ) ) {
+				return $token;
 			}
 		}
 		return false;
@@ -205,7 +234,7 @@ class External_User_Token {
 				$found = $key;
 			}
 		}
-		if ( ! $found ) {
+		if ( null === $found ) {
 			// Add local unique identifier to distinguish if multiple tokens are issued.
 			$info['uuid'] = \wp_generate_uuid4();
 
@@ -229,6 +258,9 @@ class External_User_Token {
 		}
 
 		$tokens = \get_user_meta( $this->user_id, 'indieauth_external_tokens', true );
+		if ( ! is_array( $tokens ) ) {
+			return false;
+		}
 
 		if ( is_string( $destroy ) ) {
 			$destroy = array( $destroy );
@@ -283,7 +315,7 @@ class External_User_Token {
 	/**
 	 * Verifies an External token.
 	 *
-	 * @param array $key Token to verify.
+	 * @param string $key Access token of the token to verify.
 	 * @return boolean|array Either false or the response from the token endpoint.
 	 */
 	public function verify( $key ) {
@@ -308,7 +340,7 @@ class External_User_Token {
 			$token_endpoint,
 			array(
 				'headers' => array(
-					'Authorization' => 'Bearer: ' . $token['access_token'],
+					'Authorization' => 'Bearer ' . $token['access_token'],
 					'Accept'        => 'application/json',
 				),
 			)

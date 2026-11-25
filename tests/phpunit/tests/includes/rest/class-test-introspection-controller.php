@@ -115,6 +115,21 @@ class Test_Introspection_Controller extends WP_UnitTestCase {
 		$this->assertEquals( static::$test_token, $response_token );
 	}
 
+	// auth_time stored on a token is returned by introspection as an integer, RFC 9470 section 6.2.
+	public function test_token_introspection_returns_auth_time() {
+		$tokens = new Token_User( '_indieauth_token_' );
+		$tokens->set_user( self::$author_id );
+		$token = $tokens->set( array_merge( static::$test_token, array( 'auth_time' => 1700000000 ) ) );
+
+		wp_set_current_user( self::$author_id );
+		$response = $this->create_form( 'POST', array( 'token' => $token ) );
+
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$data = $response->get_data();
+		$this->assertTrue( $data['active'] );
+		$this->assertSame( 1700000000, $data['auth_time'] );
+	}
+
 	// The introspection endpoint MUST require some form of authorization.
 	public function test_token_introspection_requires_authorization() {
 		$token    = self::set_access_token();

@@ -16,6 +16,79 @@ class Test_Functions extends WP_UnitTestCase {
 		self::delete_user( self::$author_id );
 	}
 
+	public function tear_down() {
+		unset( $_COOKIE[ LOGGED_IN_COOKIE ] );
+		parent::tear_down();
+	}
+
+	/**
+	 * Start a WordPress session for a user and set the logged-in cookie for it.
+	 *
+	 * @param int            $user_id User ID.
+	 * @param int|false|null $login   Login time to store. False removes it. Null keeps the time set by WordPress.
+	 * @return string Session token.
+	 */
+	protected function start_session( $user_id, $login = null ) {
+		$manager = WP_Session_Tokens::get_instance( $user_id );
+		$token   = $manager->create( time() + DAY_IN_SECONDS );
+
+		if ( null !== $login ) {
+			$session = $manager->get( $token );
+			if ( false === $login ) {
+				unset( $session['login'] );
+			} else {
+				$session['login'] = $login;
+			}
+			$manager->update( $token, $session );
+		}
+
+		$_COOKIE[ LOGGED_IN_COOKIE ] = wp_generate_auth_cookie( $user_id, time() + DAY_IN_SECONDS, 'logged_in', $token );
+
+		return $token;
+	}
+
+	// auth_time is the login time recorded in the user's session.
+	public function test_session_auth_time_returns_session_login() {
+		$this->start_session( static::$author_id, 1700000000 );
+
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	// Without a user ID, the current user's session is used.
+	public function test_session_auth_time_defaults_to_current_user() {
+		wp_set_current_user( static::$author_id );
+		$this->start_session( static::$author_id, 1700000000 );
+
+		$this->assertSame( 1700000000, IndieAuth\get_session_auth_time() );
+	}
+
+	public function test_session_auth_time_is_null_without_cookie() {
+		wp_set_current_user( static::$author_id );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	public function test_session_auth_time_is_null_without_user() {
+		$this->start_session( static::$author_id, 1700000000 );
+		wp_set_current_user( 0 );
+
+		$this->assertNull( IndieAuth\get_session_auth_time() );
+	}
+
+	// A cookie for a session that no longer exists, for example after logging out elsewhere.
+	public function test_session_auth_time_is_null_for_destroyed_session() {
+		$token = $this->start_session( static::$author_id, 1700000000 );
+		WP_Session_Tokens::get_instance( static::$author_id )->destroy( $token );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
+	public function test_session_auth_time_is_null_without_login_value() {
+		$this->start_session( static::$author_id, false );
+
+		$this->assertNull( IndieAuth\get_session_auth_time( static::$author_id ) );
+	}
+
 	// Test Getting the Author URL through get_user_by_identifier.
 	public function test_authorurl() {
 		// Remove port from site URL for IndieAuth URL validation compatibility.
@@ -258,5 +331,103 @@ class Test_Functions extends WP_UnitTestCase {
 		$this->assertSame( array(), $deprecations );
 		$this->assertSame( 'https://example.com/auth/grüße', $rels['authorization_endpoint'] );
 		$this->assertSame( 'https://example.com/über', $rels['me'] );
+	}
+
+	public function blocked_redirect_uri_provider() {
+		return array(
+			'javascript'           => array( 'javascript:alert(1)' ),
+			'mixed case'           => array( 'JaVaScRiPt:alert(1)' ),
+			'leading space'        => array( ' javascript:alert(1)' ),
+			'tab inside scheme'    => array( "java\tscript:alert(1)" ),
+			'newline inside'       => array( "java\nscript:alert(1)" ),
+			'null byte'            => array( "javascript\0:alert(1)" ),
+			'data'                 => array( 'data:text/html,<script>alert(1)</script>' ),
+			'vbscript'             => array( 'vbscript:msgbox(1)' ),
+			'file'                 => array( 'file:///etc/passwd' ),
+			'blob'                 => array( 'blob:https://example.com/uuid' ),
+			'filesystem'           => array( 'filesystem:https://example.com/temporary/x' ),
+		);
+	}
+
+	/**
+	 * Blocked schemes are rejected in the usual disguises, and sanitize to ''.
+	 *
+	 * @dataProvider blocked_redirect_uri_provider
+	 *
+	 * @param string $url The redirect URI.
+	 */
+	public function test_blocked_redirect_uri_is_rejected( $url ) {
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( $url ) );
+		$this->assertSame( '', IndieAuth\sanitize_redirect_uri( $url ) );
+	}
+
+	public function invalid_redirect_uri_provider() {
+		return array(
+			'empty'                => array( '' ),
+			'not a string'         => array( array( 'https://example.com/' ) ),
+			'no scheme'            => array( 'not a url' ),
+			'nothing after colon'  => array( 'myapp:' ),
+			'scheme starts digit'  => array( '1app:/cb' ),
+			'space in path'        => array( 'myapp:/c b' ),
+			'empty authority'      => array( 'myapp:///cb' ),
+			'parses as host:port'  => array( 'myapp:80/cb' ),
+			'https without host'   => array( 'https://' ),
+		);
+	}
+
+	/**
+	 * Malformed redirect URIs are rejected.
+	 *
+	 * @dataProvider invalid_redirect_uri_provider
+	 *
+	 * @param mixed $url The redirect URI.
+	 */
+	public function test_invalid_redirect_uri_is_rejected( $url ) {
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( $url ) );
+	}
+
+	// Custom schemes are accepted and kept by the sanitizer, with the scheme lowercased.
+	public function test_custom_scheme_redirect_uri_is_accepted() {
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'com.example.app:/callback' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb?x=1' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'https://app.example.com/cb' ) );
+
+		$this->assertSame( 'com.example.app:/callback', IndieAuth\sanitize_redirect_uri( 'Com.Example.App:/callback' ) );
+		// REST passes the request and key as extra arguments.
+		$this->assertSame( 'myapp://oauth/cb', IndieAuth\sanitize_redirect_uri( 'myapp://oauth/cb', new WP_REST_Request(), 'redirect_uri' ) );
+	}
+
+	// The filter can add blocked schemes, case-insensitively, but cannot remove the core ones.
+	public function test_blocked_redirect_schemes_filter_is_add_only() {
+		$add = function () {
+			return array( 'MyApp' );
+		};
+		add_filter( 'indieauth_blocked_redirect_schemes', $add );
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb' ) );
+		remove_filter( 'indieauth_blocked_redirect_schemes', $add );
+
+		add_filter( 'indieauth_blocked_redirect_schemes', '__return_empty_array' );
+		$this->assertFalse( IndieAuth\rest_is_valid_redirect_uri( 'javascript:alert(1)' ) );
+		$this->assertTrue( IndieAuth\rest_is_valid_redirect_uri( 'myapp://oauth/cb' ) );
+		remove_filter( 'indieauth_blocked_redirect_schemes', '__return_empty_array' );
+	}
+
+	/**
+	 * The URI's own scheme is added to the escaping protocols unless blocked,
+	 * and a scheme WordPress allows is removed once it is blocked.
+	 */
+	public function test_redirect_uri_protocols_exclude_blocked_schemes() {
+		$this->assertContains( 'myapp', IndieAuth\redirect_uri_protocols( 'myapp:/cb' ) );
+		$this->assertNotContains( 'javascript', IndieAuth\redirect_uri_protocols( 'javascript:alert(1)' ) );
+
+		// ftp is in wp_allowed_protocols() by default.
+		$this->assertContains( 'ftp', IndieAuth\redirect_uri_protocols( 'myapp:/cb' ) );
+		$block_ftp = function () {
+			return array( 'ftp' );
+		};
+		add_filter( 'indieauth_blocked_redirect_schemes', $block_ftp );
+		$protocols = IndieAuth\redirect_uri_protocols( 'myapp:/cb' );
+		remove_filter( 'indieauth_blocked_redirect_schemes', $block_ftp );
+		$this->assertNotContains( 'ftp', $protocols );
 	}
 }

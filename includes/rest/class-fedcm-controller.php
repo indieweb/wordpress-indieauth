@@ -13,6 +13,7 @@ use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\indieauth_validate_user_identifier;
 use function IndieAuth\get_url_from_user;
 use function IndieAuth\normalize_url;
+use function IndieAuth\get_session_auth_time;
 
 /**
  * Implements the Federated Credential Management (FedCM) API endpoints
@@ -737,6 +738,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 			'user'                  => $user->ID,
 			'uuid'                  => $uuid,
 			'fedcm'                 => true, // Mark as FedCM-issued code; these are not bound to a redirect_uri.
+			'auth_time'             => get_session_auth_time( $user->ID ), // Dropped by array_filter() below when there is no session login time.
 		);
 
 		if ( $nonce ) {
@@ -747,6 +749,11 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		$this->codes->set_user( $user->ID );
 		$code = $this->codes->set( $token, 600 );
+
+		if ( $code ) {
+			/** This action is documented in includes/rest/class-authorization-controller.php */
+			\do_action( 'indieauth_authorization_approved', $token, $user->ID );
+		}
 
 		// Build the token response.
 		$token_response = array(

@@ -2,6 +2,14 @@
 
 use IndieAuth\Token\User as Token_User;
 
+// The consent templates use these functions of wp-login.php, which cannot be loaded in a test.
+if ( ! function_exists( 'login_header' ) ) {
+	function login_header() {}
+}
+if ( ! function_exists( 'login_footer' ) ) {
+	function login_footer() {}
+}
+
 class Test_Authorization_Controller extends WP_UnitTestCase {
 
 	protected static $author_id;
@@ -22,6 +30,140 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 
 	public static function wpTearDownAfterClass() {
 		self::delete_user( self::$author_id );
+	}
+
+	public function tear_down() {
+		unset( $_COOKIE[ LOGGED_IN_COOKIE ] );
+		$_POST = array();
+		parent::tear_down();
+	}
+
+	/**
+	 * Submit the consent form as the author and return the stored authorization code.
+	 *
+	 * The redirect is captured through the wp_redirect filter, which also stops
+	 * the header from being sent.
+	 *
+	 * @return array Stored code data.
+	 */
+	protected function submit_consent_and_get_code() {
+		$location = null;
+		$capture  = function ( $url ) use ( &$location ) {
+			$location = $url;
+			return false;
+		};
+		add_filter( 'wp_redirect', $capture );
+
+		// The nonce depends on the session token, so it is created after the cookie is set.
+		$_POST = array(
+			'_wpnonce'              => wp_create_nonce( 'indieauth_authorize' ),
+			'client_id'             => 'https://app.example.com/',
+			'redirect_uri'          => 'https://app.example.com/redirect',
+			'scope'                 => array( 'create' ),
+			'state'                 => 'abc123',
+			'response_type'         => 'code',
+			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+			'code_challenge_method' => 'S256',
+		);
+
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+		$controller->confirmed();
+
+		remove_filter( 'wp_redirect', $capture );
+
+		$this->assertNotNull( $location, 'confirmed() did not redirect' );
+		wp_parse_str( (string) wp_parse_url( $location, PHP_URL_QUERY ), $query );
+		$this->assertArrayHasKey( 'code', $query );
+
+		return $this->get_auth_code( $query['code'] );
+	}
+
+	// The consent form stores the session login time with the code.
+	public function test_confirmed_stores_auth_time() {
+		wp_set_current_user( self::$author_id );
+
+		$manager = WP_Session_Tokens::get_instance( self::$author_id );
+		$session = $manager->create( time() + DAY_IN_SECONDS );
+		$data    = $manager->get( $session );
+
+		$data['login'] = 1700000000;
+		$manager->update( $session, $data );
+		$_COOKIE[ LOGGED_IN_COOKIE ] = wp_generate_auth_cookie( self::$author_id, time() + DAY_IN_SECONDS, 'logged_in', $session );
+
+		$code = $this->submit_consent_and_get_code();
+
+		$this->assertSame( 'create', $code['scope'] );
+		$this->assertSame( 1700000000, $code['auth_time'] );
+	}
+
+	// Without a session login time, auth_time is left out of the code.
+	public function test_confirmed_omits_auth_time_without_session() {
+		wp_set_current_user( self::$author_id );
+
+		$code = $this->submit_consent_and_get_code();
+
+		$this->assertSame( 'create', $code['scope'] );
+		$this->assertArrayNotHasKey( 'auth_time', $code );
+	}
+
+	// The hook gets what is stored with the code, so a logger can follow it by its uuid.
+	public function test_confirmed_fires_authorization_approved() {
+		wp_set_current_user( self::$author_id );
+
+		$calls = array();
+		add_action(
+			'indieauth_authorization_approved',
+			function ( $token, $user_id ) use ( &$calls ) {
+				$calls[] = compact( 'token', 'user_id' );
+			},
+			10,
+			2
+		);
+
+		$code = $this->submit_consent_and_get_code();
+
+		$this->assertCount( 1, $calls );
+		$this->assertSame( self::$author_id, $calls[0]['user_id'] );
+		$this->assertSame( 'https://app.example.com/', $calls[0]['token']['client_id'] );
+		$this->assertSame( 'create', $calls[0]['token']['scope'] );
+		$this->assertSame( $code['uuid'], $calls[0]['token']['uuid'] );
+	}
+
+	// The consent form hands the user and the client to plugins that add their own fields.
+	public function test_authorization_form_action_gets_the_user_and_client() {
+		wp_set_current_user( self::$author_id );
+
+		$calls = array();
+		add_action(
+			'indieauth_authorization_form',
+			function ( $user_id, $client_id ) use ( &$calls ) {
+				$calls[] = array( $user_id, $client_id );
+			},
+			10,
+			2
+		);
+
+		// A client that is known already, so nothing is fetched.
+		IndieAuth\Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+
+		$_GET = array(
+			'client_id'             => 'https://app.example.com/',
+			'redirect_to'           => 'https://app.example.com/redirect',
+			'scope'                 => 'create',
+			'state'                 => 'abc123',
+			'response_type'         => 'code',
+			'code_challenge'        => 'OfYAxt8zU2dAPDWQxTAUIteRzMsoj9QBdMIVEDOErUo',
+			'code_challenge_method' => 'S256',
+		);
+
+		ob_start();
+		( new IndieAuth\Rest\Authorization_Controller() )->authorize();
+		$output = ob_get_clean();
+
+		$_GET = array();
+
+		$this->assertSame( array( array( self::$author_id, 'https://app.example.com/' ) ), $calls );
+		$this->assertStringContainsString( get_userdata( self::$author_id )->display_name, $output );
 	}
 
 	// Form Encoded Request
@@ -214,6 +356,78 @@ class Test_Authorization_Controller extends WP_UnitTestCase {
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'http://app.example.com/callback' ) );
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://app.example.com:8443/callback' ) );
 		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'https://evil.example.net/callback' ) );
+	}
+
+	/**
+	 * A native app's custom scheme redirect must match one the client published.
+	 *
+	 * The scheme is compared without case, RFC 3986 section 3.1; the rest of
+	 * the URI has to match exactly. RFC 8252 section 7.1.
+	 */
+	public function test_verify_redirect_uri_custom_scheme() {
+		$published_uris = function () {
+			return array( 'Com.Example.App:/callback', 'myapp://oauth/cb' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'com.example.app:/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'COM.EXAMPLE.APP:/callback' ) );
+		$this->assertTrue( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp://oauth/cb' ) );
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'com.example.app:/Callback' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp://oauth/cb?x=1' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'otherapp:/callback' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+	}
+
+	// A custom scheme on a loopback host is not a loopback redirect, RFC 8252 section 7.3 covers http only.
+	public function test_verify_redirect_uri_custom_scheme_is_not_loopback() {
+		$none = function () {
+			return array();
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $none );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'http://127.0.0.1:8080/', 'myapp://localhost/cb' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $none );
+	}
+
+	/**
+	 * A redirect URI that wp_parse_url() cannot parse is rejected, even if published.
+	 *
+	 * The code is added to the redirect URI after the user approves, which
+	 * needs a parsed URI. "myapp:///cb" used to pass and then fail in confirmed().
+	 */
+	public function test_verify_redirect_uri_rejects_unparseable_uri() {
+		$published_uris = function () {
+			return array( 'myapp:///cb', 'myapp:80/cb' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:///cb' ) );
+		$this->assertFalse( $controller::verify_redirect_uri( 'https://app.example.com', 'myapp:80/cb' ) );
+
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+	}
+
+	// A blocked scheme is rejected even when the client publishes it and the filter approves it.
+	public function test_verify_redirect_uri_blocked_scheme_cannot_be_approved() {
+		$published_uris = function () {
+			return array( 'javascript:alert(1)' );
+		};
+		add_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		add_filter( 'indieauth_verify_redirect_uri', '__return_true' );
+		$controller = new IndieAuth\Rest\Authorization_Controller();
+
+		$valid = $controller::verify_redirect_uri( 'https://app.example.com', 'javascript:alert(1)' );
+
+		remove_filter( 'indieauth_verify_redirect_uri', '__return_true' );
+		remove_filter( 'pre_indieauth_client_redirect_uris', $published_uris );
+		$this->assertFalse( $valid );
 	}
 
 	// Check For an Invalid Grant Type.

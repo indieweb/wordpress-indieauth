@@ -119,8 +119,8 @@ class Token_Controller extends \WP_REST_Controller {
 						),
 						// The client's redirect URL, which MUST match the initial authentication request.
 						'redirect_uri'  => array(
-							'validate_callback' => 'IndieAuth\rest_is_valid_url',
-							'sanitize_callback' => 'esc_url_raw',
+							'validate_callback' => 'IndieAuth\rest_is_valid_redirect_uri',
+							'sanitize_callback' => 'IndieAuth\sanitize_redirect_uri',
 						),
 						// The original plaintext random string generated before starting the authorization request.
 						'code_verifier' => array(),
@@ -201,7 +201,8 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_request', \__( 'Please choose either an action or a grant_type', 'indieauth' ) );
 		}
 
-		$resp = new OAuth_Response( 'invalid_request', \__( 'Invalid Request', 'indieauth' ), 400 );
+		// The defaults below may be replaced by a filter or never be sent, so they are only reported when returned.
+		$resp = new OAuth_Response( 'invalid_request', \__( 'Invalid Request', 'indieauth' ), 400, null, false );
 
 		// Action Handler.
 		if ( isset( $params['action'] ) ) {
@@ -223,7 +224,7 @@ class Token_Controller extends \WP_REST_Controller {
 						return add_deprecation_headers( new OAuth_Response( 'invalid_request', \__( 'Revoke is Missing Required Parameter token', 'indieauth' ), 400 ) );
 					}
 				default:
-					$resp = new OAuth_Response( 'unsupported_action', \__( 'Unsupported Action', 'indieauth' ), 400 );
+					$resp = new OAuth_Response( 'unsupported_action', \__( 'Unsupported Action', 'indieauth' ), 400, null, false );
 			}
 
 			// Allows for adding custom actions.
@@ -239,13 +240,16 @@ class Token_Controller extends \WP_REST_Controller {
 				case 'refresh_token':
 					return $this->refresh_token( $params );
 				default:
-					$resp = new OAuth_Response( 'unsupported_grant_type', \__( 'Unsupported grant_type.', 'indieauth' ), 400 );
+					$resp = new OAuth_Response( 'unsupported_grant_type', \__( 'Unsupported grant_type.', 'indieauth' ), 400, null, false );
 			}
 			// Allows for adding custom grant type handling.
 			$resp = \apply_filters( 'indieauth_token_grant_type_handler', $resp, $params );
 		}
 
 		// Everything Failed.
+		if ( $resp instanceof OAuth_Response ) {
+			$resp->log();
+		}
 		return $resp;
 	}
 
@@ -253,12 +257,20 @@ class Token_Controller extends \WP_REST_Controller {
 	/**
 	 * Handle refresh token grant type.
 	 *
+	 * The refresh token is bound to the client it was issued to, so the request
+	 * must include that client_id. IndieAuth section 5.5.1.
+	 *
+	 * A request without client_id is rejected before the token is looked up, so
+	 * the response does not show whether the token is valid, and the token is
+	 * kept. A token presented by a different client is destroyed, the same as an
+	 * authorization code that fails its binding.
+	 *
 	 * @param array $params Request parameters.
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
 	public function refresh_token( $params ) {
 
-		$diff = array_diff( array( 'refresh_token' ), array_keys( $params ) );
+		$diff = array_diff( array( 'refresh_token', 'client_id' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new OAuth_Response( 'invalid_request', \__( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
@@ -267,10 +279,16 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_grant', \__( 'Invalid Token', 'indieauth' ), 400 );
 		}
 
-		// Destroy the refresh token.
+		// Destroy the refresh token. It is single use, and a token presented by
+		// another client may have been stolen, so it is destroyed on a mismatch too.
 		$this->refresh_tokens->destroy( $params['refresh_token'] );
 
-		return $this->generate_token_response( $refresh );
+		// Compared with same_url(), so a trailing slash does not cost the client its token.
+		if ( ! isset( $refresh['client_id'] ) || ! same_url( $refresh['client_id'], $params['client_id'] ) ) {
+			return new OAuth_Response( 'invalid_grant', \__( 'The client_id does not match the one the refresh token was issued to', 'indieauth' ), 400 );
+		}
+
+		return $this->generate_token_response( $refresh, 'refresh_token' );
 	}
 
 	/**
@@ -306,10 +324,11 @@ class Token_Controller extends \WP_REST_Controller {
 	/**
 	 * Generate token response from authorization data.
 	 *
-	 * @param array $response Authorization response data.
+	 * @param array  $response   Authorization response data.
+	 * @param string $grant_type The grant the token is issued for, `authorization_code` or `refresh_token`.
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
-	public function generate_token_response( $response ) {
+	public function generate_token_response( $response, $grant_type = 'authorization_code' ) {
 		$return = array(
 			'me' => $response['me'],
 		);
@@ -351,6 +370,11 @@ class Token_Controller extends \WP_REST_Controller {
 
 				$return['iat'] = time();
 
+				// Carry the user's login time through unchanged. Unlike iat, it is not reset on refresh.
+				if ( isset( $response['auth_time'] ) ) {
+					$return['auth_time'] = (int) $response['auth_time'];
+				}
+
 				$expires = (int) \get_option( 'indieauth_expires_in' );
 
 				$return = array_filter( $return );
@@ -361,6 +385,33 @@ class Token_Controller extends \WP_REST_Controller {
 				if ( 0 !== $expires ) {
 					$return['expires_in']    = $expires;
 					$return['refresh_token'] = $this->set_refresh_token( $return, $response['user'] );
+				}
+
+				if ( $return['access_token'] ) {
+					// The hooks get what is stored with the token, not the token values.
+					$token = array_diff_key( $return, array_flip( array( 'access_token', 'refresh_token', 'profile' ) ) );
+
+					if ( 'refresh_token' === $grant_type ) {
+						/**
+						 * Fires when a refresh token was used to issue a new access token.
+						 *
+						 * The `uuid` is the same as on the token that was refreshed.
+						 *
+						 * @param array $token   The token data, without the token values.
+						 * @param int   $user_id The user the token belongs to.
+						 */
+						\do_action( 'indieauth_token_refreshed', $token, (int) $response['user'] );
+					} else {
+						/**
+						 * Fires when an authorization code was exchanged for an access token.
+						 *
+						 * The `uuid` is the same as on the authorization code.
+						 *
+						 * @param array $token   The token data, without the token values.
+						 * @param int   $user_id The user the token belongs to.
+						 */
+						\do_action( 'indieauth_token_issued', $token, (int) $response['user'] );
+					}
 				}
 			}
 		}

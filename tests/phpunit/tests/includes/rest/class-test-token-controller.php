@@ -408,6 +408,7 @@ class Test_Token_Controller extends WP_UnitTestCase {
 				array(
 					'grant_type' => 'refresh_token',
 					'refresh_token' => $refresh_token,
+					'client_id'     => static::$refresh_token['client_id'],
 				)
 		);
 		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response ) );
@@ -430,6 +431,242 @@ class Test_Token_Controller extends WP_UnitTestCase {
 		);
 	}
 
+
+	// Redeems a code carrying auth_time and returns the response data.
+	protected function redeem_code_with( $extra ) {
+		$tokens = new Token_User( '_indieauth_code_' );
+		$tokens->set_user( self::$author_id );
+		$code = $tokens->set( array_merge( static::$test_auth_code, $extra ), 600 );
+
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => $code,
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		return $response->get_data();
+	}
+
+	// auth_time on the code is stored on the access and refresh tokens, but not returned to the client.
+	public function test_auth_code_redemption_carries_auth_time() {
+		$data = $this->redeem_code_with( array( 'auth_time' => 1700000000 ) );
+
+		$this->assertArrayNotHasKey( 'auth_time', $data );
+
+		$access = $this->get_access_token( $data['access_token'] );
+		$this->assertSame( 1700000000, $access['auth_time'] );
+
+		$refresh = $this->get_refresh_token( $data['refresh_token'] );
+		$this->assertSame( 1700000000, $refresh['auth_time'] );
+	}
+
+	// A code without auth_time gives tokens without it.
+	public function test_auth_code_redemption_without_auth_time() {
+		$data = $this->redeem_code_with( array() );
+
+		$this->assertArrayNotHasKey( 'auth_time', $this->get_access_token( $data['access_token'] ) );
+		$this->assertArrayNotHasKey( 'auth_time', $this->get_refresh_token( $data['refresh_token'] ) );
+	}
+
+	// auth_time is kept unchanged through refreshes, while iat is reset.
+	public function test_refresh_token_keeps_auth_time() {
+		$tokens = new Token_User( '_indieauth_refresh_' );
+		$tokens->set_user( self::$author_id );
+		$refresh_token = $tokens->set( array_merge( static::$refresh_token, array( 'auth_time' => 1700000000 ) ) );
+
+		for ( $i = 0; $i < 2; $i++ ) {
+			$response = $this->create_form( 'POST',
+				array(
+					'grant_type'    => 'refresh_token',
+					'refresh_token' => $refresh_token,
+					'client_id'     => static::$refresh_token['client_id'],
+				)
+			);
+			$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+			$data = $response->get_data();
+
+			$this->assertArrayNotHasKey( 'auth_time', $data );
+
+			$access = $this->get_access_token( $data['access_token'] );
+			$this->assertSame( 1700000000, $access['auth_time'] );
+			$this->assertGreaterThan( static::$refresh_token['iat'], $access['iat'] );
+
+			$refresh_token = $data['refresh_token'];
+			$refresh       = $this->get_refresh_token( $refresh_token );
+			$this->assertSame( 1700000000, $refresh['auth_time'] );
+		}
+	}
+
+	/**
+	 * Calls of the token and error hooks, hook name => list of argument lists.
+	 *
+	 * @var array
+	 */
+	protected $hook_calls = array();
+
+	// Collects the calls of the token and error hooks.
+	protected function record_hooks() {
+		$this->hook_calls = array(
+			'indieauth_token_issued'    => array(),
+			'indieauth_token_refreshed' => array(),
+			'indieauth_error'           => array(),
+		);
+		foreach ( array_keys( $this->hook_calls ) as $hook ) {
+			add_action(
+				$hook,
+				function ( ...$args ) use ( $hook ) {
+					$this->hook_calls[ $hook ][] = $args;
+				},
+				10,
+				2
+			);
+		}
+	}
+
+	// Exchanging a code fires the issued hook, without the token values and without an error.
+	public function test_code_redemption_fires_token_issued() {
+		$this->record_hooks();
+		$data  = $this->redeem_code_with( array( 'uuid' => 'd2a4f9c0-0000-4000-8000-000000000001' ) );
+
+		$this->assertCount( 1, $this->hook_calls['indieauth_token_issued'] );
+		$this->assertCount( 0, $this->hook_calls['indieauth_token_refreshed'] );
+		$this->assertCount( 0, $this->hook_calls['indieauth_error'] );
+
+		list( $token, $user_id ) = $this->hook_calls['indieauth_token_issued'][0];
+		$this->assertSame( self::$author_id, $user_id );
+		$this->assertSame( 'd2a4f9c0-0000-4000-8000-000000000001', $token['uuid'] );
+		$this->assertSame( 'https://app.example.com', $token['client_id'] );
+		$this->assertSame( 'create', $token['scope'] );
+		$this->assertArrayNotHasKey( 'access_token', $token );
+		$this->assertArrayNotHasKey( 'refresh_token', $token );
+		$this->assertNotContains( $data['access_token'], $token );
+		$this->assertNotContains( $data['refresh_token'], $token );
+	}
+
+	// A refresh request without client_id is rejected, and the refresh token is kept. IndieAuth section 5.5.1.
+	public function test_refresh_token_requires_client_id() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_request', $response->get_data()['error'] );
+		$this->assertNotFalse( $this->get_refresh_token( $refresh_token ), 'A request without client_id must not cost the client its token.' );
+	}
+
+	// A refresh token presented by another client is rejected and destroyed.
+	public function test_refresh_token_client_id_mismatch_destroys_token() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => 'https://evil.example.net/',
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_grant', $response->get_data()['error'] );
+		$this->assertFalse( $this->get_refresh_token( $refresh_token ) );
+
+		// The real client cannot use it afterwards either.
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => static::$refresh_token['client_id'],
+			)
+		);
+		$this->assertEquals( 400, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+		$this->assertSame( 'invalid_grant', $response->get_data()['error'] );
+	}
+
+	// An equivalent client_id, here without the trailing slash, is accepted.
+	public function test_refresh_token_tolerates_equivalent_client_id() {
+		$refresh_token = $this->set_refresh_token();
+		$response      = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => untrailingslashit( static::$refresh_token['client_id'] ),
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+	}
+
+	// Using a refresh token fires the refreshed hook and keeps the uuid.
+	public function test_refresh_fires_token_refreshed() {
+		$tokens = new Token_User( '_indieauth_refresh_' );
+		$tokens->set_user( self::$author_id );
+		$refresh_token = $tokens->set( static::$refresh_token );
+
+		$this->record_hooks();
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $refresh_token,
+				'client_id'     => static::$refresh_token['client_id'],
+			)
+		);
+		$this->assertEquals( 200, $response->get_status(), 'Response: ' . wp_json_encode( $response->get_data() ) );
+
+		$this->assertCount( 0, $this->hook_calls['indieauth_token_issued'] );
+		$this->assertCount( 1, $this->hook_calls['indieauth_token_refreshed'] );
+		$this->assertCount( 0, $this->hook_calls['indieauth_error'] );
+
+		list( $token, $user_id ) = $this->hook_calls['indieauth_token_refreshed'][0];
+		$this->assertSame( self::$author_id, $user_id );
+		$this->assertSame( static::$refresh_token['uuid'], $token['uuid'] );
+		$this->assertArrayNotHasKey( 'access_token', $token );
+	}
+
+	// A wrong code is an error a logger wants to see.
+	public function test_invalid_code_fires_error() {
+		$this->record_hooks();
+		$response = $this->create_form( 'POST',
+			array(
+				'grant_type'   => 'authorization_code',
+				'code'         => 'not-a-code',
+				'client_id'    => 'https://app.example.com',
+				'redirect_uri' => 'https://app.example.com/redirect',
+			)
+		);
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertCount( 1, $this->hook_calls['indieauth_error'] );
+		$this->assertSame( 'invalid_grant', $this->hook_calls['indieauth_error'][0][0]->get_data()['error'] );
+	}
+
+	// The default errors of the endpoint are only reported when they are returned.
+	public function test_unsupported_grant_type_fires_error_once() {
+		$this->record_hooks();
+		$response = $this->create_form( 'POST', array( 'grant_type' => 'password' ) );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertCount( 1, $this->hook_calls['indieauth_error'] );
+		$this->assertSame( 'unsupported_grant_type', $this->hook_calls['indieauth_error'][0][0]->get_data()['error'] );
+	}
+
+	// A grant type handled by a filter is not an error.
+	public function test_filtered_grant_type_fires_no_error() {
+		add_filter(
+			'indieauth_token_grant_type_handler',
+			function () {
+				return new WP_REST_Response( array( 'handled' => true ), 200 );
+			}
+		);
+
+		$this->record_hooks();
+		$response = $this->create_form( 'POST', array( 'grant_type' => 'custom' ) );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertCount( 0, $this->hook_calls['indieauth_error'] );
+	}
 
 	/**
 	 * Sets a token and verifies it using Access Token Verification.
