@@ -7,6 +7,8 @@
 
 namespace IndieAuth\WP_Admin;
 
+use IndieAuth\Authorize;
+
 use function IndieAuth\add_query_params_to_url;
 
 /**
@@ -14,20 +16,19 @@ use function IndieAuth\add_query_params_to_url;
  */
 class Admin {
 	/**
-	 * Constructor.
+	 * Register the hooks.
 	 */
-	public function __construct() {
-		\add_action( 'init', array( $this, 'register_settings' ) );
-		\add_action( 'login_form_authdiag', array( $this, 'login_form_authdiag' ) );
-		\add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-		\add_action( 'admin_init', array( $this, 'admin_init' ) );
-		\add_filter( 'site_status_tests', array( $this, 'add_indieauth_tests' ) );
+	public static function init() {
+		\add_action( 'init', array( self::class, 'register_settings' ) );
+		\add_action( 'login_form_authdiag', array( self::class, 'login_form_authdiag' ) );
+		\add_action( 'admin_menu', array( self::class, 'admin_menu' ) );
+		\add_action( 'admin_init', array( self::class, 'admin_init' ) );
 	}
 
 	/**
 	 * Register plugin settings.
 	 */
-	public function register_settings() {
+	public static function register_settings() {
 		\register_setting(
 			'indieauth',
 			'indieauth_config',
@@ -63,11 +64,11 @@ class Admin {
 	/**
 	 * Admin init - add general settings link.
 	 */
-	public function admin_init() {
+	public static function admin_init() {
 		\add_settings_field(
 			'indieauth_general_settings',
 			\__( 'IndieAuth Settings', 'indieauth' ),
-			array( $this, 'general_settings' ),
+			array( self::class, 'general_settings' ),
 			'general',
 			'default'
 		);
@@ -76,7 +77,7 @@ class Admin {
 	/**
 	 * Add IndieAuth options to the WordPress general settings page.
 	 */
-	public function general_settings() {
+	public static function general_settings() {
 		if ( \class_exists( 'IndieWeb_Plugin' ) ) {
 			$path = 'admin.php?page=indieauth';
 		} else {
@@ -95,7 +96,7 @@ class Admin {
 	/**
 	 * Add admin menu entry.
 	 */
-	public function admin_menu() {
+	public static function admin_menu() {
 		$title = \__( 'IndieAuth', 'indieauth' );
 		// If the IndieWeb Plugin is installed use its menu.
 		if ( \class_exists( 'IndieWeb_Plugin' ) ) {
@@ -105,7 +106,7 @@ class Admin {
 				$title,
 				'manage_options',
 				'indieauth',
-				array( $this, 'settings_page' )
+				array( self::class, 'settings_page' )
 			);
 		} else {
 			$options_page = \add_options_page(
@@ -113,148 +114,41 @@ class Admin {
 				$title,
 				'manage_options',
 				'indieauth',
-				array( $this, 'settings_page' )
+				array( self::class, 'settings_page' )
 			);
 		}
 		\add_action( 'load-' . $options_page, array( Settings_Fields::class, 'init' ) );
-		\add_action( 'load-' . $options_page, array( $this, 'add_help_tab' ) );
+		\add_action( 'load-' . $options_page, array( self::class, 'add_help_tab' ) );
 	}
 
 	/**
 	 * Load settings page.
 	 */
-	public function settings_page() {
+	public static function settings_page() {
 		\load_template( INDIEAUTH_PLUGIN_DIR . 'templates/indieauth-settings.php' );
-	}
-
-	/**
-	 * Add IndieAuth site health tests.
-	 *
-	 * @param array $tests Existing tests.
-	 * @return array Modified tests.
-	 */
-	public function add_indieauth_tests( $tests ) {
-		$tests['direct']['indieauth_header'] = array(
-			'label' => \__( 'IndieAuth Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_header_test' ),
-		);
-		$tests['direct']['indieauth_https']  = array(
-			'label' => \__( 'SSL Test', 'indieauth' ),
-			'test'  => array( $this, 'site_health_https_test' ),
-		);
-		return $tests;
-	}
-
-	/**
-	 * Site health test for HTTPS.
-	 *
-	 * @return array Test result.
-	 */
-	public function site_health_https_test() {
-		$result = array(
-			'label'       => \__( 'HTTPS Check Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => \__( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => \sprintf(
-				'<p>%s</p>',
-				\__( 'You are using HTTPS and IndieAuth will be secure', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_https',
-		);
-
-		if ( ! \is_ssl() ) {
-			$result['status']         = 'critical';
-			$result['badge']['color'] = 'red';
-			$result['label']          = \__( 'HTTPS Test Failed', 'indieauth' );
-			$result['description']    = \sprintf(
-				'<p>%s</p>',
-				\__( 'You are not serving your site via HTTPS. This is a security risk if running IndieAuth.', 'indieauth' )
-			);
-			$result['actions']        = \__( 'We recommend you acquire an SSL Certificate. You can do this for free through Lets Encrypt', 'indieauth' );
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Site health test for authorization headers.
-	 *
-	 * @return array Test result.
-	 */
-	public function site_health_header_test() {
-		$result = array(
-			'label'       => \__( 'Authorization Header Passed', 'indieauth' ),
-			'status'      => 'good',
-			'badge'       => array(
-				'label' => \__( 'IndieAuth', 'indieauth' ),
-				'color' => 'green',
-			),
-			'description' => \sprintf(
-				'<p>%s</p>',
-				\__( 'Your hosting provider allows authorization headers to pass so IndieAuth should work', 'indieauth' )
-			),
-			'actions'     => '',
-			'test'        => 'indieauth_headers',
-		);
-
-		if ( ! self::test_auth() ) {
-			$result['status']         = 'critical';
-			$result['badge']['color'] = 'red';
-			$result['label']          = \__( 'Authorization Test Failed', 'indieauth' );
-			\ob_start();
-			include INDIEAUTH_PLUGIN_DIR . 'templates/authdiagfail.php';
-			$result['description'] = \ob_get_contents();
-			\ob_end_clean();
-			$result['actions'] = \sprintf( '<a href="%1$s" >%2$s</a>', 'https://github.com/indieweb/wordpress-indieauth/issues', \__( 'If contacting your hosting provider does not work you can open an issue on GitHub and we will try to assist', 'indieauth' ) );
-		}
-
-		return $result;
 	}
 
 	/**
 	 * Test if authorization headers pass through.
 	 *
+	 * @deprecated Use Health_Check::test_header().
+	 *
 	 * @return bool True if authorization headers pass through, false otherwise.
 	 */
 	public static function test_auth() {
-		$response = \wp_remote_post(
-			add_query_params_to_url(
-				array(
-					'action' => 'authdiag',
-				),
-				\wp_login_url()
-			),
-			array(
-				'method'  => 'POST',
-				'headers' => array(
-					'Authorization' => 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG',
-					'Accept'        => 'application/json',
-				),
-			)
-		);
-		if ( \is_wp_error( $response ) ) {
-			return false;
-		}
-		$json = json_decode( \wp_remote_retrieve_body( $response ) );
-		return ! empty( $json->success );
+		return 'passed' === Health_Check::test_header();
 	}
 
 	/**
 	 * Handle the auth diagnostic login form.
 	 */
-	public function login_form_authdiag() {
+	public static function login_form_authdiag() {
 		$return  = '';
 		$success = false;
 		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] ) {
-			if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['HTTP_AUTHORIZATION'] ) {
+			// Same lookup as real requests, so the test cannot fail where IndieAuth works.
+			if ( 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === Authorize::get_authorization_header() ) {
 				$return  = '<div class="notice notice-success"><p>' . \esc_html__( 'Authorization Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
-				$success = true;
-			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) && 'Bearer SjdWwSPRi9rdNzyKVDiZRkXhm0fxP0lAmksJXNOgwc7SYREqJnDpXky1MCbIW6UNAFqCwXHswKGaps2lSZfwpYEZnIdREikjiKKSE6UJNlJ3NLXyvyFSQdzUiRg531uG' === $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) {
-				$return  = '<div class="notice-success"><p>' . \esc_html__( 'Alternate Header Found. You should be able to use all clients.', 'indieauth' ) . '</p></div>';
 				$success = true;
 			}
 			if ( empty( $return ) ) {
@@ -295,7 +189,7 @@ class Admin {
 	/**
 	 * Add help tabs to the settings page.
 	 */
-	public function add_help_tab() {
+	public static function add_help_tab() {
 		\get_current_screen()->add_help_tab(
 			array(
 				'id'      => 'overview',

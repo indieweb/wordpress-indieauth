@@ -7,6 +7,7 @@
 
 namespace IndieAuth\Rest;
 
+use IndieAuth\IndieAuth;
 use IndieAuth\Token\User as Token_User;
 use IndieAuth\OAuth_Response;
 use IndieAuth\Clients;
@@ -691,7 +692,8 @@ class Authorization_Controller extends \WP_REST_Controller {
 
 		$redirect_uri  = $redirect_to;
 		$scope         = isset( $_GET['scope'] ) ? \sanitize_text_field( \wp_unslash( $_GET['scope'] ) ) : null;
-		$scopes        = array_filter( explode( ' ', $scope ) );
+		// Only offer the scopes the user can use.
+		$scopes        = IndieAuth::$scopes->for_user( array_filter( explode( ' ', $scope ) ), \get_current_user_id() );
 		$state         = isset( $_GET['state'] ) ? $_GET['state'] : null;
 		$me            = isset( $_GET['me'] ) ? \esc_url_raw( \wp_unslash( $_GET['me'] ) ) : null;
 		$response_type = isset( $_GET['response_type'] ) ? \sanitize_text_field( \wp_unslash( $_GET['response_type'] ) ) : null;
@@ -752,7 +754,8 @@ class Authorization_Controller extends \WP_REST_Controller {
 			$scope = array_unique( array_merge( $scope, array( 'create', 'update' ) ) );
 		}
 
-		$scope = implode( ' ', $scope );
+		// Do not issue scopes the user cannot use.
+		$scope = implode( ' ', IndieAuth::$scopes->for_user( $scope, $user ) );
 
 		$state         = isset( $_POST['state'] ) ? $_POST['state'] : null;
 

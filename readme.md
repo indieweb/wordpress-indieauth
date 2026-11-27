@@ -206,6 +206,9 @@ Project and support maintained on github at [indieweb/wordpress-indieauth](https
 * Accept custom URI scheme redirect URLs for native apps, such as `com.example.app:/callback` (RFC 8252). They must exactly match a redirect URL published by the client, and the consent screen says the user will be returned to an app. `javascript`, `data`, `vbscript`, `file`, `blob` and `filesystem` are always rejected; more schemes can be blocked with the `indieauth_blocked_redirect_schemes` filter. The consent screen is no longer shown for a `redirect_uri` the client has not published (#367)
 * Add actions for logging and notifications: `indieauth_authorization_approved`, `indieauth_token_issued`, `indieauth_token_refreshed`, `indieauth_token_revoked` and `indieauth_error`. The token endpoint no longer writes its default "Invalid Request" error to the debug log on requests that succeed (#261)
 * Rename the class `IndieAuth\Client_Taxonomy` to `IndieAuth\Clients`. The old name and `IndieAuth_Client_Taxonomy` keep working, with a deprecation notice
+* Do not offer or issue scopes the user cannot use, for example `create` for a subscriber. Scopes that only need `read`, like `profile`, are not affected (#147)
+* Revoke all tokens of a user when the password is reset. A password change in the profile keeps them (#133)
+* Require `client_id` when refreshing a token, as the IndieAuth specification does, and reject and destroy a refresh token used by a different client. Tokens received through a ticket send their `client_id` when refreshing, if the issuer provided one (#366)
 
 ### 5.1.0
 

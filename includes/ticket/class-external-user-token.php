@@ -145,6 +145,13 @@ class External_User_Token {
 			$args['body']['resource'] = $token['resource'];
 		}
 
+		// IndieAuth asks for the client_id the refresh token was issued to. A
+		// ticket is redeemed without one, as client_id is optional in Ticket
+		// Auth, so it is only known, and only sent, if the issuer returned it.
+		if ( ! empty( $token['client_id'] ) && is_string( $token['client_id'] ) ) {
+			$args['body']['client_id'] = $token['client_id'];
+		}
+
 		$resp = \wp_safe_remote_post(
 			$token_endpoint,
 			$args
