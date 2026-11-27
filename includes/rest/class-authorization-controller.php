@@ -27,6 +27,7 @@ use function IndieAuth\add_deprecation_headers;
 use function IndieAuth\same_url;
 use function IndieAuth\code_binding_failure;
 use function IndieAuth\get_session_auth_time;
+use function IndieAuth\add_token_properties;
 use function IndieAuth\rest_is_valid_redirect_uri;
 use function IndieAuth\get_redirect_uri_scheme;
 
@@ -778,7 +779,27 @@ class Authorization_Controller extends \WP_REST_Controller {
 		/// phpcs:enable
 		$token = compact( 'response_type', 'client_id', 'redirect_uri', 'scope', 'me', 'code_challenge', 'code_challenge_method', 'user', 'uuid', 'auth_time' );
 		$token = array_filter( $token );
-		$code  = $this->set_code( $current_user->ID, $token );
+
+		/**
+		 * Filters the extra properties stored with an authorization code.
+		 *
+		 * Extra properties are carried to the access token and every refresh
+		 * token issued from the code. Properties the plugin uses itself cannot
+		 * be set or removed here, see reserved_token_properties().
+		 *
+		 * To receive a value from the authorization request, add it to the
+		 * consent form with the `indieauth_authorization_form` action.
+		 *
+		 * @param array  $properties Extra properties, keyed by name. Default empty.
+		 * @param array  $token      The data stored with the code.
+		 * @param array  $params     The parameters posted from the consent form.
+		 * @param int    $user_id    The user who approved the request.
+		 * @param string $flow       How the code was issued, `authorization` or `fedcm`.
+		 */
+		$extra = \apply_filters( 'indieauth_code_properties', array(), $token, \wp_unslash( $_POST ), $user, 'authorization' );
+		$token = add_token_properties( $token, $extra );
+
+		$code = $this->set_code( $current_user->ID, $token );
 
 		if ( $code ) {
 			/**
