@@ -4,6 +4,9 @@
  *
  * @package IndieAuth
  */
+
+use IndieAuth\Clients;
+
 class Test_Compat extends WP_UnitTestCase {
 
 	/**
@@ -31,7 +34,7 @@ class Test_Compat extends WP_UnitTestCase {
 			array( 'IndieAuth_Authorize', \IndieAuth\Authorize::class ),
 			array( 'IndieAuth_Client', \IndieAuth\Client::class ),
 			array( 'IndieAuth_Client_Discovery', \IndieAuth\Client_Discovery::class ),
-			array( 'IndieAuth_Client_Taxonomy', \IndieAuth\Client_Taxonomy::class ),
+			array( 'IndieAuth_Client_Taxonomy', \IndieAuth\Clients::class ),
 			array( 'IndieAuth_Debug', \IndieAuth\Debug::class ),
 			array( 'IndieAuth_FedCM_Endpoint', \IndieAuth\Rest\FedCM_Controller::class ),
 			array( 'IndieAuth_Plugin', \IndieAuth\IndieAuth::class ),
@@ -71,6 +74,16 @@ class Test_Compat extends WP_UnitTestCase {
 
 		$reflection = new ReflectionClass( $legacy );
 		$this->assertSame( $current, $reflection->getName(), "Legacy class {$legacy} is not an alias of {$current}." );
+	}
+
+	// The name the class had from 4.7.0 on keeps working too.
+	public function test_renamed_class_alias() {
+		if ( function_exists( '_deprecated_class' ) ) {
+			$this->setExpectedDeprecated( 'IndieAuth\\Client_Taxonomy' );
+		}
+
+		$this->assertTrue( class_exists( 'IndieAuth\\Client_Taxonomy' ) );
+		$this->assertSame( Clients::class, ( new ReflectionClass( 'IndieAuth\\Client_Taxonomy' ) )->getName() );
 	}
 
 	/**

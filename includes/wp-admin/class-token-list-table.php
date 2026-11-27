@@ -8,7 +8,7 @@
 namespace IndieAuth\WP_Admin;
 
 use IndieAuth\Client_Discovery;
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Clients;
 use IndieAuth\Token\User as Token_User;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
@@ -223,7 +223,7 @@ class Token_List_Table extends \WP_List_Table {
 		}
 		if ( ! isset( $item['client_name'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
-				$client = Client_Taxonomy::get_client( $item['client_id'] );
+				$client = Clients::get_client( $item['client_id'] );
 				if ( \is_wp_error( $client ) ) {
 					$item['client_name'] = \__( 'Unknown', 'indieauth' );
 				} else {
@@ -245,7 +245,7 @@ class Token_List_Table extends \WP_List_Table {
 	public function column_client_icon( $item ) {
 		if ( empty( $item['client_icon'] ) ) {
 			if ( isset( $item['client_id'] ) ) {
-				$client = Client_Taxonomy::get_client( $item['client_id'] );
+				$client = Clients::get_client( $item['client_id'] );
 				if ( \is_wp_error( $client ) ) {
 					return \__( 'None', 'indieauth' );
 				}

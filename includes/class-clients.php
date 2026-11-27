@@ -1,6 +1,6 @@
 <?php
 /**
- * IndieAuth Client Taxonomy class file.
+ * Clients class file.
  *
  * @package IndieAuth
  */
@@ -8,13 +8,13 @@
 namespace IndieAuth;
 
 /**
- * Class that handles the client taxonomy functions.
+ * The clients (applications) known to the site.
  *
- * Registers the taxonomy and sets its behavior.
+ * Stored as terms of the `indieauth_client` taxonomy.
  *
  * @since 1.0.0
  */
-final class Client_Taxonomy {
+final class Clients {
 
 	/**
 	 * Initialize the taxonomy.
