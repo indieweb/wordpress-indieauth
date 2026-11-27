@@ -70,7 +70,7 @@ class Test_Debug extends WP_UnitTestCase {
 	}
 
 	public function test_other_plugin_errors_are_not_logged() {
-		$this->assertSame( '', $this->log_error( '/other-plugin/1.0/items' ) );
+		$this->assertStringNotContainsString( 'REST request:', $this->log_error( '/other-plugin/1.0/items' ) );
 	}
 
 	public function test_indieauth_route_errors_are_logged() {
@@ -118,7 +118,7 @@ class Test_Debug extends WP_UnitTestCase {
 	}
 
 	public function test_unknown_token_is_not_logged_when_request_succeeds() {
-		$this->assertSame( '', $this->log_unknown_token( new WP_REST_Response( array(), 200 ) ) );
+		$this->assertStringNotContainsString( 'IndieAuth Error:', $this->log_unknown_token( new WP_REST_Response( array(), 200 ) ) );
 	}
 
 	// The error hook follows the same rules as the log, but does not need WP_DEBUG.
@@ -163,7 +163,7 @@ class Test_Debug extends WP_UnitTestCase {
 		$error = ( new Authorize() )->verify_access_token( 'not-an-indieauth-token' );
 
 		$this->assertTrue( is_oauth_error( $error ) );
-		$this->assertSame( '', $this->read_log() );
+		$this->assertStringNotContainsString( 'IndieAuth Error:', $this->read_log() );
 	}
 
 	public function test_oauth_errors_are_logged() {

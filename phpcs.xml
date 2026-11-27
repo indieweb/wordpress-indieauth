@@ -18,7 +18,7 @@
 	<arg name="parallel" value="50"/>
 
 	<config name="testVersion" value="7.4-"/>
-	<config name="minimum_supported_wp_version" value="6.5"/>
+	<config name="minimum_supported_wp_version" value="6.2"/>
 	<config name="text_domain" value="indieauth,default"/>
 
 	<rule ref="PHPCompatibilityWP"/>

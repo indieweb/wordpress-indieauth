@@ -37,7 +37,9 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 
 		$table = new Token_List_Table();
 		$args  = new ReflectionProperty( $table, '_args' );
-		$args->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$args->setAccessible( true );
+		}
 
 		$_REQUEST['action'] = 'retrieve';
 		// The row action passes the stored, hashed key.
@@ -82,7 +84,9 @@ class Test_Token_List_Table extends WP_UnitTestCase {
 
 		$table = new Token_List_Table();
 		$args  = new ReflectionProperty( $table, '_args' );
-		$args->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$args->setAccessible( true );
+		}
 
 		$_REQUEST['action'] = 'revoke';
 		// The row action passes the stored, hashed key.

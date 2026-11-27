@@ -39,15 +39,13 @@ set -ex
 
 CP_RELEASE=y
 if [[ "$CP_VERSION" == latest ]]; then
-	# Find the version number of the latest release
-	download \
-		https://api.github.com/repos/ClassicPress/ClassicPress-release/releases/latest \
-		"$TMPDIR/cp-latest.json"
-	CP_VERSION="$(grep -Po '"tag_name":\s*"[^"]+"' "$TMPDIR/cp-latest.json" | cut -d'"' -f4)"
+	# Find the version number of the latest release. The releases page
+	# redirects to the latest tag, which avoids the rate limit of the GitHub API.
+	CP_LATEST_URL="$(curl -s -o /dev/null -w '%{redirect_url}' https://github.com/ClassicPress/ClassicPress-release/releases/latest)"
+	CP_VERSION="${CP_LATEST_URL##*/}"
 
-	if [ -z "$CP_VERSION" ]; then
-		echo "ClassicPress version not detected correctly!"
-		cat "$TMPDIR/cp-latest.json"
+	if ! [[ "$CP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-|$) ]]; then
+		echo "ClassicPress version not detected correctly: $CP_LATEST_URL"
 		exit 1
 	fi
 elif [[ "$CP_VERSION" = git-* ]]; then
