@@ -14,6 +14,7 @@ use function IndieAuth\indieauth_validate_user_identifier;
 use function IndieAuth\get_url_from_user;
 use function IndieAuth\normalize_url;
 use function IndieAuth\get_session_auth_time;
+use function IndieAuth\add_token_properties;
 
 /**
  * Implements the Federated Credential Management (FedCM) API endpoints
@@ -746,6 +747,10 @@ class FedCM_Controller extends \WP_REST_Controller {
 		}
 
 		$token = array_filter( $token );
+
+		/** This filter is documented in includes/rest/class-authorization-controller.php */
+		$extra = \apply_filters( 'indieauth_code_properties', array(), $token, is_array( $params ) ? $params : array(), $user->ID, 'fedcm' );
+		$token = add_token_properties( $token, $extra );
 
 		$this->codes->set_user( $user->ID );
 		$code = $this->codes->set( $token, 600 );

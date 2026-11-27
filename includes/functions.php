@@ -1214,3 +1214,157 @@ function get_session_auth_time( $user_id = null ) {
 
 	return isset( $session['login'] ) ? (int) $session['login'] : null;
 }
+
+/**
+ * Names of the properties the plugin itself stores with codes and tokens, or returns for them.
+ *
+ * Extensions can add their own properties to codes and tokens, but cannot
+ * set or remove any of these. Only names the plugin stores, reads or returns
+ * are listed. When the plugin starts to manage another property, the name is
+ * added here, and the plugin sets it from then on. An extension can still take
+ * part in setting it through the filters the plugin provides for it.
+ *
+ * @return string[] Reserved property names.
+ */
+function reserved_token_properties() {
+	return array(
+		// Authorization code.
+		'response_type',
+		'client_id',
+		'redirect_uri',
+		'scope',
+		'me',
+		'code_challenge',
+		'code_challenge_method',
+		'user',
+		'uuid',
+		'auth_time',
+		'fedcm',
+		'nonce',
+		// Access and refresh token.
+		'access_token',
+		'refresh_token',
+		'token_type',
+		'expires_in',
+		'expiration',
+		'exp',
+		'iat',
+		'issued_by',
+		'client_uid',
+		'profile',
+		'last_accessed',
+		'last_ip',
+		// Introspection response.
+		'active',
+	);
+}
+
+/**
+ * Names of all known code and token properties: the reserved ones and those extensions declare.
+ *
+ * Extensions do not have to declare a property to store it. The list is for
+ * code that needs to know every property in use, such as an admin screen.
+ *
+ * @return string[] Property names, reserved names first.
+ */
+function token_properties() {
+	$reserved = reserved_token_properties();
+
+	/**
+	 * Filters the names of the code and token properties extensions add.
+	 *
+	 * Reserved names are removed from the result, so an extension cannot
+	 * claim them, see reserved_token_properties().
+	 *
+	 * @param string[] $names Property names. Default empty.
+	 */
+	$extra = \apply_filters( 'indieauth_extension_token_properties', array() );
+	if ( ! is_array( $extra ) ) {
+		$extra = array();
+	}
+	$extra = array_filter(
+		$extra,
+		function ( $name ) {
+			return is_string( $name ) && '' !== $name;
+		}
+	);
+
+	return array_values( array_unique( array_merge( $reserved, array_diff( $extra, $reserved ) ) ) );
+}
+
+/**
+ * Add extension properties to code or token data.
+ *
+ * Only adds: a reserved property in `$extra` is ignored, and so is a key
+ * that is not a string. Properties already in `$data` are never changed.
+ *
+ * @param array $data  Code or token data.
+ * @param mixed $extra Properties to add, keyed by name.
+ * @return array The data with the extra properties added.
+ */
+function add_token_properties( $data, $extra ) {
+	if ( ! is_array( $extra ) ) {
+		return $data;
+	}
+
+	$reserved = reserved_token_properties();
+	foreach ( $extra as $key => $value ) {
+		if ( ! is_string( $key ) || '' === $key || in_array( $key, $reserved, true ) || array_key_exists( $key, $data ) ) {
+			continue;
+		}
+		$data[ $key ] = $value;
+	}
+
+	return $data;
+}
+
+/**
+ * Get the extension properties from code or token data.
+ *
+ * @param array $data Code or token data.
+ * @return array The properties that are not reserved by the plugin.
+ */
+function get_extra_token_properties( $data ) {
+	if ( ! is_array( $data ) ) {
+		return array();
+	}
+	return array_diff_key( $data, array_flip( reserved_token_properties() ) );
+}
+
+/**
+ * Get the extension properties of a token that may be returned to a client.
+ *
+ * Extension properties are returned unless they are added to the block list
+ * with the `indieauth_hidden_token_properties` filter. Properties the plugin
+ * uses itself are not affected: the plugin decides where those are returned.
+ *
+ * @param array  $token   Token data, without the token values.
+ * @param string $context Where the properties are returned, `token_response` or `introspection`.
+ * @return array The extension properties that may be returned, keyed by name.
+ */
+function get_visible_token_properties( $token, $context ) {
+	$extra = get_extra_token_properties( $token );
+	if ( empty( $extra ) ) {
+		return array();
+	}
+
+	/**
+	 * Filters the extension properties that are not returned to clients.
+	 *
+	 * Extension properties are stored with the token and returned in the token
+	 * response and by introspection, unless they are listed here. Listing a
+	 * property only keeps it out of the response; it stays stored with the
+	 * token. Properties the plugin uses itself cannot be listed.
+	 *
+	 * @param string[] $names   Names of properties not to return. Default empty.
+	 * @param array    $token   The token data, without the token values.
+	 * @param string   $context Where the properties would be returned, `token_response` or `introspection`.
+	 */
+	$hidden = \apply_filters( 'indieauth_hidden_token_properties', array(), $token, $context );
+	if ( ! is_array( $hidden ) ) {
+		return $extra;
+	}
+	$hidden = array_filter( $hidden, 'is_string' );
+
+	return array_diff_key( $extra, array_flip( $hidden ) );
+}
