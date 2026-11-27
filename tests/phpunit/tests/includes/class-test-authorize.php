@@ -26,7 +26,7 @@ class Test_Authorize extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
-		unset( $_SERVER['HTTP_AUTHORIZATION'], $_POST['access_token'], $_REQUEST['micropub'] );
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'], $_POST['access_token'], $_REQUEST['micropub'] );
 		// The plugin's own instance also answers determine_current_user, so clear the token it kept.
 		foreach ( $GLOBALS['wp_filter']['indieauth_response']->callbacks as $callbacks ) {
 			foreach ( $callbacks as $callback ) {
@@ -404,5 +404,19 @@ class Test_Authorize extends WP_UnitTestCase {
 		$this->assertTrue( user_can( static::$author_id, 'upload_files' ) );
 	}
 
+	// The Site Health test uses the same lookup as the plugin, without an instance.
+	public function test_get_authorization_header_static_http_authorization() {
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer abc';
+		$this->assertSame( 'Bearer abc', Indieauth_Authorize::get_authorization_header() );
+	}
 
+	public function test_get_authorization_header_static_redirect() {
+		$_SERVER['REDIRECT_HTTP_AUTHORIZATION'] = 'Bearer abc';
+		$this->assertSame( 'Bearer abc', Indieauth_Authorize::get_authorization_header() );
+	}
+
+	// getallheaders() does not exist in every SAPI, the lookup must not fail then.
+	public function test_get_authorization_header_none() {
+		$this->assertNull( Indieauth_Authorize::get_authorization_header() );
+	}
 }

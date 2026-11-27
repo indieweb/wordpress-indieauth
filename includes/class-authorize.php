@@ -283,14 +283,14 @@ class Authorize {
 	 *
 	 * @return string|null Authorization header if set, null otherwise
 	 */
-	public function get_authorization_header() {
+	public static function get_authorization_header() {
 		$auth = null;
 		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
 			$auth = \wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 			// When Apache speaks via FastCGI with PHP, then the authorization header is often available as REDIRECT_HTTP_AUTHORIZATION.
 			$auth = \wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		} else {
+		} elseif ( \function_exists( 'getallheaders' ) ) {
 			$headers = getallheaders();
 			// Check for the authorization header case-insensitively.
 			foreach ( $headers as $key => $value ) {
