@@ -77,7 +77,7 @@ class Token_UI {
 		if ( empty( $scopes ) ) {
 			$scopes = 'create update';
 		}
-		$scopes  = \sanitize_text_field( $scopes );
+		$scopes  = implode( ' ', IndieAuth::$scopes->for_user( explode( ' ', \sanitize_text_field( $scopes ) ), \get_current_user_id() ) );
 		$expires = isset( $_REQUEST['expires_in'] ) ? \absint( $_REQUEST['expires_in'] ) : 0;
 		$token   = self::generate_local_token( $client_name, $scopes, $expires );
 		?>
@@ -165,6 +165,7 @@ class Token_UI {
 	 */
 	public static function scopes() {
 		$scopes = Authorization_Controller::scopes();
+		$scopes = array_intersect_key( $scopes, array_flip( IndieAuth::$scopes->for_user( array_keys( $scopes ), \get_current_user_id() ) ) );
 		echo '<ul>';
 		foreach ( $scopes as $scope => $description ) {
 			\printf( '<li><input type="checkbox" name="scopes[]" value="%1$s" /><strong>%1$s</strong> - %2$s</li>', \esc_attr( $scope ), \esc_html( $description ) );
