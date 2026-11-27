@@ -20,6 +20,8 @@ use function IndieAuth\deprecation_notice;
 use function IndieAuth\add_deprecation_headers;
 use function IndieAuth\same_url;
 use function IndieAuth\code_binding_failure;
+use function IndieAuth\add_token_properties;
+use function IndieAuth\get_extra_token_properties;
 
 /**
  * IndieAuth Token Controller class.
@@ -378,6 +380,26 @@ class Token_Controller extends \WP_REST_Controller {
 				$expires = (int) \get_option( 'indieauth_expires_in' );
 
 				$return = array_filter( $return );
+
+				// Extension properties of the code, or of the refresh token, carry over unchanged.
+				$return = add_token_properties( $return, get_extra_token_properties( $response ) );
+
+				/**
+				 * Filters the extra properties added to an access token when it is issued.
+				 *
+				 * Only adds: the extra properties carried over from the authorization
+				 * code or refresh token cannot be changed or removed here, and neither
+				 * can the properties the plugin uses itself, see reserved_token_properties().
+				 * Added properties go with any refresh token, like the carried ones.
+				 *
+				 * @param array  $properties Extra properties to add, keyed by name. Default empty.
+				 * @param array  $token      The token data so far, including the carried properties.
+				 * @param array  $response   The authorization code or refresh token data the token is issued from.
+				 * @param string $grant_type The grant the token is issued for, `authorization_code` or `refresh_token`.
+				 * @param int    $user_id    The user the token belongs to.
+				 */
+				$extra  = \apply_filters( 'indieauth_access_token_properties', array(), $return, $response, $grant_type, (int) $response['user'] );
+				$return = add_token_properties( $return, $extra );
 
 				$return['access_token'] = $this->set_token( $return, $expires, $response['user'] );
 

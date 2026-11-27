@@ -9,6 +9,8 @@ namespace IndieAuth\Rest;
 
 use IndieAuth\Token\User as Token_User;
 use function IndieAuth\get_user_by_identifier;
+use function IndieAuth\add_token_properties;
+use function IndieAuth\get_extra_token_properties;
 
 /**
  * Trait providing shared token management for REST controllers.
@@ -147,6 +149,8 @@ trait Token_Management {
 		if ( isset( $token['auth_time'] ) ) {
 			$refresh['auth_time'] = (int) $token['auth_time'];
 		}
+		// Extension properties go with the refresh token, so the next access token gets them too.
+		$refresh = add_token_properties( $refresh, get_extra_token_properties( $token ) );
 		$this->refresh_tokens->set_user( $user );
 		$expires_in = array_key_exists( 'expires_in', $token ) ? $token['expires_in'] : null;
 
