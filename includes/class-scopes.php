@@ -271,6 +271,32 @@ class Scopes {
 	}
 
 	/**
+	 * Remove the scopes a user cannot use.
+	 *
+	 * A scope is removed if it needs more than `read` and the user has none of
+	 * its capabilities. Scopes that are not registered are kept.
+	 *
+	 * @param string[] $names   Scope names.
+	 * @param int      $user_id User ID.
+	 * @return string[] The scope names the user can use.
+	 */
+	public function for_user( $names, $user_id ) {
+		$kept = array();
+		foreach ( $names as $name ) {
+			$scope = $this->get_scope( $name );
+			$caps  = $scope ? array_diff( $scope->capabilities, array( 'read' ) ) : array();
+			$can   = empty( $caps );
+			foreach ( $caps as $cap ) {
+				$can = $can || \user_can( $user_id, $cap );
+			}
+			if ( $can ) {
+				$kept[] = $name;
+			}
+		}
+		return $kept;
+	}
+
+	/**
 	 * Confirm if a capability is in one of the scopes provided.
 	 *
 	 * @param string          $cap    Capability.

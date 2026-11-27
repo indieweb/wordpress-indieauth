@@ -51,6 +51,22 @@ class Metadata_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Whether the metadata can be served at the RFC 8414 well-known URL.
+	 *
+	 * Plain permalinks put the route in the query, and a WordPress in a
+	 * subdirectory cannot answer at the root of the host.
+	 *
+	 * @return bool True if the well-known URL is served.
+	 */
+	public static function has_well_known_url() {
+		$issuer      = \wp_parse_url( self::get_issuer() );
+		$issuer_path = isset( $issuer['path'] ) ? trim( $issuer['path'], '/' ) : '';
+		$home_path   = trim( (string) \wp_parse_url( \home_url(), PHP_URL_PATH ), '/' );
+
+		return ! isset( $issuer['query'] ) && '' !== $issuer_path && '' === $home_path;
+	}
+
+	/**
 	 * Serve the metadata at the RFC 8414 well-known URL.
 	 *
 	 * The well-known string goes between the host and the path of the issuer,
@@ -61,15 +77,12 @@ class Metadata_Controller extends \WP_REST_Controller {
 	 * @see https://www.rfc-editor.org/rfc/rfc8414#section-3
 	 */
 	public static function add_rewrite_rules() {
-		$issuer      = \wp_parse_url( self::get_issuer() );
-		$issuer_path = isset( $issuer['path'] ) ? trim( $issuer['path'], '/' ) : '';
-		$home_path   = trim( (string) \wp_parse_url( \home_url(), PHP_URL_PATH ), '/' );
-
-		// Plain permalinks put the route in the query, and a WordPress in a
-		// subdirectory cannot answer at the root of the host.
-		if ( isset( $issuer['query'] ) || '' === $issuer_path || '' !== $home_path ) {
+		if ( ! self::has_well_known_url() ) {
 			return;
 		}
+
+		$issuer      = \wp_parse_url( self::get_issuer() );
+		$issuer_path = trim( $issuer['path'], '/' );
 
 		\add_rewrite_rule(
 			'^\.well-known/oauth-authorization-server/' . preg_quote( $issuer_path, '#' ) . '/?$',
