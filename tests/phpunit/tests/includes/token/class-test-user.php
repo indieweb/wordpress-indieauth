@@ -2,7 +2,7 @@
 
 use IndieAuth\Token\User as Token_User;
 
-class Test_Tokens extends WP_UnitTestCase {
+class Test_Token_User extends WP_UnitTestCase {
 	 
 	public function test_set_and_get_user_token() {
 		$user_id = self::factory()->user->create();

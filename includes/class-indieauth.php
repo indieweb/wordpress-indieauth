@@ -180,6 +180,7 @@ class IndieAuth {
 
 		new Authorize();
 		Clients::init();
+		Tokens::init();
 		new Web_Signin();
 
 		if ( \WP_DEBUG ) {
