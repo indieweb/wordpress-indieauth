@@ -284,7 +284,7 @@ class Tokens {
 		// Attach the client, so the tokens of a client can be found.
 		$client = isset( $info['client_uid'] ) ? (int) $info['client_uid'] : 0;
 		if ( ! $client && ! empty( $info['client_id'] ) ) {
-			$found = Client_Taxonomy::get_client( $info['client_id'] );
+			$found = Clients::get_client( $info['client_id'] );
 			if ( is_array( $found ) && isset( $found['id'] ) ) {
 				$client = (int) $found['id'];
 			}

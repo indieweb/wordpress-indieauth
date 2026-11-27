@@ -5,7 +5,7 @@
  * @package IndieAuth
  */
 
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Clients;
 use IndieAuth\Tokens;
 
 class Test_Tokens extends WP_UnitTestCase {
@@ -210,7 +210,7 @@ class Test_Tokens extends WP_UnitTestCase {
 
 	// The client and the uuid can be queried, which user meta could not do.
 	public function test_tokens_can_be_found_by_client_and_uuid() {
-		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$client  = Clients::add_client( 'https://app.example.com/', 'Example App' );
 		$user_id = self::factory()->user->create();
 		$data    = $this->token_data();
 
@@ -248,7 +248,7 @@ class Test_Tokens extends WP_UnitTestCase {
 
 	// Tokens are no content: not in the search and not counted for the client.
 	public function test_tokens_do_not_show_up_as_content() {
-		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$client  = Clients::add_client( 'https://app.example.com/', 'Example App' );
 		$user_id = self::factory()->user->create();
 		( new Tokens( 'access', $user_id ) )->set( array( 'client_uid' => $client['id'] ) + $this->token_data() );
 
@@ -337,7 +337,7 @@ class Test_Tokens extends WP_UnitTestCase {
 	public function test_destroy_removes_the_client_link() {
 		global $wpdb;
 
-		$client  = Client_Taxonomy::add_client( 'https://app.example.com/', 'Example App' );
+		$client  = Clients::add_client( 'https://app.example.com/', 'Example App' );
 		$user_id = self::factory()->user->create();
 		$tokens  = new Tokens( 'access', $user_id );
 		$key     = $tokens->set( array( 'client_uid' => $client['id'] ) + $this->token_data() );

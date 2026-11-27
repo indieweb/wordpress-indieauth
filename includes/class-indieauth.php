@@ -179,8 +179,8 @@ class IndieAuth {
 		static::$scopes->init();
 
 		new Authorize();
-		Tokens::init();
 		Clients::init();
+		Tokens::init();
 		new Web_Signin();
 
 		if ( \WP_DEBUG ) {
