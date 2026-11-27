@@ -1330,3 +1330,41 @@ function get_extra_token_properties( $data ) {
 	}
 	return array_diff_key( $data, array_flip( reserved_token_properties() ) );
 }
+
+/**
+ * Get the extension properties of a token that may be returned to a client.
+ *
+ * Extension properties are returned unless they are added to the block list
+ * with the `indieauth_hidden_token_properties` filter. Properties the plugin
+ * uses itself are not affected: the plugin decides where those are returned.
+ *
+ * @param array  $token   Token data, without the token values.
+ * @param string $context Where the properties are returned, `token_response` or `introspection`.
+ * @return array The extension properties that may be returned, keyed by name.
+ */
+function get_visible_token_properties( $token, $context ) {
+	$extra = get_extra_token_properties( $token );
+	if ( empty( $extra ) ) {
+		return array();
+	}
+
+	/**
+	 * Filters the extension properties that are not returned to clients.
+	 *
+	 * Extension properties are stored with the token and returned in the token
+	 * response and by introspection, unless they are listed here. Listing a
+	 * property only keeps it out of the response; it stays stored with the
+	 * token. Properties the plugin uses itself cannot be listed.
+	 *
+	 * @param string[] $names   Names of properties not to return. Default empty.
+	 * @param array    $token   The token data, without the token values.
+	 * @param string   $context Where the properties would be returned, `token_response` or `introspection`.
+	 */
+	$hidden = \apply_filters( 'indieauth_hidden_token_properties', array(), $token, $context );
+	if ( ! is_array( $hidden ) ) {
+		return $extra;
+	}
+	$hidden = array_filter( $hidden, 'is_string' );
+
+	return array_diff_key( $extra, array_flip( $hidden ) );
+}

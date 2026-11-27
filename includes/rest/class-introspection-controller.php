@@ -7,6 +7,9 @@
 
 namespace IndieAuth\Rest;
 
+use function IndieAuth\get_extra_token_properties;
+use function IndieAuth\get_visible_token_properties;
+
 /**
  * Introspection Controller Functionality.
  *
@@ -187,6 +190,9 @@ class Introspection_Controller extends \WP_REST_Controller {
 		}
 
 		if ( $token ) {
+			// Extension properties an extension hides are kept out of the response.
+			$hidden          = array_diff_key( get_extra_token_properties( $token ), get_visible_token_properties( $token, 'introspection' ) );
+			$token           = array_diff_key( $token, $hidden );
 			$token['active'] = true;
 		} else {
 			$token = array( 'active' => false );

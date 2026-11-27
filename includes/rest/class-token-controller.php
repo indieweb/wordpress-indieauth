@@ -22,6 +22,7 @@ use function IndieAuth\same_url;
 use function IndieAuth\code_binding_failure;
 use function IndieAuth\add_token_properties;
 use function IndieAuth\get_extra_token_properties;
+use function IndieAuth\get_visible_token_properties;
 
 /**
  * IndieAuth Token Controller class.
@@ -439,20 +440,24 @@ class Token_Controller extends \WP_REST_Controller {
 		}
 
 		if ( $return ) {
-			// Return only the standard keys in the response.
+			// Of the plugin's own properties, return only the standard keys.
+			$body = \wp_array_slice_assoc(
+				$return,
+				array(
+					'access_token',
+					'token_type',
+					'scope',
+					'me',
+					'profile',
+					'expires_in',
+					'refresh_token',
+				)
+			);
+			// Extension properties are returned unless an extension hides them.
+			$body += get_visible_token_properties( array_diff_key( $return, array_flip( array( 'access_token', 'refresh_token' ) ) ), 'token_response' );
+
 			return new \WP_REST_Response(
-				\wp_array_slice_assoc(
-					$return,
-					array(
-						'access_token',
-						'token_type',
-						'scope',
-						'me',
-						'profile',
-						'expires_in',
-						'refresh_token',
-					)
-				),
+				$body,
 				200,
 				array(
 					'Cache-Control' => 'no-store',
