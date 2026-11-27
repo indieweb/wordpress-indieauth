@@ -27,7 +27,7 @@ const COMPAT_CLASS_MAP = array(
 	'IndieAuth_Authorize'        => Authorize::class,
 	'IndieAuth_Client'           => Client::class,
 	'IndieAuth_Client_Discovery' => Client_Discovery::class,
-	'IndieAuth_Client_Taxonomy'  => Client_Taxonomy::class,
+	'IndieAuth_Client_Taxonomy'  => Clients::class,
 	'IndieAuth_Debug'            => Debug::class,
 	'IndieAuth_FedCM_Endpoint'   => Rest\FedCM_Controller::class,
 	'IndieAuth_Plugin'           => IndieAuth::class,
@@ -43,18 +43,31 @@ const COMPAT_CLASS_MAP = array(
 	'Web_Signin'                 => Web_Signin::class,
 );
 
+/**
+ * Map of classes that were renamed after 4.7.0 to their new names.
+ */
+const RENAMED_CLASS_MAP = array(
+	'IndieAuth\Client_Taxonomy' => Clients::class,
+);
+
 \spl_autoload_register(
 	function ( $class_name ) {
-		if ( ! isset( COMPAT_CLASS_MAP[ $class_name ] ) ) {
+		if ( isset( COMPAT_CLASS_MAP[ $class_name ] ) ) {
+			$current = COMPAT_CLASS_MAP[ $class_name ];
+			$version = '4.7.0';
+		} elseif ( isset( RENAMED_CLASS_MAP[ $class_name ] ) ) {
+			$current = RENAMED_CLASS_MAP[ $class_name ];
+			$version = '5.2.0';
+		} else {
 			return;
 		}
 
 		// `_deprecated_class()` requires WordPress 6.4.
 		if ( \function_exists( '_deprecated_class' ) ) {
-			\_deprecated_class( $class_name, '4.7.0', COMPAT_CLASS_MAP[ $class_name ] );
+			\_deprecated_class( $class_name, $version, $current );
 		}
 
-		\class_alias( COMPAT_CLASS_MAP[ $class_name ], $class_name );
+		\class_alias( $current, $class_name );
 	}
 );
 

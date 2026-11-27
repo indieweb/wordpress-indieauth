@@ -8,7 +8,7 @@
 namespace IndieAuth\Rest;
 
 use IndieAuth\Token\User as Token_User;
-use IndieAuth\Client_Taxonomy;
+use IndieAuth\Clients;
 use function IndieAuth\indieauth_validate_client_identifier;
 use function IndieAuth\indieauth_validate_user_identifier;
 use function IndieAuth\get_url_from_user;
@@ -592,7 +592,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 
 		// Try to discover client metadata.
 		if ( $client_id ) {
-			$client = Client_Taxonomy::get_client( $client_id );
+			$client = Clients::get_client( $client_id );
 			if ( $client && ! \is_wp_error( $client ) ) {
 				if ( ! empty( $client['privacy_policy'] ) ) {
 					$metadata['privacy_policy_url'] = $client['privacy_policy'];
@@ -771,7 +771,7 @@ class FedCM_Controller extends \WP_REST_Controller {
 		$token_response = \apply_filters( 'indieauth_fedcm_assertion_token', $token_response, $request, $user );
 
 		// Add client to taxonomy for tracking.
-		Client_Taxonomy::add_client( $client_id );
+		Clients::add_client( $client_id );
 
 		$response = new \WP_REST_Response(
 			array( 'token' => \wp_json_encode( $token_response ) ),
