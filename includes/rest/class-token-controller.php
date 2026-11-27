@@ -257,12 +257,20 @@ class Token_Controller extends \WP_REST_Controller {
 	/**
 	 * Handle refresh token grant type.
 	 *
+	 * The refresh token is bound to the client it was issued to, so the request
+	 * must include that client_id. IndieAuth section 5.5.1.
+	 *
+	 * A request without client_id is rejected before the token is looked up, so
+	 * the response does not show whether the token is valid, and the token is
+	 * kept. A token presented by a different client is destroyed, the same as an
+	 * authorization code that fails its binding.
+	 *
 	 * @param array $params Request parameters.
 	 * @return \WP_REST_Response|OAuth_Response Token response or error.
 	 */
 	public function refresh_token( $params ) {
 
-		$diff = array_diff( array( 'refresh_token' ), array_keys( $params ) );
+		$diff = array_diff( array( 'refresh_token', 'client_id' ), array_keys( $params ) );
 		if ( ! empty( $diff ) ) {
 			return new OAuth_Response( 'invalid_request', \__( 'The request is missing one or more required parameters', 'indieauth' ), 400 );
 		}
@@ -271,8 +279,14 @@ class Token_Controller extends \WP_REST_Controller {
 			return new OAuth_Response( 'invalid_grant', \__( 'Invalid Token', 'indieauth' ), 400 );
 		}
 
-		// Destroy the refresh token.
+		// Destroy the refresh token. It is single use, and a token presented by
+		// another client may have been stolen, so it is destroyed on a mismatch too.
 		$this->refresh_tokens->destroy( $params['refresh_token'] );
+
+		// Compared with same_url(), so a trailing slash does not cost the client its token.
+		if ( ! isset( $refresh['client_id'] ) || ! same_url( $refresh['client_id'], $params['client_id'] ) ) {
+			return new OAuth_Response( 'invalid_grant', \__( 'The client_id does not match the one the refresh token was issued to', 'indieauth' ), 400 );
+		}
 
 		return $this->generate_token_response( $refresh, 'refresh_token' );
 	}
